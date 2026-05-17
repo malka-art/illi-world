@@ -1,0 +1,54 @@
+# illi
+
+> illi is a Chrome browser extension that gives you mouse gesture control over YouTube video playback. Instead of keyboard shortcuts or tiny player buttons, you drag anywhere on the screen to change speed, navigate, bookmark moments, and auto-pause. Built for people who watch YouTube to learn.
+
+## What illi does
+
+illi replaces YouTube's built-in speed controls with intuitive mouse gestures. Drag up to speed up (0.1x to 16x), drag down to slow down. Scrub forward and back with horizontal gestures. Pin bookmarks on the video timeline. Auto-pause when you leave the tab. Channel memory saves your preferred speed per YouTube channel automatically.
+
+Everything works from anywhere on the screen. No aiming at small buttons, no memorizing keyboard shortcuts.
+
+## Who illi is for
+
+- Online learners watching tutorials, courses, and lectures on YouTube
+- Developers following code walkthroughs while working in another window
+- Students reviewing recorded lectures at their own pace
+- Anyone who uses YouTube as a learning tool and wants precise playback control
+
+## Key features
+
+- Mouse gesture speed control (0.1x to 16x in 0.1x increments)
+- Forward and back navigation without the progress bar
+- Timeline bookmarks that persist across sessions
+- Per-channel speed memory (automatic)
+- Auto-pause when mouse leaves the video tab
+- Works on YouTube.com and YouTube embeds
+- Neumorphic floating hub UI that adapts to each platform's brand colors
+
+## Technical details
+
+- Chrome extension (Manifest V3)
+- Built with WXT framework and Preact
+- Local-first: settings and bookmarks stored on device via chrome.storage.local
+- Cloud sync available for paid subscribers (Supabase backend)
+- Email OTP authentication (no passwords)
+- Stripe for payments, Sentry for error monitoring, Postmark for transactional email
+
+## Pricing
+
+- 7-day free trial, no credit card required
+- Founders tier: $2/month (limited availability, locked price)
+- Monthly: $7/month
+- Annual: $70/year
+
+## Links
+
+- [Landing page](https://illi.world): Product homepage
+- [Chrome Web Store](https://chrome.google.com/webstore): Install illi
+- [Privacy Policy](https://illi.world/privacy): What data illi collects and how it is used
+- [Terms of Service](https://illi.world/terms): Subscription terms, trial, legal
+
+## Contact
+
+- Email: malka@wallflowerstudio.ca
+- Made by Wallflower Studio (Ontario, Canada)
