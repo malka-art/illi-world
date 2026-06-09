@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>illi</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Design tokens — values from illi's token system (primitives.json / semantic.json via generate.mjs).
+     Inlined here because GitHub Pages can't pull the extension's runtime CSS. Every value is var()-driven. */
+  :root {
+    --illi-bone-50: #FAF8F5; --illi-bone-100: #F5F2EE; --illi-bone-300: #EBE7E2; --illi-bone-900: #857869;
+    --illi-gray-400: #9E9E9E; --illi-gray-500: #6E6E6E; --illi-gray-600: #484848; --illi-gray-800: #1A1A1A;
+    --illi-red-500: #EF4444; --illi-white: #FFFFFF;
+    --illi-font-primary: Inter; --illi-font-display: Sora; --illi-shape-lg: 12px; --illi-shape-xl: 16px;
+    --illi-surface-card: var(--illi-bone-50); --illi-surface-sunken: var(--illi-bone-100); --illi-border-card: var(--illi-bone-300);
+    --illi-text-primary: var(--illi-gray-800); --illi-text-body: var(--illi-gray-600); --illi-text-secondary: var(--illi-gray-500); --illi-text-muted: var(--illi-gray-400);
+    --illi-accent-default: var(--illi-red-500); --illi-mark: var(--illi-bone-900); --illi-on-accent: var(--illi-white);
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px 24px; background:var(--illi-surface-sunken); font-family:var(--illi-font-primary),-apple-system,sans-serif; }
+  .card { width:100%; max-width:600px; margin:0 auto; background:var(--illi-surface-card); border:1px solid var(--illi-border-card); border-radius:var(--illi-shape-xl); padding:48px 48px 44px; text-align:center; }
+  .wordmark { display:block; margin:0 auto 30px; }
+  h1 { margin:0 0 16px; font-family:var(--illi-font-display),-apple-system,sans-serif; font-size:28px; line-height:1.3; font-weight:700; color:var(--illi-text-primary); }
+  p.body { margin:0 auto; max-width:460px; font-size:17px; line-height:27px; color:var(--illi-text-body); }
+  .seal { display:none; margin:0 auto 24px; }
+  .seal-ring { opacity:0; animation: illiFade .5s ease-out .2s forwards; }
+  .seal-tick { opacity:0; animation: illiFade .6s ease-out 1.5s forwards; }
+  @keyframes illiFade { to { opacity:1; } }
+  @media (prefers-reduced-motion: reduce) { .seal-ring, .seal-tick { animation: none; opacity:1; } }
+  .reinstall { margin:26px auto 0; max-width:460px; font-size:14px; line-height:22px; color:var(--illi-text-secondary); display:none; }
+  .reinstall a { color:var(--illi-accent-default); font-weight:600; text-decoration:underline; }
+  .sig { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:34px; }
+  .sig img { display:block; }
+  .sig span { font-family:var(--illi-font-display),var(--illi-font-primary),sans-serif; font-size:15px; line-height:20px; font-weight:500; color:var(--illi-text-muted); }
+  .foot { margin-top:18px; padding-top:18px; border-top:1px solid var(--illi-border-card); }
+  .foot .l1 { font-size:13px; line-height:18px; font-weight:500; color:var(--illi-text-secondary); }
+  .foot .l2 { margin-top:2px; font-size:13px; line-height:18px; color:var(--illi-text-muted); }
+  @media only screen and (max-width:480px) { .card { padding-left:24px; padding-right:24px; } }
+</style></head>
+<body>
+  <div class="card">
+    <img class="wordmark" src="https://illi.world/assets/illi-wordmark.png" width="62" height="42" alt="illi">
+    <svg class="seal" id="seal" width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+      <circle class="seal-ring" cx="28" cy="28" r="25" stroke="var(--illi-mark)" stroke-width="2"/>
+      <path class="seal-tick" d="M18 28.5l6.5 6.5L39 21" stroke="var(--illi-mark)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1 id="heading"></h1>
+    <p class="body" id="body"></p>
+    <p class="reinstall" id="reinstall">Uninstalled the extension? You'll need to <a href="https://illi.world">reinstall illi</a> to use it again.</p>
+    <div class="sig"><img src="https://illi.world/assets/illi-glyph-color-v2.png" width="27" height="16" alt=""><span>Go learn something.</span></div>
+    <div class="foot">
+      <div class="l1">illi · gesture control for video</div>
+      <div class="l2">illi.world · Questions? Just reply to hey@illi.world</div>
+    </div>
+  </div>
+  <script>
+    // recover-account clears the deletion marker server-side, then redirects here with ?status=.
+    // This page only renders the confirmation copy for that outcome.
+    var STATES = {
+      trial:   { seal:true,  reinstall:true,  heading:'Your account is saved',
+                 body:"We've canceled the deletion, and everything is exactly where you left it. Open illi and pick up right where you stopped." },
+      paid:    { seal:true,  reinstall:true,  heading:'Your account is saved',
+                 body:"We've canceled the deletion, so your account and everything in it are safe. Your subscription was canceled when you asked to delete, so to start using illi again you'll need to resubscribe from the extension." },
+      expired: { seal:false, reinstall:true,  heading:'This recovery link has expired',
+                 body:"This link is no longer valid. If your account is still in its recovery window, just open illi and sign back in to keep it." },
+      deleted: { seal:false, reinstall:true,  heading:'This account has been deleted',
+                 body:'This illi account was permanently deleted and can no longer be recovered. You are welcome to start fresh anytime.' },
+      error:   { seal:false, reinstall:false, heading:'Something went wrong',
+                 body:"We couldn't recover your account just now. Please open illi and sign back in to keep it, or reply to hey@illi.world and we'll sort it out." }
+    };
+    var fallback = { seal:false, reinstall:true, heading:'illi', body:'Open illi to continue.' };
+    var status = new URLSearchParams(location.search).get('status');
+    var c = STATES[status] || fallback;
+    document.getElementById('heading').textContent = c.heading;
+    document.getElementById('body').textContent = c.body;
+    if (c.seal) document.getElementById('seal').style.display = 'block';
+    if (c.reinstall) document.getElementById('reinstall').style.display = 'block';
+  </script>
+</body></html>
