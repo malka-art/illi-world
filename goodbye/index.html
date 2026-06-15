@@ -12,13 +12,13 @@
      Design: design/UNINSTALL-GOODBYE-DESIGN.md + Paper "illi Goodbye — *". Copy: COPY-INVENTORY E7.
      Tokens inlined (values from primitives.json / semantic.json) — GitHub Pages can't pull runtime CSS. */
   :root {
-    --illi-bone-50: #FAF8F5; --illi-bone-100: #F5F2EE; --illi-bone-200: #F0EDE8; --illi-bone-300: #EBE7E2;
+    --illi-bone-50: #FAF8F5; --illi-bone-100: #F5F2EE; --illi-bone-200: #F0EDE8; --illi-bone-300: #EBE7E2; --illi-bone-400: #E4DED6;
     --illi-gray-400: #9E9E9E; --illi-gray-500: #6E6E6E; --illi-gray-600: #484848; --illi-gray-700: #333333; --illi-gray-800: #1A1A1A;
     --illi-red-500: #EF4444; --illi-white: #FFFFFF;
     --illi-font-primary: Inter; --illi-font-display: Sora; --illi-shape-lg: 12px;
     --illi-surface-ground: var(--illi-bone-50); --illi-surface-sunken: var(--illi-bone-100); --illi-surface-chip: var(--illi-bone-200);
     --illi-text-heading: var(--illi-gray-700); --illi-text-body: var(--illi-gray-600); --illi-text-secondary: var(--illi-gray-500); --illi-text-muted: var(--illi-gray-400);
-    --illi-accent-default: var(--illi-red-500); --illi-on-accent: var(--illi-white); --illi-border: var(--illi-bone-300);
+    --illi-accent-default: var(--illi-red-500); --illi-on-accent: var(--illi-white); --illi-border: var(--illi-bone-300); --illi-border-field: var(--illi-bone-400); --illi-shadow-field: inset 0 1px 2px rgba(0,0,0,.04);
   }
   * { box-sizing: border-box; }
   body {
@@ -61,12 +61,16 @@
   .note { display:none; flex-direction:column; align-items:center; gap:12px; width:100%; max-width:420px; }
   .note textarea {
     width:100%; min-height:64px; resize:vertical; padding:12px 14px;
-    border-radius:var(--illi-shape-lg); border:1px solid var(--illi-border);
+    border-radius:var(--illi-shape-lg); border:1px solid var(--illi-border-field); box-shadow:var(--illi-shadow-field);
     background:var(--illi-surface-sunken); color:var(--illi-text-heading);
     font-family:inherit; font-size:14px; line-height:20px;
   }
   .note textarea::placeholder { color:var(--illi-text-muted); }
-  .note textarea:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:1px; }
+  /* Field treatment mirrors the auth email input: border.field (bone.400) + shadow.field (inset), on surface.sunken.
+     Hover (over the field only) thickens the SAME border to 2px; box-sizing:border-box keeps the outer size fixed.
+     Focus only suppresses the browser default ring — no halo. */
+  .note textarea:hover { border-width:2px; }
+  .note textarea:focus { outline:none; }
   .send {
     align-self:center; padding:10px 28px; border-radius:var(--illi-shape-lg); border:none;
     background:var(--illi-accent-default); color:var(--illi-on-accent);
