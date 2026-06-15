@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>illi</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Uninstall goodbye — per-user-state (I-082 /account quarter). The `uninstall` Edge Function
+     computes the user's state on removal, mints action links, and 302s here with ?state=... .
+     This page only renders the right variant + posts the churn reason back. Static by design.
+     Design: design/UNINSTALL-GOODBYE-DESIGN.md + Paper "illi Goodbye — *". Copy: COPY-INVENTORY E7.
+     Tokens inlined (values from primitives.json / semantic.json) — GitHub Pages can't pull runtime CSS. */
+  :root {
+    --illi-bone-50: #FAF8F5; --illi-bone-100: #F5F2EE; --illi-bone-200: #F0EDE8; --illi-bone-300: #EBE7E2;
+    --illi-gray-400: #9E9E9E; --illi-gray-500: #6E6E6E; --illi-gray-600: #484848; --illi-gray-700: #333333; --illi-gray-800: #1A1A1A;
+    --illi-red-500: #EF4444; --illi-white: #FFFFFF;
+    --illi-font-primary: Inter; --illi-font-display: Sora; --illi-shape-lg: 12px;
+    --illi-surface-ground: var(--illi-bone-50); --illi-surface-sunken: var(--illi-bone-100); --illi-surface-chip: var(--illi-bone-200);
+    --illi-text-heading: var(--illi-gray-700); --illi-text-body: var(--illi-gray-600); --illi-text-secondary: var(--illi-gray-500); --illi-text-muted: var(--illi-gray-400);
+    --illi-accent-default: var(--illi-red-500); --illi-on-accent: var(--illi-white); --illi-border: var(--illi-bone-300);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:48px 24px; min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--illi-surface-ground);
+    font-family:var(--illi-font-primary),-apple-system,sans-serif;
+  }
+  .col { display:flex; flex-direction:column; align-items:center; gap:24px; width:100%; max-width:500px; text-align:center; }
+  .wordmark { display:block; flex-shrink:0; }
+  .lockup { display:flex; flex-direction:column; align-items:center; gap:12px; width:100%; }
+  h1 { margin:0; font-family:var(--illi-font-display),-apple-system,sans-serif; font-size:34px; line-height:42px; font-weight:700; color:var(--illi-text-heading); }
+  p.sub { margin:0; font-size:16px; line-height:24px; color:var(--illi-text-secondary); }
+  .actions { display:flex; flex-direction:column; align-items:center; gap:12px; width:100%; }
+  .cta {
+    display:flex; align-items:center; justify-content:center; width:280px; max-width:100%;
+    padding:14px 24px; border-radius:var(--illi-shape-lg);
+    font-size:15px; line-height:20px; font-weight:600; text-decoration:none; cursor:pointer;
+    border:1px solid transparent; transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .cta.primary { background:var(--illi-accent-default); color:var(--illi-on-accent); box-shadow:0 2px 8px rgba(239,68,68,.28); }
+  .cta.primary:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(239,68,68,.34); }
+  .cta.primary:active { transform:translateY(0); box-shadow:0 1px 4px rgba(239,68,68,.28); }
+  .cta.ghost { background:var(--illi-white); color:var(--illi-text-heading); border-color:var(--illi-border); }
+  .cta.ghost:hover { transform:translateY(-1px); }
+  .cta:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:3px; }
+  /* Churn survey */
+  .churn { display:none; flex-direction:column; align-items:center; gap:14px; width:100%; margin-top:4px; }
+  .churn .prompt { font-size:13px; line-height:18px; color:var(--illi-text-muted); }
+  .chips { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:500px; }
+  .chip {
+    padding:9px 16px; border-radius:999px; border:1px solid var(--illi-border);
+    background:var(--illi-surface-chip); color:var(--illi-text-heading);
+    font-family:inherit; font-size:14px; line-height:18px; cursor:pointer;
+    transition:background .12s ease, color .12s ease, border-color .12s ease;
+  }
+  .chip:hover { border-color:var(--illi-gray-400); }
+  .chip.selected { background:var(--illi-accent-default); color:var(--illi-on-accent); border-color:var(--illi-accent-default); }
+  .chip:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:2px; }
+  .note { display:none; flex-direction:column; align-items:center; gap:12px; width:100%; max-width:420px; }
+  .note textarea {
+    width:100%; min-height:64px; resize:vertical; padding:12px 14px;
+    border-radius:var(--illi-shape-lg); border:1px solid var(--illi-border);
+    background:var(--illi-surface-sunken); color:var(--illi-text-heading);
+    font-family:inherit; font-size:14px; line-height:20px;
+  }
+  .note textarea::placeholder { color:var(--illi-text-muted); }
+  .note textarea:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:1px; }
+  .send {
+    align-self:center; padding:10px 28px; border-radius:var(--illi-shape-lg); border:none;
+    background:var(--illi-accent-default); color:var(--illi-on-accent);
+    font-family:inherit; font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .toast {
+    display:none; align-items:center; gap:8px; padding:12px 20px;
+    background:var(--illi-white); border:1px solid var(--illi-border); border-radius:var(--illi-shape-lg);
+    box-shadow:0 2px 10px rgba(26,26,26,.08); font-size:14px; font-weight:500; color:var(--illi-text-heading);
+  }
+  .toast svg { flex-shrink:0; }
+  .foot { font-size:13px; line-height:19px; color:var(--illi-text-muted); max-width:420px; }
+  .sig { display:none; align-items:center; justify-content:center; gap:8px; }
+  .sig img { display:block; }
+  .sig span { font-family:var(--illi-font-display),var(--illi-font-primary),sans-serif; font-size:14px; line-height:20px; font-weight:500; color:var(--illi-text-muted); }
+  @media only screen and (max-width:480px) { h1 { font-size:28px; line-height:36px; } }
+</style></head>
+<body>
+  <div class="col">
+    <svg class="wordmark" width="88" height="60" viewBox="0 0 162 111" xmlns="http://www.w3.org/2000/svg" aria-label="illi">
+      <g transform="translate(0,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <g transform="translate(6,0)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
+      <g transform="translate(42,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <g transform="translate(84,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <g transform="translate(126,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <rect x="132" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+      <rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+    </svg>
+    <div class="lockup">
+      <h1 id="heading"></h1>
+      <p class="sub" id="body"></p>
+    </div>
+    <div class="actions" id="actions"></div>
+    <div class="churn" id="churn">
+      <div class="prompt">Mind telling us why?</div>
+      <div class="chips" id="chips"></div>
+      <div class="note" id="note">
+        <textarea id="noteField" rows="2"></textarea>
+        <button class="send" id="send" type="button">Send</button>
+      </div>
+      <div class="toast" id="toast">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 9.5l3.2 3.2L14 6" stroke="#6E6E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Thanks, noted.</span>
+      </div>
+    </div>
+    <p class="foot" id="foot"></p>
+    <div class="sig" id="sig"><img src="https://illi.world/assets/illi-glyph-color-v2.png" width="27" height="16" alt=""><span>Go learn something anyway.</span></div>
+  </div>
+  <script>
+    // ── Field text per chip (decided S288): a field opens ONLY for these two reasons. ──
+    var FIELD_CHIPS = {
+      'Missing a feature': 'What were you hoping it could do? (optional)',
+      'Something else':    'Tell us what happened. (optional)'
+    };
+    // ── Per-state content (copy: COPY-INVENTORY E7). {date} is replaced from query params. ──
+    // btn href keys map to query params the uninstall fn fills (portal / recover / reinstall).
+    var STATES = {
+      mid_trial: {
+        heading:"illi's been removed.",
+        body:"Your free trial was still running. If that was a slip, bring illi back in a click and pick up where you left off. Your settings are saved.",
+        buttons:[{label:'Reinstall illi', kind:'primary', href:'reinstall'}],
+        chips:["Didn't get the hang of it","Not for me","Too slow or buggy","Don't watch enough","Just testing","Something else"],
+        foot:"No hard feelings either way. If something went wrong, tell us, we read every note.", sig:true
+      },
+      trial_expired: {
+        heading:"illi's been removed.",
+        body:"Your trial had already ended, so gestures had stopped. Want them back? illi's one click away, and your saved settings are still here.",
+        buttons:[{label:'Bring illi back', kind:'primary', href:'reinstall'}],
+        chips:["Price","Didn't use it enough","Didn't love it","Too slow or buggy","Just testing","Something else"],
+        foot:"No hard feelings either way. If something went wrong, tell us, we read every note.", sig:true
+      },
+      active_payer: {
+        heading:"illi's gone, but your subscription isn't.",
+        body:"Removing illi from your browser doesn't stop your billing. If you meant to cancel, you can do it right here in one click. If this was a mistake, bring illi back and nothing changes.",
+        buttons:[{label:'Cancel my subscription', kind:'primary', href:'portal'},{label:'Reinstall illi', kind:'ghost', href:'reinstall'}],
+        chips:["Too expensive","Not using it enough","Missing a feature","Too slow or buggy","Switching tools","Something else"],
+        foot:"Whatever you decide, thanks for giving illi a real shot. If something went wrong, tell us, we'd genuinely like to fix it.", sig:true
+      },
+      payment_failing: {
+        heading:"illi's gone, and your last payment didn't go through.",
+        body:"Your subscription is paused while a payment retries, and removing illi doesn't change that. Want to keep it? Update your card and you're set. Done with it? Cancel here and it stops for good.",
+        buttons:[{label:'Update my card', kind:'primary', href:'portal'},{label:'Cancel subscription', kind:'ghost', href:'portal'}],
+        chips:["Too expensive","Not using it enough","Missing a feature","Too slow or buggy","Switching tools","Something else"],
+        foot:"Whatever you decide, thanks for giving illi a real shot. If something went wrong, tell us, we'd genuinely like to fix it.", sig:true
+      },
+      canceled: {
+        heading:"illi's gone. You're all set.",
+        body:"You'd already canceled, so there's nothing more to do and no further charges. Your access runs until {date} if you change your mind, and your settings stay saved either way.",
+        buttons:[{label:'Bring illi back', kind:'ghost', href:'reinstall'}],
+        chips:["Too expensive","Not using it enough","Missing a feature","Switching tools","Just didn't stick","Something else"],
+        foot:"Thanks for the time you spent with illi. The door's open if you're ever back.", sig:true
+      },
+      lapsed: {
+        heading:"illi's gone. No loose ends.",
+        body:"No subscription, no charges, nothing to sort out. Your saved settings are still here if you ever want to come back.",
+        buttons:[{label:'Bring illi back', kind:'ghost', href:'reinstall'}],
+        chips:["Too expensive","Wasn't using it","Missing a feature","Switched tools","Just didn't stick","Something else"],
+        foot:"The door's open if you're ever back.", sig:true
+      },
+      deleting: {
+        heading:"illi's gone, and your account is on its way out.",
+        body:"Your account is set to be permanently deleted on {date}, and everything is erased then. There's nothing else you need to do. Changed your mind? You can still keep your account until that date.",
+        buttons:[{label:'Keep my account', kind:'primary', href:'recover'}],
+        chips:[], foot:"We're sorry to see you go. If anything pushed you to this, we'd still like to hear it.", sig:false
+      }
+    };
+    var fallback = {
+      heading:"illi's been removed.",
+      body:"Thanks for trying illi. Changed your mind? Bring it back anytime.",
+      buttons:[{label:'Bring illi back', kind:'ghost', href:'reinstall'}],
+      chips:[], foot:"The door's open if you're ever back.", sig:true
+    };
+
+    var q = new URLSearchParams(location.search);
+    var c = STATES[q.get('state')] || fallback;
+    var date = q.get('date') || '';
+    function fill(s){ return s.replace('{date}', date); }
+
+    document.getElementById('heading').textContent = c.heading;
+    document.getElementById('body').textContent = fill(c.body);
+    document.getElementById('foot').textContent = c.foot;
+    if (c.sig) document.getElementById('sig').style.display = 'flex';
+
+    // Buttons
+    var actions = document.getElementById('actions');
+    c.buttons.forEach(function(b){
+      var href = q.get(b.href);
+      if (!href) return; // server didn't supply this action link → skip the button rather than dangle a dead one
+      var a = document.createElement('a');
+      a.className = 'cta ' + b.kind;
+      a.textContent = b.label;
+      a.href = href;
+      actions.appendChild(a);
+    });
+
+    // Churn survey (states with chips only)
+    if (c.chips.length) {
+      document.getElementById('churn').style.display = 'flex';
+      var chipsEl = document.getElementById('chips');
+      var noteEl = document.getElementById('note');
+      var fieldEl = document.getElementById('noteField');
+      var toastEl = document.getElementById('toast');
+      var sendEl = document.getElementById('send');
+      var api = q.get('api'); var ct = q.get('ct'); var stateKey = q.get('state') || '';
+      var current = null; var submitted = false;
+
+      function post(reason, note){
+        if (submitted) return; submitted = true;
+        // Fire-and-forget; the page never blocks on the network. Token binds the user server-side.
+        if (api && ct) {
+          try {
+            fetch(api, {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ churn_token: ct, state: stateKey, reason: reason, note: note || '' }),
+              keepalive: true
+            }).catch(function(){});
+          } catch (e) {}
+        }
+        chipsEl.style.display = 'none';
+        noteEl.style.display = 'none';
+        document.querySelector('#churn .prompt').style.display = 'none';
+        toastEl.style.display = 'inline-flex';
+      }
+
+      c.chips.forEach(function(label){
+        var btn = document.createElement('button');
+        btn.className = 'chip'; btn.type = 'button'; btn.textContent = label;
+        btn.addEventListener('click', function(){
+          if (submitted) return;
+          var ph = FIELD_CHIPS[label];
+          if (ph) {
+            // Field chip: select it, reveal the optional field, wait for Send.
+            current = label;
+            Array.prototype.forEach.call(chipsEl.children, function(ch){ ch.classList.toggle('selected', ch === btn); });
+            fieldEl.placeholder = ph;
+            noteEl.style.display = 'flex';
+            fieldEl.focus();
+          } else {
+            // Tap-and-done: submit immediately.
+            post(label, '');
+          }
+        });
+        chipsEl.appendChild(btn);
+      });
+
+      sendEl.addEventListener('click', function(){ if (current) post(current, fieldEl.value); });
+      fieldEl.addEventListener('keydown', function(e){
+        if ((e.key === 'Enter' && !e.shiftKey)) { e.preventDefault(); if (current) post(current, fieldEl.value); }
+      });
+    }
+  </script>
+</body></html>
