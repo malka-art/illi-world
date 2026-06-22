@@ -1,0 +1,361 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>illi — Feedback</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* illi /feedback — in-product "Feedback" links (ui-manager.ts ×2) open here (I-082 dead-links gate).
+     The extension mints a short-lived signed token and opens /feedback?t=…; this page posts the
+     typed feedback to the feedback-submit Edge Function, which resolves the user server-side, stores
+     it in the locked-down `feedback` table, and pings hey@illi.world.
+
+     Voice: dictation via the browser's Web Speech API (live speech-to-text into the message field,
+     insert-at-cursor on re-record). Text-only — no audio is recorded or stored. Failures fall back
+     to a graceful toast + typing. Design: Paper "illi Feedback — *". Copy: COPY-INVENTORY (feedback).
+
+     Tokens inlined below are pulled EXACTLY from tokens/primitives.json + tokens/semantic.json
+     (the jar). GitHub Pages can't pull the extension's runtime CSS, so they're inlined, same pattern
+     as welcome/goodbye. INTERIM: clean no-drift target is to <link> a generated tokens.css once the
+     jar reconciliations land. Two values are one step off the jar's semantic roles by owner design
+     choice — flagged: chip surface = bone.300 (jar surface.chip = bone.200), chip border = gray.300
+     (jar border.default = gray.200). */
+  :root {
+    /* primitives (primitives.json) */
+    --illi-bone-50:#FAF8F5; --illi-bone-100:#F5F2EE; --illi-bone-200:#F0EDE8; --illi-bone-300:#EBE7E2; --illi-bone-400:#E4DED6;
+    --illi-gray-200:#D4D4D4; --illi-gray-300:#C5C5C5; --illi-gray-400:#9E9E9E; --illi-gray-500:#6E6E6E; --illi-gray-600:#484848; --illi-gray-700:#333333; --illi-gray-800:#1A1A1A;
+    --illi-red-400:#F87171; --illi-red-500:#EF4444; --illi-green-500:#22C55E; --illi-yellow-500:#EAB308; --illi-amber-100:#FEF3C7; --illi-amber-300:#FCD34D; --illi-amber-500:#F59E0B; --illi-white:#FFFFFF;
+    --illi-font-primary:Inter; --illi-font-display:Sora; --illi-shape-lg:12px;
+    /* semantic (semantic.json) */
+    --illi-surface-ground:var(--illi-bone-50); --illi-surface-sunken:var(--illi-bone-100); --illi-surface-raised:var(--illi-white);
+    --illi-text-heading:var(--illi-gray-700); --illi-text-secondary:var(--illi-gray-500); --illi-text-field:var(--illi-gray-600); --illi-text-muted:var(--illi-gray-400);
+    --illi-accent-default:var(--illi-red-500); --illi-on-accent:var(--illi-white);
+    /* warning — NEW semantic for failure toasts; jar tags amber "Warning". Add to semantic.json (flag). */
+    --illi-warning:var(--illi-amber-500); --illi-warning-tint:var(--illi-amber-100); --illi-warning-border:var(--illi-amber-300);
+    --illi-border-field:var(--illi-bone-400); --illi-shadow-field:inset 0 1px 2px rgba(0,0,0,.04);
+    /* chip — owner design choice, one step off jar surface.chip/border.default (drift flag) */
+    --illi-chip-surface:var(--illi-bone-300); --illi-chip-border:var(--illi-gray-300);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:48px 24px; min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--illi-surface-ground);
+    font-family:var(--illi-font-primary),-apple-system,sans-serif;
+  }
+  .col { display:flex; flex-direction:column; align-items:center; gap:28px; width:100%; max-width:500px; text-align:center; }
+  .wordmark { display:block; flex-shrink:0; }
+  .lockup { display:flex; flex-direction:column; align-items:center; gap:12px; width:100%; }
+  h1 { margin:0; font-family:var(--illi-font-display),-apple-system,sans-serif; font-size:40px; line-height:48px; font-weight:700; color:var(--illi-text-heading); }
+  p.sub { margin:0; font-size:16px; line-height:24px; color:var(--illi-text-secondary); max-width:420px; }
+
+  /* form */
+  .form { display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; margin-top:4px; }
+  .chips { display:flex; flex-direction:row; justify-content:center; gap:10px; width:100%; }
+  .chip {
+    flex:1 1 0; display:flex; align-items:center; justify-content:center; padding:10px 16px;
+    border-radius:9999px; border:1px solid var(--illi-chip-border); background:var(--illi-chip-surface);
+    color:var(--illi-text-heading); font-family:inherit; font-size:14px; line-height:18px; font-weight:500;
+    white-space:nowrap; cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease;
+  }
+  .chip:hover { border-color:var(--illi-gray-400); }
+  .chip.selected { background:var(--illi-accent-default); color:var(--illi-on-accent); border-color:var(--illi-accent-default); }
+  .chip:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:2px; }
+
+  textarea#msg {
+    width:100%; min-height:104px; resize:vertical; padding:14px 16px;
+    border-radius:var(--illi-shape-lg); border:1px solid var(--illi-border-field); box-shadow:var(--illi-shadow-field);
+    background:var(--illi-surface-sunken); color:var(--illi-text-heading);
+    font-family:inherit; font-size:15px; line-height:22px;
+  }
+  textarea#msg::placeholder { color:var(--illi-text-muted); }
+  textarea#msg:hover { border-width:2px; }
+  textarea#msg:focus { outline:none; }
+
+  /* voice (dictation) */
+  .voice { width:100%; }
+  .voice-pane { display:none; }
+  .voice-pane.active { display:flex; }
+  .voice-row {
+    flex-direction:row; align-items:center; gap:14px; width:100%; padding:12px 16px;
+    border-radius:var(--illi-shape-lg); border:1px solid var(--illi-gray-200); background:var(--illi-surface-raised);
+  }
+  .voice-row.idle { cursor:pointer; }
+  .voice-row.listening { border-color:var(--illi-accent-default); }
+  .round-btn { display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:9999px; cursor:pointer; }
+  .mic-btn { width:44px; height:44px; background:#FEF2F2; border:1px solid #FECACA; }
+  .stop-btn { width:44px; height:44px; background:var(--illi-accent-default); }
+  .stop-btn .glyph { width:14px; height:14px; border-radius:3px; background:var(--illi-white); }
+  .voice-text { display:flex; flex-direction:column; gap:2px; flex:1; text-align:left; }
+  .voice-title { font-size:15px; line-height:20px; font-weight:600; color:var(--illi-text-heading); }
+  .voice-sub { font-size:13px; line-height:18px; color:var(--illi-text-muted); }
+  .wave { display:flex; flex-direction:row; align-items:center; gap:3px; flex:1; height:34px; overflow:hidden; }
+  .wave .bar { width:3px; border-radius:2px; flex-shrink:0; background:var(--illi-red-400); animation:pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{ transform:scaleY(.45); } 50%{ transform:scaleY(1); } }
+  .listen-meta { display:flex; flex-direction:row; align-items:center; gap:8px; flex-shrink:0; }
+  .rec-dot { width:8px; height:8px; border-radius:9999px; background:var(--illi-accent-default); animation:blink 1.1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
+  .listen-label { font-size:14px; line-height:18px; font-weight:500; color:var(--illi-text-field); flex-shrink:0; }
+
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; } /* honeypot */
+  .send {
+    width:100%; padding:15px 24px; margin-top:4px; border:none; border-radius:var(--illi-shape-lg);
+    background:var(--illi-accent-default); color:var(--illi-on-accent); box-shadow:0 2px 8px rgba(239,68,68,.28);
+    font-family:inherit; font-size:15px; line-height:20px; font-weight:600; cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .send:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(239,68,68,.34); }
+  .send:active { transform:translateY(0); }
+  .send:disabled { opacity:.55; cursor:default; transform:none; box-shadow:none; }
+  .send:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:3px; }
+  .err { display:none; font-size:13px; line-height:18px; color:var(--illi-accent-default); }
+  .err.show { display:block; }
+
+  /* graceful failure toast — sits right under the mic card, in the form flow */
+  .toast {
+    display:none; align-items:center; gap:10px; width:100%; padding:11px 16px;
+    background:var(--illi-warning-tint); border:1px solid var(--illi-warning-border); border-radius:var(--illi-shape-lg);
+    font-size:14px; line-height:19px; font-weight:500; color:var(--illi-text-heading); text-align:left;
+  }
+  .toast.show { display:flex; animation:toastIn .2s ease; }
+  .toast svg { flex-shrink:0; }
+  @keyframes toastIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+  /* success */
+  .success { display:none; flex-direction:column; align-items:center; gap:22px; width:100%; }
+  .check-wrap { position:relative; display:flex; align-items:center; justify-content:center; width:160px; height:108px; }
+  .check-circle { display:flex; align-items:center; justify-content:center; width:78px; height:78px; border-radius:9999px; background:var(--illi-green-500); box-shadow:0 8px 24px rgba(34,197,94,.32); }
+  .confetti { position:absolute; }
+  .success-lockup { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
+  .success h2 { margin:0; font-family:var(--illi-font-display),-apple-system,sans-serif; font-size:40px; line-height:48px; font-weight:700; color:var(--illi-text-heading); }
+  .success p { margin:0; font-size:17px; line-height:26px; color:var(--illi-text-secondary); max-width:420px; }
+
+  .signature { display:flex; align-items:center; justify-content:center; gap:8px; }
+  .signature span { font-family:var(--illi-font-display),var(--illi-font-primary),sans-serif; font-size:14px; line-height:20px; font-weight:500; color:var(--illi-text-muted); }
+
+  @media only screen and (max-width:480px) { h1, .success h2 { font-size:30px; line-height:38px; } }
+</style></head>
+<body>
+  <div class="col">
+    <svg class="wordmark" width="88" height="60" viewBox="0 0 162 111" xmlns="http://www.w3.org/2000/svg" aria-label="illi">
+      <g transform="translate(0,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <g transform="translate(6,0)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
+      <g transform="translate(42,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <g transform="translate(84,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <g transform="translate(126,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+      <rect x="132" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+      <rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+    </svg>
+
+    <div class="lockup">
+      <h1>We're listening.</h1>
+      <p class="sub">Love something, want something, or hit a snag? A real person reads every note.</p>
+    </div>
+
+    <form class="form" id="form" autocomplete="off">
+      <div class="chips" id="chips">
+        <button type="button" class="chip" data-cat="feature">Feature</button>
+        <button type="button" class="chip" data-cat="idea">Idea</button>
+        <button type="button" class="chip" data-cat="bug">Bug</button>
+        <button type="button" class="chip" data-cat="other">Other</button>
+      </div>
+
+      <textarea id="msg" rows="3" placeholder="Tell us what's on your mind…"></textarea>
+
+      <div class="voice" id="voice">
+        <!-- idle: tap to dictate -->
+        <div class="voice-pane active" id="v-idle">
+          <div class="voice-row idle" id="startRec" role="button" tabindex="0">
+            <div class="round-btn mic-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+            </div>
+            <div class="voice-text"><div class="voice-title" id="micTitle">Talk it out</div><div class="voice-sub" id="micSub">Sometimes it's easier to just talk.</div></div>
+          </div>
+        </div>
+        <!-- listening: live dictation into the field -->
+        <div class="voice-pane" id="v-listening">
+          <div class="voice-row listening">
+            <div class="round-btn stop-btn" id="stopRec" role="button" tabindex="0"><div class="glyph"></div></div>
+            <div class="wave" id="liveWave"></div>
+            <div class="listen-meta"><div class="rec-dot"></div><div class="listen-label">Listening…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- graceful failure toast — appears right under the mic card -->
+      <div class="toast" id="toast" role="status" aria-live="polite">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="3" x2="21" y2="21"/><path d="M9 9v3a3 3 0 0 0 5.1 2.1"/><path d="M15 9.3V5a3 3 0 0 0-5.9-.6"/><path d="M5 11a7 7 0 0 0 10.6 5.5"/><line x1="12" y1="19" x2="12" y2="22"/>
+        </svg>
+        <span id="toastMsg"></span>
+      </div>
+
+      <!-- honeypot: real users never fill this; bots do -->
+      <input class="hp" type="text" id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <button type="submit" class="send" id="send">Send</button>
+      <div class="err" id="err">Something went wrong. Mind trying once more?</div>
+    </form>
+
+    <!-- success -->
+    <div class="success" id="success">
+      <div class="check-wrap">
+        <span class="confetti" style="top:8px;left:24px;width:8px;height:8px;border-radius:2px;background:var(--illi-yellow-500);transform:rotate(20deg);"></span>
+        <span class="confetti" style="top:2px;left:76px;width:7px;height:7px;border-radius:9999px;background:var(--illi-red-500);"></span>
+        <span class="confetti" style="top:16px;right:26px;width:9px;height:9px;border-radius:2px;background:var(--illi-green-500);transform:rotate(-15deg);"></span>
+        <span class="confetti" style="bottom:12px;left:16px;width:6px;height:6px;border-radius:9999px;background:var(--illi-red-500);"></span>
+        <span class="confetti" style="bottom:6px;right:20px;width:8px;height:8px;border-radius:2px;background:var(--illi-yellow-500);transform:rotate(35deg);"></span>
+        <span class="confetti" style="top:46px;right:6px;width:6px;height:6px;border-radius:9999px;background:var(--illi-green-500);"></span>
+        <div class="check-circle">
+          <svg width="36" height="36" viewBox="0 0 34 34" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17.5 L14.5 23 L25 11"/></svg>
+        </div>
+      </div>
+      <div class="success-lockup">
+        <h2>Got it.</h2>
+        <p>You just made illi better.</p>
+      </div>
+    </div>
+
+    <div class="signature">
+      <svg width="28" height="16" viewBox="0 0 62 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="0" y="2" width="10" height="32" rx="3" fill="#EAB308"/>
+        <rect x="16" y="2" width="10" height="32" rx="3" fill="#EAB308"/>
+        <g transform="translate(30,0) scale(1.333)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
+      </svg>
+      <span>Go learn something.</span>
+    </div>
+  </div>
+
+  <script>
+    // ── CONFIG ────────────────────────────────────────────────────────────────
+    // TODO(feedback-submit): set to the real Supabase project ref before deploy (filled in task 3).
+    var FEEDBACK_ENDPOINT = 'https://PROJECT_REF.supabase.co/functions/v1/feedback-submit';
+
+    var q = new URLSearchParams(location.search);
+    var token = q.get('t') || '';            // signed token minted by the extension (auto-attributes the user)
+    var category = '';                        // optional; set by chip tap
+    var msgEl = document.getElementById('msg');
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    var toastEl = document.getElementById('toast'), toastTimer = null;
+    function showToast(text) {
+      document.getElementById('toastMsg').textContent = text;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 5200);
+    }
+
+    // ── Chips (single-select, optional) ───────────────────────────────────────
+    document.querySelectorAll('.chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var was = c.classList.contains('selected');
+        document.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('selected'); });
+        if (was) { category = ''; } else { c.classList.add('selected'); category = c.dataset.cat; }
+      });
+    });
+
+    // ── Live "hearing you" bars (visual only) ─────────────────────────────────
+    function fillWave(el, n) {
+      el.innerHTML = '';
+      for (var i = 0; i < n; i++) {
+        var b = document.createElement('div'); b.className = 'bar';
+        var h = 6 + Math.round(12 * (1 + Math.sin(i * 0.7)) + (i % 5) * 2);
+        b.style.height = Math.min(32, h) + 'px';
+        b.style.animationDelay = (i * 0.05) + 's';
+        el.appendChild(b);
+      }
+    }
+
+    // ── Dictation (Web Speech API) ────────────────────────────────────────────
+    // Live speech-to-text straight into the message field. On (re)start we capture the caret and
+    // insert the recognized words THERE, so "record again" adds at the cursor. Text-only, no audio.
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var panes = { idle: document.getElementById('v-idle'), listening: document.getElementById('v-listening') };
+    function showPane(name) { for (var k in panes) panes[k].classList.toggle('active', k === name); }
+    var recog = null, listening = false, before = '', after = '', finalSeg = '';
+
+    function startDictation() {
+      if (!SR) { showToast("This browser can't transcribe speech. You can still type your note."); return; }
+      try { recog = new SR(); } catch (e) { showToast("Couldn't start dictation. You can still type your note."); return; }
+      recog.lang = navigator.language || 'en-US';
+      recog.interimResults = true;
+      recog.continuous = true;
+
+      var pos = (typeof msgEl.selectionStart === 'number') ? msgEl.selectionStart : msgEl.value.length;
+      before = msgEl.value.slice(0, pos);
+      after = msgEl.value.slice(pos);
+      // gentle spacing so dictated text doesn't fuse onto an existing word
+      if (before && !/\s$/.test(before)) before += ' ';
+      finalSeg = '';
+
+      recog.onresult = function (e) {
+        var interim = '';
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) finalSeg += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        var seg = finalSeg + interim;
+        msgEl.value = before + seg + after;
+        var caret = (before + seg).length;
+        try { msgEl.setSelectionRange(caret, caret); } catch (e) {}
+      };
+      recog.onerror = function (e) {
+        var msg = {
+          'not-allowed': "We couldn't reach your mic. Allow mic access in your browser, or just type it.",
+          'service-not-allowed': "We couldn't reach your mic. Allow mic access in your browser, or just type it.",
+          'audio-capture': "No microphone found. Plug one in, or just type your note.",
+          'network': "Lost the connection for transcription. Type it, or try again in a moment.",
+          'no-speech': "Didn't catch anything. Tap to try again, or just type it.",
+          'aborted': ''
+        };
+        var m = (e.error in msg) ? msg[e.error] : "Something went off with the mic. You can still type your note.";
+        if (m) showToast(m);
+        endDictation();
+      };
+      recog.onend = function () { if (listening) endDictation(); };
+
+      try { recog.start(); listening = true; fillWave(document.getElementById('liveWave'), 22); showPane('listening'); }
+      catch (e) { showToast("Couldn't start dictation. You can still type your note."); }
+    }
+
+    function stopDictation() { if (recog) { try { recog.stop(); } catch (e) {} } }
+    function endDictation() {
+      listening = false;
+      var caret = (before + finalSeg).length;
+      showPane('idle');
+      try { msgEl.focus(); msgEl.setSelectionRange(caret, caret); } catch (e) {}
+    }
+
+    function bindTap(id, fn) {
+      var el = document.getElementById(id);
+      el.addEventListener('click', fn);
+      el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+    }
+    bindTap('startRec', startDictation);
+    bindTap('stopRec', stopDictation);
+
+    // ── Submit (text-only) ────────────────────────────────────────────────────
+    var form = document.getElementById('form'), sendBtn = document.getElementById('send'), errEl = document.getElementById('err');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (document.getElementById('website').value) return; // honeypot tripped — silently drop
+      if (listening) stopDictation();
+      var message = msgEl.value.trim();
+      if (!message) { msgEl.focus(); return; }
+      errEl.classList.remove('show'); sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
+      try {
+        var res = await fetch(FEEDBACK_ENDPOINT, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token, category: category, message: message, page: 'feedback' })
+        });
+        if (!res.ok) throw new Error('bad status ' + res.status);
+        document.getElementById('form').style.display = 'none';
+        document.querySelector('.lockup').style.display = 'none';
+        document.getElementById('success').style.display = 'flex';
+      } catch (err) {
+        sendBtn.disabled = false; sendBtn.textContent = 'Send'; errEl.classList.add('show');
+      }
+    });
+  </script>
+</body></html>
