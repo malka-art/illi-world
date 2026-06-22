@@ -22,9 +22,10 @@
   "Speedemon" look instead, the reskin is contained to the "CHOOSER SKIN (v6 baseline)" CSS block
   + the optional Caveat font; markup data-hooks and all JS stay unchanged.
 
-  ── DEFERRED / STUBBED (NO SUPABASE — owner-decoupled until she clears it) ──
-   * pricing-info  → local MOCK matching the locked §2 contract; live fetch is a flagged 1-line drop-in.
-   * Stripe handoff, web OTP sign-in, signed-token pickup, live seat count → stubbed with TODO + mock.
+  ── LIVE ──
+   * pricing-info → live public endpoint (founder counter + prices); honest static fallback on failure (wired 2026-06-22).
+  ── DEFERRED / STUBBED (backend/code-repo work, outside this site-only task) ──
+   * Stripe checkout handoff, web OTP sign-in, signed-token pickup → stubbed with TODO + mock.
   Tokens inlined because GitHub Pages can't pull the extension's runtime CSS.
 ============================================================ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -314,19 +315,15 @@ main{
   }
   toggle.addEventListener('click', function(e){ var b=e.target.closest('.bt-opt'); if(b) applyInterval(b.dataset.interval); });
 
-  /* ════════ pricing-info — LOCAL MOCK (NO SUPABASE; owner-decoupled until cleared) ════════
-     Shape matches the LOCKED data contract (PRICING-BLOCK-DESIGN.md §2). The page DISPLAYS this and
-     never SETS any of it. To wire the live endpoint later, this is the only swap — replace the body of
-     getPricingInfo() with the one fetch line below and delete the mock. The .then/.catch render +
-     honest fallback are already production-shaped, so live wiring is a true drop-in.
-
-       // LIVE DROP-IN (when Supabase is back):
-       // return fetch('https://wbobpjzkasbnkxbiiioe.supabase.co/functions/v1/pricing-info',
-       //   { headers:{ accept:'application/json' } })
-       //   .then(function(r){ if(!r.ok) throw new Error('pricing-info '+r.status); return r.json(); });
-  */
-  var MOCK_PRICING_INFO = {
-    founders_remaining: 188,                              // 1000 − (# who chose Founders); 0 = sold out
+  /* ════════ pricing-info — LIVE (public, keyless GET; matches LOCKED contract §2) ════════
+     The page DISPLAYS this data and never SETS any of it (all money/discount authority is server-side).
+     Default path fetches the live endpoint; on ANY failure it falls back to the honest static state
+     (keep the printed prices, hide the live counter — never a stale/zero number). The ?mock= switches
+     stay for QA of states the live data won't currently produce (failure, sold-out, promo).
+     Wired live 2026-06-22 after confirming the endpoint returns the contract shape + CORS allow-origin *. */
+  var ENDPOINT = 'https://wbobpjzkasbnkxbiiioe.supabase.co/functions/v1/pricing-info';
+  var MOCK_PRICING_INFO = {                               // QA reference shape (used ONLY by the ?mock= switches)
+    founders_remaining: 188,
     prices: {
       founders: { monthly: 2,  annual: 24 },              // dollars; annual = 12 × monthly (no extra discount)
       standard: { monthly: 7,  annual: 70 }               // dollars; annual ≈ 17% off monthly
@@ -334,13 +331,13 @@ main{
     promo: null                                           // display-only: null | { label, code }
   };
   function getPricingInfo(){
-    // ?mock=fail → simulate an endpoint failure so the honest static fallback can be verified.
-    if(params.get('mock')==='fail') return Promise.reject(new Error('mock fail'));
-    // ?mock=soldout → simulate founders_remaining:0 for the sold-out state.
+    // QA switches — preview a state without touching live data:
+    if(params.get('mock')==='fail') return Promise.reject(new Error('mock fail'));                                   // → honest fallback
     if(params.get('mock')==='soldout') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { founders_remaining:0 }));
-    // ?mock=promo → simulate an active display-only promo ribbon.
     if(params.get('mock')==='promo') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { promo:{ label:'Launch week', code:'ILLILAUNCH' } }));
-    return Promise.resolve(MOCK_PRICING_INFO);
+    // LIVE (default): one public GET; the .then render + .catch fallback are production-shaped.
+    return fetch(ENDPOINT, { headers:{ accept:'application/json' } })
+      .then(function(r){ if(!r.ok) throw new Error('pricing-info ' + r.status); return r.json(); });
   }
 
   function applyPricing(d){
