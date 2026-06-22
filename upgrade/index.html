@@ -210,7 +210,7 @@ main{
     <!-- return-from-abandoned-checkout (shown when Stripe cancel_url sends ?status=cancelled) -->
     <div class="return-banner" id="returnBanner" role="status">
       <span class="rb-dot" aria-hidden="true"></span>
-      <span class="rb-text"><strong>No charge yet.</strong> You left checkout before finishing &mdash; pick your plan back up whenever you're ready.</span>
+      <span class="rb-text"><strong>No charge yet.</strong> You left checkout before finishing. Pick your plan back up whenever you're ready.</span>
       <button type="button" class="rb-close" id="returnClose" aria-label="Dismiss">&times;</button>
     </div>
 
@@ -419,11 +419,11 @@ main{
   */
   function startCheckout(tier, interval){
     var stub = document.getElementById('checkoutStub');
-    var label = (tier==='founders' ? 'Founders' : 'Standard') + ', billed ' + interval;
+    var label = (tier==='founders' ? 'Founders' : 'Standard') + ', billed ' + (interval==='annual' ? 'yearly' : 'monthly');
     if(stub){
-      stub.innerHTML = '<strong>Checkout isn’t connected yet.</strong> Payment hooks up once the backend is back online. '
-        + 'Your choice is captured: <strong>' + label + '</strong>'
-        + (identityToken ? ' (signed in).' : ' — you’ll be asked to sign in at checkout.');
+      stub.innerHTML = '<strong>Checkout isn’t connected yet.</strong> The payment step gets wired in next. '
+        + 'Your choice is saved: <strong>' + label + '</strong>'
+        + (identityToken ? ' (signed in).' : '. You’ll sign in when checkout opens.');
       stub.classList.add('is-visible');
     }
     // eslint-disable-next-line no-console
