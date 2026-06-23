@@ -24,8 +24,10 @@
 
   ── LIVE ──
    * pricing-info → live public endpoint (founder counter + prices); honest static fallback on failure (wired 2026-06-22).
-  ── DEFERRED / STUBBED (backend/code-repo work, outside this site-only task) ──
-   * Stripe checkout handoff, web OTP sign-in, signed-token pickup → stubbed with TODO + mock.
+   * Signed-token pickup + Stripe checkout handoff → live (wired 2026-06-22, §8.11 funnel):
+       ?token → upgrade-redeem → verifyOtp (silent web sign-in) → plan CTA → stripe-checkout → Stripe.
+  ── DEFERRED / STUBBED ──
+   * Web OTP sign-in for tokenless web visitors (§8.11 bridge 2) → honest "open the extension" message for now.
   Tokens inlined because GitHub Pages can't pull the extension's runtime CSS.
 ============================================================ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -321,7 +323,12 @@ main{
      (keep the printed prices, hide the live counter — never a stale/zero number). The ?mock= switches
      stay for QA of states the live data won't currently produce (failure, sold-out, promo).
      Wired live 2026-06-22 after confirming the endpoint returns the contract shape + CORS allow-origin *. */
-  var ENDPOINT = 'https://wbobpjzkasbnkxbiiioe.supabase.co/functions/v1/pricing-info';
+  /* ── Supabase project config (public: URL + anon/publishable client key, safe to inline) ── */
+  var SUPABASE_URL = 'https://wbobpjzkasbnkxbiiioe.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_nj-_J2qmR2VT45qqSesaTg_rvZcXr1j'; // public client key; mirrors the extension's VITE_SUPABASE_ANON_KEY
+  var SUPABASE_JS_CDN = 'https://esm.sh/@supabase/supabase-js@2.103.0';      // pinned to the extension's supabase-js version (lazy-imported only when signing in / checking out)
+
+  var ENDPOINT = SUPABASE_URL + '/functions/v1/pricing-info';
   var MOCK_PRICING_INFO = {                               // QA reference shape (used ONLY by the ?mock= switches)
     founders_remaining: 188,
     prices: {
@@ -406,29 +413,125 @@ main{
   var rc = document.getElementById('returnClose');
   if(rc) rc.addEventListener('click', function(){ var b=document.getElementById('returnBanner'); if(b) b.classList.remove('is-visible'); });
 
-  /* ── signed identity token (web↔extension bridge) — captured only; validation is DEFERRED (no Supabase) ── */
-  var identityToken = params.get('token') || null;  // TODO(Supabase up): verify server-side at checkout mint.
+  /* ════════ payment funnel — signed-token pickup + web sign-in + Stripe handoff (§8.11, wired 2026-06-22) ════════
+     Replaces the former stub. Flow:
+       • Arrive with ?token (extension or email bridge): POST upgrade-redeem -> { auth:{token_hash,type} },
+         then supabase.auth.verifyOtp() establishes a real web session with NO code entry. We then strip
+         ?token from the URL (single-use, 30-min). The session persists in localStorage, so it survives the
+         Stripe round-trip and is still there on the cancel_url return (?status=cancelled, no token).
+       • Click a plan CTA: POST stripe-checkout with the session JWT -> { url } -> redirect to Stripe Checkout.
+       • No session (tokenless web visitor): honest message pointing to the extension. Full web OTP sign-in
+         (§8.11 bridge 2) is the separately-deferred piece and is NOT wired here.
+     supabase-js is lazy-imported (pinned) only when signing in / checking out, so a CDN hiccup can never
+     break the chooser itself (mirrors the page's honest-fallback philosophy for pricing-info). */
 
-  /* ════════ checkout handoff — STUB (DEFERRED: needs Supabase mint + Stripe Checkout) ════════
-     Honest placeholder, never a fake success. When Supabase is back:
-       1. POST {tier, interval, token} to an authed "mint upgrade URL" Edge Function
-          (mirrors the existing checkout-redirect / uninstall-URL signed-token pattern).
-       2. It maps the choice to the Stripe price (Founders+annual → illi_founders_annual) and returns a
-          Stripe Checkout Session URL; redirect there. cancel_url comes back to /upgrade?status=cancelled.
-       3. Tokenless arrival → web OTP sign-in (§8.11 B2) OR "open the illi extension → Upgrade" (§8.7).
-  */
-  function startCheckout(tier, interval){
-    var stub = document.getElementById('checkoutStub');
-    var label = (tier==='founders' ? 'Founders' : 'Standard') + ', billed ' + (interval==='annual' ? 'yearly' : 'monthly');
-    if(stub){
-      stub.innerHTML = '<strong>Checkout isn’t connected yet.</strong> The payment step gets wired in next. '
-        + 'Your choice is saved: <strong>' + label + '</strong>'
-        + (identityToken ? ' (signed in).' : '. You’ll sign in when checkout opens.');
-      stub.classList.add('is-visible');
-    }
-    // eslint-disable-next-line no-console
-    console.info('[illi /upgrade] checkout intent (stub):', { tier: tier, interval: interval, hasToken: !!identityToken });
+  var stub = document.getElementById('checkoutStub');
+  function showStub(html){ if(stub){ stub.innerHTML = html; stub.classList.add('is-visible'); } }
+  function hideStub(){ if(stub){ stub.classList.remove('is-visible'); stub.innerHTML = ''; } }
+
+  /* one lazily-created supabase-js client; persistSession carries the web session across the Stripe round-trip */
+  var _sbClient = null;
+  function getSupabase(){
+    if(_sbClient) return Promise.resolve(_sbClient);
+    return import(SUPABASE_JS_CDN).then(function(m){
+      _sbClient = m.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'illi-web-auth' }
+      });
+      return _sbClient;
+    });
   }
+
+  /* drop ?token from the address bar without reloading (token is single-use + 30-min) */
+  function stripToken(){
+    params.delete('token');
+    var qs = params.toString();
+    history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    identityToken = null;
+  }
+
+  /* ?token -> upgrade-redeem -> verifyOtp (silent sign-in). Resolves to true when signed in. */
+  function redeemUpgradeToken(token){
+    showStub('Signing you in…');
+    return fetch(SUPABASE_URL + '/functions/v1/upgrade-redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ token: token })
+    }).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(data){ return { status: res.status, data: data }; });
+    }).then(function(r){
+      if(r.status === 200 && r.data && r.data.ok && r.data.auth){
+        return getSupabase().then(function(sb){
+          return sb.auth.verifyOtp({ token_hash: r.data.auth.token_hash, type: r.data.auth.type });
+        }).then(function(out){
+          stripToken(); // token is consumed server-side; clean the URL either way
+          if(out && out.error){
+            showStub('We couldn’t finish signing you in. Open the illi extension and click <strong>Upgrade</strong> to try again.');
+            return false;
+          }
+          hideStub(); // signed in silently; the plan CTAs now open real checkout
+          return true;
+        });
+      }
+      // error contract: 400 missing_token / 401 bad_token / 404 no_user / 500 session_mint_failed|internal_error
+      if(r.status === 500){
+        showStub('Something went wrong on our end. Please refresh to try again in a moment.'); // transient: keep the token for a refresh-retry
+      } else {
+        stripToken(); // permanent failure: don’t loop on a dead link
+        if(r.status === 401){
+          showStub('That upgrade link is invalid or has expired. Links last 30 minutes. Open the illi extension and click <strong>Upgrade</strong> for a fresh one.');
+        } else if(r.status === 404){
+          showStub('We couldn’t find your account from that link. Open the illi extension and click <strong>Upgrade</strong>, or sign in there.');
+        } else {
+          showStub('That upgrade link looks incomplete. Open the illi extension and click <strong>Upgrade</strong> to get a new one.');
+        }
+      }
+      return false;
+    }).catch(function(){
+      showStub('We couldn’t reach the server to sign you in. Check your connection and refresh to try again.'); // network: keep token for refresh-retry
+      return false;
+    });
+  }
+
+  /* plan CTA -> Stripe Checkout, authed with the web session minted above (or restored after a cancel) */
+  function startCheckout(tier, interval){
+    showStub('Opening secure checkout…');
+    var ready = redeemPromise ? redeemPromise.catch(function(){ return false; }) : Promise.resolve(false);
+    return ready.then(function(){
+      return getSupabase();
+    }).then(function(sb){
+      return sb.auth.getSession().then(function(out){
+        var session = out && out.data && out.data.session;
+        if(!session){
+          // tokenless / not signed in — honest path; web OTP sign-in is the deferred §8.11 bridge 2
+          showStub('To start your plan, open the illi extension and click <strong>Upgrade</strong>, or use the link from your illi email. Signing in here directly is coming soon.');
+          return null;
+        }
+        return fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + session.access_token
+          },
+          body: JSON.stringify({ tier: tier, interval: interval })
+        }).then(function(res){
+          return res.json().catch(function(){ return {}; }).then(function(data){ return { status: res.status, data: data }; });
+        }).then(function(r){
+          if(r.status === 200 && r.data && r.data.url){
+            window.location.assign(r.data.url); // hand off to Stripe Checkout
+            return;
+          }
+          showStub('We couldn’t open checkout just now. Please try again in a moment.');
+        });
+      });
+    }).catch(function(){
+      showStub('We couldn’t reach checkout. Check your connection and try again.');
+    });
+  }
+
+  /* ── signed identity token (web↔extension bridge): redeem on arrival for a silent web session ── */
+  var identityToken = params.get('token') || null;
+  var redeemPromise = identityToken ? redeemUpgradeToken(identityToken) : null;
 
   /* initial render — resolve pricing (mock), then paint */
   getPricingInfo().then(applyPricing).catch(onPricingFail);
