@@ -326,7 +326,7 @@ main{
   /* ── Supabase project config (public: URL + anon/publishable client key, safe to inline) ── */
   var SUPABASE_URL = 'https://wbobpjzkasbnkxbiiioe.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_nj-_J2qmR2VT45qqSesaTg_rvZcXr1j'; // public client key; mirrors the extension's VITE_SUPABASE_ANON_KEY
-  var SUPABASE_JS_CDN = 'https://esm.sh/@supabase/supabase-js@2.103.0';      // pinned to the extension's supabase-js version (lazy-imported only when signing in / checking out)
+  var SUPABASE_JS = '/assets/vendor/supabase-js-2.103.0.esm.js';            // self-hosted, pinned (no third-party runtime script); lazy-imported only when signing in / checking out
 
   var ENDPOINT = SUPABASE_URL + '/functions/v1/pricing-info';
   var MOCK_PRICING_INFO = {                               // QA reference shape (used ONLY by the ?mock= switches)
@@ -422,8 +422,8 @@ main{
        • Click a plan CTA: POST stripe-checkout with the session JWT -> { url } -> redirect to Stripe Checkout.
        • No session (tokenless web visitor): honest message pointing to the extension. Full web OTP sign-in
          (§8.11 bridge 2) is the separately-deferred piece and is NOT wired here.
-     supabase-js is lazy-imported (pinned) only when signing in / checking out, so a CDN hiccup can never
-     break the chooser itself (mirrors the page's honest-fallback philosophy for pricing-info). */
+     supabase-js is self-hosted (pinned, /assets/vendor) and lazy-imported only when signing in / checking
+     out, so the chooser never depends on it loading (mirrors the page's honest-fallback philosophy). */
 
   var stub = document.getElementById('checkoutStub');
   function showStub(html){ if(stub){ stub.innerHTML = html; stub.classList.add('is-visible'); } }
@@ -433,7 +433,7 @@ main{
   var _sbClient = null;
   function getSupabase(){
     if(_sbClient) return Promise.resolve(_sbClient);
-    return import(SUPABASE_JS_CDN).then(function(m){
+    return import(SUPABASE_JS).then(function(m){
       _sbClient = m.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'illi-web-auth' }
       });
