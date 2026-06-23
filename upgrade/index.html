@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upgrade &middot; illi</title>
+<meta name="description" content="Choose your illi plan: lock the founder rate or go standard, monthly or annual.">
+<!-- Transaction surface, not a marketing page → noindex (matches the /welcome, /goodbye flow-page convention). -->
+<meta name="robots" content="noindex">
+
+<!-- ============================================================
+  illi /upgrade  (illi.world/upgrade)  —  the canonical transaction surface
+  Pick tier (Founders vs Standard) + billing interval (monthly/annual), then hand off to checkout.
+  Deep-link target for: lifecycle email CTAs, the extension Upgrade button, and the Stripe cancel_url.
+
+  Spec: design/PRICING-BLOCK-DESIGN.md §8.11 (funnel ruling) + §1–4 (model, data contract, visual).
+  Chooser lifted from the SHIPPED v6 #pricing component (design/landing/illi-landing-v6.html, S301):
+  same structure, data hooks, tokens, and selection/toggle/fallback engine.
+
+  ── HELD pending owner decision (orchestrator, 2026-06-22): the chooser SKIN ──
+  Baseline below = the v6 "warm paper, quiet machine" treatment. If the owner picks the v7
+  "Speedemon" look instead, the reskin is contained to the "CHOOSER SKIN (v6 baseline)" CSS block
+  + the optional Caveat font; markup data-hooks and all JS stay unchanged.
+
+  ── LIVE ──
+   * pricing-info → live public endpoint (founder counter + prices); honest static fallback on failure (wired 2026-06-22).
+   * Signed-token pickup + Stripe checkout handoff → live (wired 2026-06-22, §8.11 funnel):
+       ?token → upgrade-redeem → verifyOtp (silent web sign-in) → plan CTA → stripe-checkout → Stripe.
+  ── DEFERRED / STUBBED ──
+   * Web OTP sign-in for tokenless web visitors (§8.11 bridge 2) → honest "open the extension" message for now.
+  Tokens inlined because GitHub Pages can't pull the extension's runtime CSS.
+============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ── Tokens (source: code/tokens/primitives.json — exact values, do not invent) ── */
+:root{
+  --bone-50:#FAF8F5; --bone-100:#F5F2EE; --bone-200:#F0EDE8; --bone-300:#EBE7E2;
+  --bone-500:#D8D0C6; --bone-600:#C8BFB3;
+  /* NOTE: bone-950 is NOT yet in primitives.json (scale ends at bone-900 #857869). Value carried from
+     v6's :root — the lightest bone that still passes AA for white CTA text. Add to primitives.json to
+     make it a real token; until then this is the one non-JSON-backed color on the page. */
+  --bone-950:#7B6D5D;
+  --gray-400:#9E9E9E; --gray-500:#6E6E6E; --gray-600:#484848; --gray-700:#333333; --gray-800:#1A1A1A;
+  --red-500:#EF4444; --red-650:#CD2222;
+  --green-100:#DCFCE7; --green-600:#16A34A;
+  --white:#FFFFFF;
+  --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif;
+  --sp-xs:4px; --sp-sm:8px; --sp-md:12px; --sp-lg:16px; --sp-xl:24px; --sp-2xl:32px; --sp-3xl:48px;
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-full:9999px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-body); color:var(--gray-800); background:var(--bone-50);
+  line-height:1.5; font-size:16px; -webkit-font-smoothing:antialiased;
+  min-height:100vh; display:flex; flex-direction:column;
+}
+a{color:inherit}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.15;color:var(--gray-800)}
+
+/* ── Stripped logo-only flow-page header (matches /welcome chrome) ── */
+.site-header{
+  display:flex; align-items:center; justify-content:center;
+  padding:20px 24px; background:var(--bone-50); border-bottom:1px solid var(--bone-300);
+}
+.site-header a{display:inline-flex; border-radius:var(--r-sm)}
+.site-header a:focus-visible{outline:2px solid var(--gray-800); outline-offset:4px}
+.wordmark{display:block}
+
+main{
+  flex:1; width:100%; max-width:984px; margin:0 auto; padding:56px 24px 72px;
+  display:flex; flex-direction:column; align-items:center; gap:var(--sp-3xl);
+}
+
+/* ── Return-from-abandoned-checkout banner (Stripe cancel_url → /upgrade?status=cancelled) ── */
+.return-banner{
+  width:100%; max-width:920px; display:none; align-items:flex-start; gap:12px;
+  background:var(--bone-100); border:1px solid var(--bone-300); border-radius:var(--r-lg); padding:14px 18px;
+}
+.return-banner.is-visible{display:flex}
+.return-banner .rb-dot{flex-shrink:0; width:8px; height:8px; margin-top:7px; border-radius:var(--r-full); background:var(--red-500)}
+.return-banner .rb-text{font-size:14px; line-height:1.5; color:var(--gray-600)}
+.return-banner .rb-text strong{color:var(--gray-800); font-weight:600}
+.return-banner .rb-close{
+  margin-left:auto; flex-shrink:0; background:transparent; border:none; cursor:pointer;
+  color:var(--gray-400); font-size:18px; line-height:1; padding:2px 6px; border-radius:var(--r-sm);
+}
+.return-banner .rb-close:hover{color:var(--gray-700)}
+
+/* ── Chooser layout ── */
+.chooser{display:flex; flex-direction:column; align-items:center; gap:var(--sp-3xl); width:100%}
+.section-head{display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; max-width:640px}
+.kicker{font-family:var(--font-display); font-weight:600; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--red-500)}
+.section-head h2{font-size:clamp(30px,3.4vw,42px); letter-spacing:-.015em}
+.price-subhead{font-size:17px; color:var(--gray-500); line-height:1.5; max-width:46ch; margin:0}
+
+/* promo ribbon — display-only (contract: promo=null | {label,code}); page may SHOW, never GRANT */
+.promo-ribbon{
+  display:none; align-items:center; gap:10px; background:var(--bone-100); border:1px solid var(--bone-300);
+  border-radius:var(--r-full); padding:8px 16px; font-size:13px; color:var(--gray-700);
+}
+.promo-ribbon.is-visible{display:inline-flex}
+.promo-ribbon .promo-code{font-family:var(--font-display); font-weight:600; color:var(--gray-800); background:var(--white); border:1px solid var(--bone-300); border-radius:var(--r-sm); padding:2px 8px}
+
+/* billing interval toggle — page-only state, not in the data contract */
+.billing-toggle{
+  display:inline-flex; align-items:center; gap:var(--sp-xs);
+  background:var(--bone-200); border:1px solid var(--bone-300); border-radius:var(--r-full); padding:var(--sp-xs);
+}
+.bt-opt{
+  font-family:var(--font-display); font-weight:600; font-size:14px; color:var(--gray-500);
+  background:transparent; border:none; cursor:pointer; border-radius:var(--r-full); padding:9px 22px;
+  transition:color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.bt-opt.is-active{background:var(--white); color:var(--gray-800); box-shadow:0 1px 3px rgba(26,26,26,.1)}
+.bt-opt:focus-visible{outline:2px solid var(--red-500); outline-offset:2px}
+
+/* ════════ CHOOSER SKIN (v6 baseline — swap-point if owner picks Speedemon) ════════ */
+/* cards — two tiers, selection-follows-click (red selected / bone unselected) */
+.price-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-xl); align-items:stretch; max-width:920px; width:100%}
+.price{
+  background:var(--bone-100); border:1px solid var(--bone-300); border-radius:var(--r-xl);
+  padding:36px 30px 30px; display:flex; flex-direction:column; gap:18px; position:relative;
+  cursor:pointer; text-align:left; font:inherit; color:inherit; width:100%;
+  transition:border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
+}
+.price:hover{transform:translateY(-2px)}
+.price:focus-visible{outline:2px solid var(--red-500); outline-offset:3px}
+.price.is-selected{background:var(--white); border:1.5px solid var(--red-500); box-shadow:0 24px 60px -24px rgba(239,68,68,.34)}
+.price-head{display:flex; flex-direction:column; gap:var(--sp-sm)}
+.price .tier{font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--gray-800)}
+.price .amount{display:flex; align-items:baseline; gap:var(--sp-sm); flex-wrap:wrap}
+.price .amount .amt{font-family:var(--font-display); font-weight:800; font-size:52px; letter-spacing:-.02em; line-height:1; color:var(--gray-800)}
+.price .amount .per{font-family:var(--font-body); font-size:16px; font-weight:500; color:var(--gray-500)}
+.save-badge{font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--green-600); background:var(--green-100); border-radius:var(--r-full); padding:2px 10px; line-height:1.4}
+.price .note{font-size:14.5px; color:var(--gray-500); line-height:1.6; margin:0}
+/* meter — Founders scarcity / Standard availability, same footprint so CTAs align */
+.meter{display:flex; flex-direction:column; gap:var(--sp-sm)}
+.meter-track{height:6px; border-radius:var(--r-full); background:var(--bone-200); overflow:hidden}
+.meter-fill{height:6px; border-radius:var(--r-full); background:var(--bone-600); transition:width .4s ease, background .2s ease}
+/* whole-card selection semantics: the SELECTED card's meter goes red (both tiers); unselected stays bone */
+.price.is-selected .meter-fill{background:var(--red-500)}
+.meter-label{font-family:var(--font-display); font-weight:600; font-size:13px; color:var(--gray-500); margin:0; transition:color .2s ease}
+.price.is-selected .meter-label{color:var(--red-500)}
+/* CTA — bone-950 secondary (unselected), red primary (selected) */
+.price .plan-cta{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-sm);
+  font-family:var(--font-display); font-weight:600; text-decoration:none; border:none; cursor:pointer;
+  width:100%; border-radius:var(--r-full); padding:15px 24px; font-size:16px;
+  background:var(--bone-950); color:var(--white); box-shadow:0 8px 20px -12px rgba(75,67,57,.5);
+  transition:filter .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.price.is-selected .plan-cta{background:var(--red-500); box-shadow:0 10px 24px -10px rgba(239,68,68,.5)}
+.price .plan-cta:hover{filter:brightness(.96)}
+.price .plan-cta:focus-visible{outline:2px solid var(--gray-800); outline-offset:3px}
+.price .fud{text-align:center; margin:0; font-size:13px; color:var(--gray-400)}
+/* Founders badge — always on the Founders card; recolors red↔bone with selection */
+.founders-badge{
+  position:absolute; top:-13px; left:30px;
+  background:var(--bone-500); color:var(--gray-700); font-family:var(--font-display); font-weight:600;
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 15px; border-radius:var(--r-full); white-space:nowrap;
+}
+.price.is-selected .founders-badge{background:var(--red-500); color:var(--white)}
+/* sold-out treatment (founders_remaining === 0) */
+.price.is-sold-out{cursor:default}
+.price.is-sold-out .plan-cta{background:var(--bone-500); box-shadow:none; opacity:.7; pointer-events:none}
+/* ════════ /CHOOSER SKIN ════════ */
+
+.price-foot{text-align:center; margin:0; font-size:14px; color:var(--gray-400); max-width:60ch}
+
+/* checkout handoff stub — honest placeholder, never a fake success */
+.checkout-stub{
+  display:none; width:100%; max-width:920px; text-align:center;
+  background:var(--bone-100); border:1px dashed var(--bone-500); border-radius:var(--r-lg);
+  padding:14px 18px; font-size:14px; line-height:1.55; color:var(--gray-600);
+}
+.checkout-stub.is-visible{display:block}
+.checkout-stub strong{color:var(--gray-800); font-weight:600}
+
+@media (max-width:760px){
+  main{padding:40px 18px 56px; gap:var(--sp-2xl)}
+  .price-grid{grid-template-columns:1fr; max-width:420px}
+  .price .amount .amt{font-size:46px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important}
+}
+</style>
+</head>
+<body>
+
+  <!-- Logo-only flow-page header (inline wordmark SVG — resolution-independent, no external asset dep) -->
+  <header class="site-header">
+    <a href="https://illi.world/" aria-label="illi home">
+      <svg class="wordmark" width="88" height="60" viewBox="0 0 162 111" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="translate(0,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+        <g transform="translate(6,0)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
+        <g transform="translate(42,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+        <g transform="translate(84,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+        <g transform="translate(126,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
+        <rect x="132" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+        <rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+      </svg>
+    </a>
+  </header>
+
+  <main>
+    <!-- return-from-abandoned-checkout (shown when Stripe cancel_url sends ?status=cancelled) -->
+    <div class="return-banner" id="returnBanner" role="status">
+      <span class="rb-dot" aria-hidden="true"></span>
+      <span class="rb-text"><strong>No charge yet.</strong> You left checkout before finishing. Pick your plan back up whenever you're ready.</span>
+      <button type="button" class="rb-close" id="returnClose" aria-label="Dismiss">&times;</button>
+    </div>
+
+    <section class="chooser">
+      <div class="section-head">
+        <span class="kicker">Pricing</span>
+        <h2>Every plan includes everything</h2>
+        <p class="price-subhead">No feature gating, no upsells. Choose how you want to pay, and only the price changes.</p>
+      </div>
+
+      <!-- promo ribbon (display-only; hidden when promo:null) -->
+      <div class="promo-ribbon" id="promoRibbon" role="note">
+        <span class="promo-label" id="promoLabel"></span>
+        <span class="promo-code" id="promoCode" hidden></span>
+      </div>
+
+      <!-- billing interval toggle (page-only state) -->
+      <div class="billing-toggle" role="group" aria-label="Billing interval">
+        <button type="button" class="bt-opt is-active" data-interval="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" class="bt-opt" data-interval="annual" aria-pressed="false">Annual</button>
+      </div>
+
+      <div class="price-grid" id="priceGrid">
+        <!-- Founders — selected on load (default) -->
+        <div class="price founders is-selected" data-plan="founders" tabindex="0" role="group" aria-label="Founders plan">
+          <span class="founders-badge">Founders &middot; Best value</span>
+          <div class="price-head">
+            <span class="tier">Founders</span>
+            <div class="amount">
+              <span class="amt" data-monthly="$2" data-annual="$24">$2</span><span class="per" data-monthly="&nbsp;/ month, locked for life" data-annual="&nbsp;/ year, locked for life">&nbsp;/ month, locked for life</span>
+            </div>
+          </div>
+          <p class="note">You're part of how illi gets built: a question a week, first eyes on what's next, and honest feedback when we ask. That's the exchange.</p>
+          <div class="meter" data-meter="scarcity">
+            <div class="meter-track"><div class="meter-fill" id="scarcityFill" style="width:81.2%"></div></div>
+            <p class="meter-label"><strong id="scarcityCount" data-count="188">188</strong> of 1,000 founder spots left</p>
+          </div>
+          <button type="button" class="plan-cta" data-cta>Start free trial</button>
+          <p class="fud">7 days free. No card required.</p>
+        </div>
+
+        <!-- Standard — unselected on load -->
+        <div class="price standard" data-plan="standard" tabindex="0" role="group" aria-label="Standard plan">
+          <div class="price-head">
+            <span class="tier">Standard</span>
+            <div class="amount">
+              <span class="amt" data-monthly="$7" data-annual="$70">$7</span><span class="per" data-monthly="&nbsp;/ month" data-annual="&nbsp;/ year">&nbsp;/ month</span><span class="save-badge" data-save hidden>save 17%</span>
+            </div>
+          </div>
+          <p class="note">Just pay and go, no feedback obligation. Cancel anytime. Every feature included, exactly the same product.</p>
+          <div class="meter" data-meter="availability">
+            <div class="meter-track"><div class="meter-fill" style="width:100%"></div></div>
+            <p class="meter-label">Open to everyone, no waitlist</p>
+          </div>
+          <button type="button" class="plan-cta" data-cta>Start free trial</button>
+          <p class="fud">7 days free. No card required.</p>
+        </div>
+      </div>
+
+      <!-- checkout handoff stub status (honest placeholder while Stripe handoff is deferred) -->
+      <p class="checkout-stub" id="checkoutStub" role="status" aria-live="polite"></p>
+
+      <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension. Your bookmarks and settings always stay yours.</p>
+    </section>
+  </main>
+
+<!-- ════════ /upgrade engine — lifted from v6 #pricing (S301) + the /upgrade-only behaviors ════════ -->
+<script>
+(function(){
+  'use strict';
+  var params = new URLSearchParams(location.search);
+  var grid = document.getElementById('priceGrid');
+  var toggle = document.querySelector('.billing-toggle');
+  if(!grid || !toggle) return;
+  var cards = Array.prototype.slice.call(grid.querySelectorAll('.price'));
+  var cardOf = function(plan){ for(var i=0;i<cards.length;i++){ if(cards[i].dataset.plan===plan) return cards[i]; } return null; };
+  var interval = 'monthly';
+
+  /* ── selection-follows-click — decorative emphasis only; both CTAs always work ── */
+  function select(card){ if(!card) return; cards.forEach(function(c){ c.classList.toggle('is-selected', c===card); }); }
+  cards.forEach(function(card){
+    card.addEventListener('click', function(e){ if(!e.target.closest('[data-cta]')) select(card); });
+    card.addEventListener('keydown', function(e){ if((e.key===' '||e.key==='Enter') && e.target===card){ e.preventDefault(); select(card); } });
+    var cta = card.querySelector('[data-cta]');
+    if(cta){
+      cta.addEventListener('focus', function(){ select(card); });
+      cta.addEventListener('click', function(e){ e.preventDefault(); select(card); startCheckout(card.dataset.plan, interval); });
+    }
+  });
+
+  /* ── monthly ⇄ annual — swaps the shown price + suffix; "save 17%" shows on Standard annual only ── */
+  function applyInterval(next){
+    interval = (next==='annual') ? 'annual' : 'monthly';
+    toggle.querySelectorAll('.bt-opt').forEach(function(b){
+      var on = b.dataset.interval === interval;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    grid.querySelectorAll('.amt').forEach(function(el){ var v=el.dataset[interval]; if(v) el.textContent=v; });
+    grid.querySelectorAll('.per').forEach(function(el){ var v=el.dataset[interval]; if(v) el.innerHTML=v; });
+    grid.querySelectorAll('[data-save]').forEach(function(el){ el.hidden = interval!=='annual'; });
+  }
+  toggle.addEventListener('click', function(e){ var b=e.target.closest('.bt-opt'); if(b) applyInterval(b.dataset.interval); });
+
+  /* ════════ pricing-info — LIVE (public, keyless GET; matches LOCKED contract §2) ════════
+     The page DISPLAYS this data and never SETS any of it (all money/discount authority is server-side).
+     Default path fetches the live endpoint; on ANY failure it falls back to the honest static state
+     (keep the printed prices, hide the live counter — never a stale/zero number). The ?mock= switches
+     stay for QA of states the live data won't currently produce (failure, sold-out, promo).
+     Wired live 2026-06-22 after confirming the endpoint returns the contract shape + CORS allow-origin *. */
+  /* ── Supabase project config (public: URL + anon/publishable client key, safe to inline) ── */
+  var SUPABASE_URL = 'https://wbobpjzkasbnkxbiiioe.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_nj-_J2qmR2VT45qqSesaTg_rvZcXr1j'; // public client key; mirrors the extension's VITE_SUPABASE_ANON_KEY
+  var SUPABASE_JS = '/assets/vendor/supabase-js-2.103.0.esm.js';            // self-hosted, pinned (no third-party runtime script); lazy-imported only when signing in / checking out
+
+  var ENDPOINT = SUPABASE_URL + '/functions/v1/pricing-info';
+  var MOCK_PRICING_INFO = {                               // QA reference shape (used ONLY by the ?mock= switches)
+    founders_remaining: 188,
+    prices: {
+      founders: { monthly: 2,  annual: 24 },              // dollars; annual = 12 × monthly (no extra discount)
+      standard: { monthly: 7,  annual: 70 }               // dollars; annual ≈ 17% off monthly
+    },
+    promo: null                                           // display-only: null | { label, code }
+  };
+  function getPricingInfo(){
+    // QA switches — preview a state without touching live data:
+    if(params.get('mock')==='fail') return Promise.reject(new Error('mock fail'));                                   // → honest fallback
+    if(params.get('mock')==='soldout') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { founders_remaining:0 }));
+    if(params.get('mock')==='promo') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { promo:{ label:'Launch week', code:'ILLILAUNCH' } }));
+    // LIVE (default): one public GET; the .then render + .catch fallback are production-shaped.
+    return fetch(ENDPOINT, { headers:{ accept:'application/json' } })
+      .then(function(r){ if(!r.ok) throw new Error('pricing-info ' + r.status); return r.json(); });
+  }
+
+  function applyPricing(d){
+    var p = d && d.prices;
+    if(p && p.founders && p.standard){
+      var f = cardOf('founders'), s = cardOf('standard');
+      if(f){ var fa=f.querySelector('.amt'); fa.dataset.monthly='$'+p.founders.monthly; fa.dataset.annual='$'+p.founders.annual; }
+      if(s){ var sa=s.querySelector('.amt'); sa.dataset.monthly='$'+p.standard.monthly; sa.dataset.annual='$'+p.standard.annual; }
+    }
+    var remaining = (d && typeof d.founders_remaining==='number')
+      ? Math.max(0, Math.min(1000, Math.round(d.founders_remaining))) : null;
+    if(remaining !== null){
+      var count = document.getElementById('scarcityCount');
+      var fill  = document.getElementById('scarcityFill');
+      if(count){ count.dataset.count=remaining; count.textContent=remaining.toLocaleString(); }
+      if(fill){ fill.style.width = (((1000 - remaining)/1000)*100).toFixed(1) + '%'; }
+      if(remaining === 0) soldOut();
+    }
+    applyPromo(d && d.promo);
+    applyInterval(interval); // re-render with the resolved numbers + honor any deep-link interval
+  }
+
+  /* honest static fallback: keep the static prices, hide the live counter (never show 0/stale) */
+  function onPricingFail(){
+    var meter = grid.querySelector('.meter[data-meter="scarcity"]');
+    if(meter) meter.style.visibility = 'hidden';  // hidden, not removed, so the two CTAs stay aligned
+    applyInterval(interval);
+  }
+
+  /* founders_remaining === 0 → Founders sold out, Standard becomes the entry */
+  function soldOut(){
+    var f = cardOf('founders'); if(!f) return;
+    f.classList.add('is-sold-out');
+    var label = f.querySelector('.meter-label'); if(label) label.textContent = 'All 1,000 founder seats taken';
+    var fill = document.getElementById('scarcityFill'); if(fill) fill.style.width = '100%';
+    var cta = f.querySelector('[data-cta]');
+    if(cta){ cta.setAttribute('aria-disabled','true'); cta.textContent='Founder seats full'; }
+    // TODO(launch): swap the sold-out CTA for the simple "notify me when a seat opens" email capture (§8.11 G).
+    select(cardOf('standard') || f);
+  }
+
+  /* promo ribbon — display-only; the page can SHOW a promo, never GRANT one (§2 / §3c) */
+  function applyPromo(promo){
+    var ribbon = document.getElementById('promoRibbon');
+    if(!ribbon || !promo || !promo.label) return;
+    var label = document.getElementById('promoLabel');
+    var code  = document.getElementById('promoCode');
+    if(label) label.textContent = promo.label;
+    if(code && promo.code){ code.textContent = promo.code; code.hidden = false; }
+    ribbon.classList.add('is-visible');
+  }
+
+  /* ── {tier, interval} deep-link preselect (email CTA / extension / cancel_url carry the intent) ── */
+  var wantInterval = params.get('interval');
+  if(wantInterval==='monthly' || wantInterval==='annual') interval = wantInterval;
+  var wantTier = (params.get('tier')||'').toLowerCase();
+  if(wantTier==='founders' || wantTier==='standard') select(cardOf(wantTier));
+  // default (no/invalid tier) = Founders selected, per the markup + §4 default-on-load.
+
+  /* ── return-from-abandoned-checkout (Stripe cancel_url → /upgrade?status=cancelled[&tier&interval]) ── */
+  var status = (params.get('status')||'').toLowerCase();
+  if(status==='cancelled' || status==='canceled'){
+    var banner = document.getElementById('returnBanner');
+    if(banner) banner.classList.add('is-visible');
+  }
+  var rc = document.getElementById('returnClose');
+  if(rc) rc.addEventListener('click', function(){ var b=document.getElementById('returnBanner'); if(b) b.classList.remove('is-visible'); });
+
+  /* ════════ payment funnel — signed-token pickup + web sign-in + Stripe handoff (§8.11, wired 2026-06-22) ════════
+     Replaces the former stub. Flow:
+       • Arrive with ?token (extension or email bridge): POST upgrade-redeem -> { auth:{token_hash,type} },
+         then supabase.auth.verifyOtp() establishes a real web session with NO code entry. We then strip
+         ?token from the URL (single-use, 30-min). The session persists in localStorage, so it survives the
+         Stripe round-trip and is still there on the cancel_url return (?status=cancelled, no token).
+       • Click a plan CTA: POST stripe-checkout with the session JWT -> { url } -> redirect to Stripe Checkout.
+       • No session (tokenless web visitor): honest message pointing to the extension. Full web OTP sign-in
+         (§8.11 bridge 2) is the separately-deferred piece and is NOT wired here.
+     supabase-js is self-hosted (pinned, /assets/vendor) and lazy-imported only when signing in / checking
+     out, so the chooser never depends on it loading (mirrors the page's honest-fallback philosophy). */
+
+  var stub = document.getElementById('checkoutStub');
+  function showStub(html){ if(stub){ stub.innerHTML = html; stub.classList.add('is-visible'); } }
+  function hideStub(){ if(stub){ stub.classList.remove('is-visible'); stub.innerHTML = ''; } }
+
+  /* one lazily-created supabase-js client; persistSession carries the web session across the Stripe round-trip */
+  var _sbClient = null;
+  function getSupabase(){
+    if(_sbClient) return Promise.resolve(_sbClient);
+    return import(SUPABASE_JS).then(function(m){
+      _sbClient = m.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'illi-web-auth' }
+      });
+      return _sbClient;
+    });
+  }
+
+  /* drop ?token from the address bar without reloading (token is single-use + 30-min) */
+  function stripToken(){
+    params.delete('token');
+    var qs = params.toString();
+    history.replaceState({}, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    identityToken = null;
+  }
+
+  /* ?token -> upgrade-redeem -> verifyOtp (silent sign-in). Resolves to true when signed in. */
+  function redeemUpgradeToken(token){
+    showStub('Signing you in…');
+    return fetch(SUPABASE_URL + '/functions/v1/upgrade-redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ token: token })
+    }).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(data){ return { status: res.status, data: data }; });
+    }).then(function(r){
+      if(r.status === 200 && r.data && r.data.ok && r.data.auth){
+        return getSupabase().then(function(sb){
+          return sb.auth.verifyOtp({ token_hash: r.data.auth.token_hash, type: r.data.auth.type });
+        }).then(function(out){
+          stripToken(); // token is consumed server-side; clean the URL either way
+          if(out && out.error){
+            showStub('We couldn’t finish signing you in. Open the illi extension and click <strong>Upgrade</strong> to try again.');
+            return false;
+          }
+          hideStub(); // signed in silently; the plan CTAs now open real checkout
+          return true;
+        });
+      }
+      // error contract: 400 missing_token / 401 bad_token / 404 no_user / 500 session_mint_failed|internal_error
+      if(r.status === 500){
+        showStub('Something went wrong on our end. Please refresh to try again in a moment.'); // transient: keep the token for a refresh-retry
+      } else {
+        stripToken(); // permanent failure: don’t loop on a dead link
+        if(r.status === 401){
+          showStub('That upgrade link is invalid or has expired. Links last 30 minutes. Open the illi extension and click <strong>Upgrade</strong> for a fresh one.');
+        } else if(r.status === 404){
+          showStub('We couldn’t find your account from that link. Open the illi extension and click <strong>Upgrade</strong>, or sign in there.');
+        } else {
+          showStub('That upgrade link looks incomplete. Open the illi extension and click <strong>Upgrade</strong> to get a new one.');
+        }
+      }
+      return false;
+    }).catch(function(){
+      showStub('We couldn’t reach the server to sign you in. Check your connection and refresh to try again.'); // network: keep token for refresh-retry
+      return false;
+    });
+  }
+
+  /* plan CTA -> Stripe Checkout, authed with the web session minted above (or restored after a cancel) */
+  function startCheckout(tier, interval){
+    showStub('Opening secure checkout…');
+    var ready = redeemPromise ? redeemPromise.catch(function(){ return false; }) : Promise.resolve(false);
+    return ready.then(function(){
+      return getSupabase();
+    }).then(function(sb){
+      return sb.auth.getSession().then(function(out){
+        var session = out && out.data && out.data.session;
+        if(!session){
+          // tokenless / not signed in — honest path; web OTP sign-in is the deferred §8.11 bridge 2
+          showStub('To start your plan, open the illi extension and click <strong>Upgrade</strong>, or use the link from your illi email. Signing in here directly is coming soon.');
+          return null;
+        }
+        return fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + session.access_token
+          },
+          body: JSON.stringify({ tier: tier, interval: interval })
+        }).then(function(res){
+          return res.json().catch(function(){ return {}; }).then(function(data){ return { status: res.status, data: data }; });
+        }).then(function(r){
+          if(r.status === 200 && r.data && r.data.url){
+            window.location.assign(r.data.url); // hand off to Stripe Checkout
+            return;
+          }
+          showStub('We couldn’t open checkout just now. Please try again in a moment.');
+        });
+      });
+    }).catch(function(){
+      showStub('We couldn’t reach checkout. Check your connection and try again.');
+    });
+  }
+
+  /* ── signed identity token (web↔extension bridge): redeem on arrival for a silent web session ── */
+  var identityToken = params.get('token') || null;
+  var redeemPromise = identityToken ? redeemUpgradeToken(identityToken) : null;
+
+  /* initial render — resolve pricing (mock), then paint */
+  getPricingInfo().then(applyPricing).catch(onPricingFail);
+})();
+</script>
+</body>
+</html>
