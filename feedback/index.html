@@ -125,8 +125,9 @@
   /* success */
   .success { display:none; flex-direction:column; align-items:center; gap:22px; width:100%; }
   .check-wrap { position:relative; display:flex; align-items:center; justify-content:center; width:160px; height:108px; }
-  .check-circle { display:flex; align-items:center; justify-content:center; width:78px; height:78px; border-radius:9999px; background:var(--illi-green-500); box-shadow:0 8px 24px rgba(34,197,94,.32); }
-  .confetti { position:absolute; }
+  .check-circle { display:flex; align-items:center; justify-content:center; width:78px; height:78px; border-radius:9999px; background:var(--illi-green-500); box-shadow:0 8px 24px rgba(34,197,94,.32); animation:checkIn .6s ease-out both, checkPulse 1.8s ease-in-out .6s infinite; }
+  @keyframes checkIn { 0%{ transform:scale(.92); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+  @keyframes checkPulse { 0%,100%{ transform:scale(1); box-shadow:0 8px 24px rgba(34,197,94,.30); } 50%{ transform:scale(1.06); box-shadow:0 12px 30px rgba(34,197,94,.45); } }
   .success-lockup { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
   .success h2 { margin:0; font-family:var(--illi-font-display),-apple-system,sans-serif; font-size:40px; line-height:48px; font-weight:700; color:var(--illi-text-heading); }
   .success p { margin:0; font-size:17px; line-height:26px; color:var(--illi-text-secondary); max-width:420px; }
@@ -201,18 +202,12 @@
     <!-- success -->
     <div class="success" id="success">
       <div class="check-wrap">
-        <span class="confetti" style="top:8px;left:24px;width:8px;height:8px;border-radius:2px;background:var(--illi-yellow-500);transform:rotate(20deg);"></span>
-        <span class="confetti" style="top:2px;left:76px;width:7px;height:7px;border-radius:9999px;background:var(--illi-red-500);"></span>
-        <span class="confetti" style="top:16px;right:26px;width:9px;height:9px;border-radius:2px;background:var(--illi-green-500);transform:rotate(-15deg);"></span>
-        <span class="confetti" style="bottom:12px;left:16px;width:6px;height:6px;border-radius:9999px;background:var(--illi-red-500);"></span>
-        <span class="confetti" style="bottom:6px;right:20px;width:8px;height:8px;border-radius:2px;background:var(--illi-yellow-500);transform:rotate(35deg);"></span>
-        <span class="confetti" style="top:46px;right:6px;width:6px;height:6px;border-radius:9999px;background:var(--illi-green-500);"></span>
         <div class="check-circle">
           <svg width="36" height="36" viewBox="0 0 34 34" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17.5 L14.5 23 L25 11"/></svg>
         </div>
       </div>
       <div class="success-lockup">
-        <h2>Got it.</h2>
+        <h2>Thank you.</h2>
         <p>You just made illi better.</p>
       </div>
     </div>
@@ -223,14 +218,14 @@
         <rect x="16" y="2" width="10" height="32" rx="3" fill="#EAB308"/>
         <g transform="translate(30,0) scale(1.333)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
       </svg>
-      <span>Go learn something.</span>
+      <span>Go back to learning.</span>
     </div>
   </div>
 
   <script>
     // ── CONFIG ────────────────────────────────────────────────────────────────
-    // TODO(feedback-submit): set to the real Supabase project ref before deploy (filled in task 3).
-    var FEEDBACK_ENDPOINT = 'https://PROJECT_REF.supabase.co/functions/v1/feedback-submit';
+    // Production feedback-submit Edge Function (Supabase project wbobpjzkasbnkxbiiioe). I-082.
+    var FEEDBACK_ENDPOINT = 'https://wbobpjzkasbnkxbiiioe.supabase.co/functions/v1/feedback-submit';
 
     var q = new URLSearchParams(location.search);
     var token = q.get('t') || '';            // signed token minted by the extension (auto-attributes the user)
