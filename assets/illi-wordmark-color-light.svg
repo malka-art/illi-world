@@ -1,0 +1,26 @@
+<svg width="162" height="111" viewBox="0 0 162 111" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- illi wordmark — full color on light background -->
+  <!-- Letter i (play) — stem -->
+  <g transform="translate(0,36)">
+    <path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848" />
+  </g>
+  <!-- Play tittle -->
+  <g transform="translate(6,0)">
+    <path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444" />
+  </g>
+  <!-- Letter l (1) -->
+  <g transform="translate(42,0)">
+    <path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848" />
+  </g>
+  <!-- Letter l (2) -->
+  <g transform="translate(84,0)">
+    <path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848" />
+  </g>
+  <!-- Letter i (pause) — stem -->
+  <g transform="translate(126,36)">
+    <path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848" />
+  </g>
+  <!-- Pause bars -->
+  <rect x="132" y="0" width="8" height="24" rx="3" fill="#EAB308" />
+  <rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308" />
+</svg>

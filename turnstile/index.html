@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>illi</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<!-- Design tokens (generated from primitives.json / semantic.json, vendored into this repo).
+     Every color/font/space/type below references a token via var(--illi-*) — no hardcoded hex.
+     Relative path so it resolves both on illi.world/turnstile/ and in a local file:// preview. -->
+<link rel="stylesheet" href="../assets/illi-tokens.css">
+<style>
+  /* Turnstile host page — illi auth CAPTCHA (I-133). The extension auth UI can't run Turnstile's
+     remote script (MV3 forbids remote scripts in extension pages), so it embeds THIS page in an
+     <iframe>; this page runs the widget and relays the token up via postMessage. Wire format =
+     the I-133 INTEGRATION CONTRACT in Projects/Illi/ISSUES.md. Static by design.
+     Styling references SEMANTIC tokens (text-heading, accent-default, …) wherever one exists. */
+  * { box-sizing: border-box; }
+  html, body { margin:0; }
+  body {
+    padding:var(--illi-space-lg); min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    /* Standalone visit → the canonical illi page surface (bone). When embedded in the popup iframe we
+       switch to transparent (see body.chromeless) so it inherits the parent auth surface instead of
+       stamping a mismatched bone rectangle inside it. */
+    background:var(--illi-surface-card);
+    font-family:var(--illi-font-primary),-apple-system,sans-serif;
+    color:var(--illi-text-secondary);
+  }
+  .col { display:flex; flex-direction:column; align-items:center; gap:var(--illi-space-lg); width:100%; max-width:360px; text-align:center; }
+  /* Brand chrome (wordmark + line). PROPOSED look for a standalone / first-load view. For the embedded
+     iframe we will likely hide this (the popup already shows illi branding) and show only #widget —
+     toggled by the parent via an `init` message field, or stripped here. Owner decides branding extent. */
+  .chrome { display:flex; flex-direction:column; align-items:center; gap:var(--illi-space-sm); }
+  /* Real brand asset (illi-wordmark-color-light.svg) — used directly, not redrawn. It carries its own
+     canonical colors (gray-600 letters, red play, gold pause), so it isn't recolored by tokens. */
+  .wordmark { display:block; flex-shrink:0; width:64px; height:auto; }
+  /* Heading = the `h3` semantic type role (21px Inter semibold); color = text-heading. */
+  .line {
+    margin:0;
+    font-family:var(--illi-type-h3-family),-apple-system,sans-serif;
+    font-size:var(--illi-type-h3-size); line-height:var(--illi-type-h3-line);
+    font-weight:var(--illi-type-h3-weight); color:var(--illi-text-heading);
+  }
+  /* Subline = the `caption` role (13px Inter regular); color = text-secondary. */
+  .sub {
+    margin:0;
+    font-family:var(--illi-type-caption-family),-apple-system,sans-serif;
+    font-size:var(--illi-type-caption-size); line-height:var(--illi-type-caption-line);
+    font-weight:var(--illi-type-caption-weight); color:var(--illi-text-secondary);
+  }
+  #widget { min-height:65px; display:flex; align-items:center; justify-content:center; } /* 65px = Turnstile's intrinsic widget height */
+  /* Shown only if the Turnstile script fails to load / is blocked. `caption` role, text-muted. */
+  .fallback {
+    display:none;
+    font-family:var(--illi-type-caption-family),-apple-system,sans-serif;
+    font-size:var(--illi-type-caption-size); line-height:var(--illi-type-caption-line);
+    font-weight:var(--illi-type-caption-weight); color:var(--illi-text-muted); max-width:300px;
+  }
+  /* Embedded mode (parent sends init{chromeless:true}): hide brand chrome AND drop the bone bg so the
+     check sits transparently inside the popup's own surface. */
+  body.chromeless { background:transparent; }
+  body.chromeless .chrome { display:none; }
+</style></head>
+<body>
+  <div class="col">
+    <div class="chrome">
+      <img class="wordmark" src="../assets/illi-wordmark-color-light.svg" width="64" height="44" alt="illi" decoding="async">
+
+      <!-- PROPOSED copy (not locked — confirm before writing to COPY-INVENTORY). illi voice: warm, plain. -->
+      <p class="line">Just making sure you're human.</p>
+      <p class="sub">One quick check, then you're in.</p>
+    </div>
+    <div id="widget"></div>
+    <p class="fallback" id="fallback">Couldn't load the security check. Refresh and try again.</p>
+  </div>
+
+  <script>
+    // ── I-133 INTEGRATION CONTRACT (page side). Protocol version 1. ──
+    // OUT (page -> extension), source 'illi-turnstile': ready | rendered{width,height} | token{token} | expired | error{code} | timeout
+    // IN  (extension -> page), source 'illi-auth':       init{theme,action,chromeless?} | reset
+    (function () {
+      var V = 1;
+      var SITEKEY = '0x4AAAAAADslj3mt9mGs6LQa';   // PUBLIC Turnstile site key (managed, domain illi.world)
+      var IN_SOURCE = 'illi-auth';                 // messages we ACCEPT
+      var OUT_SOURCE = 'illi-turnstile';           // messages we SEND
+
+      var parentWin = null;      // event.source captured from `init`
+      var parentOrigin = null;   // event.origin captured from `init`
+      var pendingToken = null;   // a token produced before `init` arrived (held — never posted to '*')
+      var widgetId = null;
+
+      var params = new URLSearchParams(location.search);
+      var theme = params.get('theme') === 'dark' ? 'dark' : 'light';
+      var action = params.get('action') || undefined;
+      if (params.get('chromeless') === '1') document.body.classList.add('chromeless');
+
+      function send(type, extra) {
+        var msg = { source: OUT_SOURCE, v: V, type: type };
+        if (extra) { for (var k in extra) msg[k] = extra[k]; }
+        // A token may ONLY go to a captured parent origin — never '*' (contract §4).
+        if (type === 'token' && !parentOrigin) { pendingToken = msg.token; return; }
+        var target = parentOrigin || '*';
+        (parentWin || window.parent).postMessage(msg, target);
+      }
+
+      function reportSize() {
+        var el = document.getElementById('widget');
+        if (!el) return;
+        var r = el.getBoundingClientRect();
+        send('rendered', { width: Math.ceil(r.width), height: Math.ceil(r.height) });
+      }
+
+      // Inbound control from the extension.
+      window.addEventListener('message', function (e) {
+        var d = e.data;
+        if (!d || d.source !== IN_SOURCE || d.v !== V) return;   // ignore everything that isn't our parent's v1 message
+        if (d.type === 'init') {
+          parentWin = e.source;
+          parentOrigin = e.origin;
+          if (d.chromeless) document.body.classList.add('chromeless');
+          if (typeof d.action === 'string') action = d.action;
+          // theme is applied at render; if init arrives after render, a reset keeps the rendered theme.
+          if (typeof d.theme === 'string') theme = (d.theme === 'dark') ? 'dark' : 'light';
+          if (pendingToken) { send('token', { token: pendingToken }); pendingToken = null; }
+          reportSize();   // parent now has our origin — give it our size
+        } else if (d.type === 'reset') {
+          if (window.turnstile && widgetId !== null) window.turnstile.reset(widgetId);
+        }
+      });
+
+      // Turnstile explicit render — gives us the widgetId (for reset) and every lifecycle callback.
+      window.onTurnstileLoad = function () {
+        send('ready');
+        try {
+          widgetId = window.turnstile.render('#widget', {
+            sitekey: SITEKEY,
+            theme: theme,
+            action: action,
+            callback: function (token) { send('token', { token: token }); },
+            'error-callback': function (code) { send('error', { code: String(code == null ? '' : code) }); },
+            'expired-callback': function () { send('expired'); },
+            'timeout-callback': function () { send('timeout'); }
+          });
+        } catch (err) {
+          document.getElementById('fallback').style.display = 'block';
+          send('error', { code: 'render-failed' });
+          return;
+        }
+        reportSize();
+        // Turnstile grows/shrinks when an interactive challenge appears — keep the parent iframe sized.
+        if (window.ResizeObserver) {
+          new ResizeObserver(function () { reportSize(); }).observe(document.getElementById('widget'));
+        }
+      };
+
+      // If the remote script never loads (blocked / offline), surface the on-brand fallback.
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          if (!window.turnstile) {
+            document.getElementById('fallback').style.display = 'block';
+            send('error', { code: 'script-unavailable' });
+          }
+        }, 8000);
+      });
+    })();
+  </script>
+  <!-- Cloudflare Turnstile. render=explicit + onload= so we control render + get callbacks. async/defer keeps it non-blocking. -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
+</body></html>
