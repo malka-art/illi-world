@@ -57,9 +57,11 @@
     font-size:var(--illi-type-caption-size); line-height:var(--illi-type-caption-line);
     font-weight:var(--illi-type-caption-weight); color:var(--illi-text-muted); max-width:300px;
   }
-  /* Embedded mode (parent sends init{chromeless:true}): hide brand chrome AND drop the bone bg so the
-     check sits transparently inside the popup's own surface. */
-  body.chromeless { background:transparent; }
+  /* Embedded mode (parent sends init{chromeless:true} / ?chromeless=1): hide brand chrome, drop the
+     bone bg so the check sits transparently inside the popup's surface, and zero the page padding /
+     min-height so the iframe can be sized to exactly the widget (no clipping, no dead space). */
+  body.chromeless { background:transparent; padding:0; min-height:0; }
+  body.chromeless .col { gap:0; }
   body.chromeless .chrome { display:none; }
 </style></head>
 <body>
