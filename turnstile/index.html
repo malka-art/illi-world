@@ -63,6 +63,10 @@
   body.chromeless { background:transparent; padding:0; min-height:0; }
   body.chromeless .col { gap:0; }
   body.chromeless .chrome { display:none; }
+  /* Embedded + interaction-only: don't reserve the 65px widget slot, so an
+     invisible pass collapses to ~0 and the parent iframe shows no empty box.
+     (Standalone view keeps min-height:65px above for a stable first-load look.) */
+  body.chromeless #widget { min-height:0; }
 </style></head>
 <body>
   <div class="col">
@@ -139,6 +143,13 @@
             sitekey: SITEKEY,
             theme: theme,
             action: action,
+            // BP (I-133): interaction-only → the widget renders NOTHING for the ~all
+            // users who pass the managed check invisibly (the token still fires via
+            // `callback`); it only shows a box if Cloudflare actually needs a human
+            // interaction. With #widget min-height zeroed in chromeless mode + the
+            // ResizeObserver below, reportSize() then reports ~0 so the embedding
+            // iframe collapses — no reserved empty box between email and submit.
+            appearance: 'interaction-only',
             callback: function (token) { send('token', { token: token }); },
             'error-callback': function (code) { send('error', { code: String(code == null ? '' : code) }); },
             'expired-callback': function () { send('expired'); },
