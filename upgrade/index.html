@@ -22,12 +22,17 @@
   "Speedemon" look instead, the reskin is contained to the "CHOOSER SKIN (v6 baseline)" CSS block
   + the optional Caveat font; markup data-hooks and all JS stay unchanged.
 
+  ── STATE-AWARE (I-138) ──
+   * Anonymous arrival (no ?token, no persisted web session): the signup-first HERO leads (email +
+     "7 days free, no card"), the cards sit below as context; plan CTAs read "Start free trial" and
+     route to the hero. Sold-out mutes the Founders card + promotes Standard (E10 sold-out copy).
+   * Signed-in / token arrival: the chooser as built; plan CTAs read "Lock my founder rate" / "Choose Standard".
   ── LIVE ──
    * pricing-info → live public endpoint (founder counter + prices); honest static fallback on failure (wired 2026-06-22).
-   * Signed-token pickup + Stripe checkout handoff → live (wired 2026-06-22, §8.11 funnel):
+   * Signed-token pickup + Stripe checkout handoff → live (§8.11 funnel):
        ?token → upgrade-redeem → verifyOtp (silent web sign-in) → plan CTA → stripe-checkout → Stripe.
-  ── DEFERRED / STUBBED ──
-   * Web OTP sign-in for tokenless web visitors (§8.11 bridge 2) → honest "open the extension" message for now.
+   * Web OTP sign-in (I-137, §8.11 bridge 2) → live: Turnstile-gated (same-origin /turnstile frame, I-133
+     contract) → signInWithOtp({options:{captchaToken}}) → code step → verifyOtp → signed-in chooser.
   Tokens inlined because GitHub Pages can't pull the extension's runtime CSS.
 ============================================================ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -182,10 +187,58 @@ main{
 .checkout-stub.is-visible{display:block}
 .checkout-stub strong{color:var(--gray-800); font-weight:600}
 
+/* ════════ anonymous signup-first hero (I-138) + web OTP sign-in (I-137) ════════
+   Shown ONLY to anonymous arrivals (no ?token, no persisted web session): the trial
+   IS the hero, the cards sit below as context (§8.11 A/E, COPY-INVENTORY E10 §10).
+   Signed-in / token arrivals never see this — they get the chooser as built. */
+.anon-hero{
+  display:none; flex-direction:column; align-items:center; gap:var(--sp-lg);
+  text-align:center; width:100%; max-width:560px;
+}
+.anon-hero.is-visible{display:flex}
+.anon-hero h1{font-size:clamp(30px,3.6vw,44px); letter-spacing:-.02em}
+.anon-hero .ah-sub{font-size:17px; color:var(--gray-500); line-height:1.5; max-width:44ch; margin:0}
+/* OTP form — email step then code step; native validation suppressed for branded errors */
+.otp-form{display:flex; flex-direction:column; align-items:stretch; gap:var(--sp-md); width:100%; max-width:400px; margin-top:var(--sp-sm)}
+.otp-step{display:flex; flex-direction:column; align-items:stretch; gap:var(--sp-md)}
+.otp-step[hidden]{display:none}
+.otp-field{
+  width:100%; font-family:var(--font-body); font-size:16px; color:var(--gray-800);
+  background:var(--white); border:1.5px solid var(--bone-500); border-radius:var(--r-md);
+  padding:14px 16px; transition:border-color .15s ease, box-shadow .15s ease;
+}
+.otp-field:focus{outline:none; border-color:var(--red-500); box-shadow:0 0 0 3px rgba(239,68,68,.15)}
+.otp-field.is-code{text-align:center; letter-spacing:.4em; font-family:var(--font-display); font-weight:600; font-size:22px}
+/* interaction-only Turnstile: collapses to ~0 for the ~all who pass invisibly (I-133 BP) */
+.turnstile-slot{display:flex; justify-content:center; min-height:0}
+.turnstile-slot:empty{display:none}
+.ah-cta{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-sm);
+  font-family:var(--font-display); font-weight:600; font-size:16px; border:none; cursor:pointer;
+  width:100%; border-radius:var(--r-full); padding:15px 24px;
+  background:var(--red-600); color:var(--white); box-shadow:0 10px 24px -10px rgba(239,68,68,.5);
+  transition:filter .18s ease, opacity .18s ease;
+}
+.ah-cta:hover{filter:brightness(.96)}
+.ah-cta:focus-visible{outline:2px solid var(--gray-800); outline-offset:3px}
+.ah-cta:disabled{opacity:.55; cursor:default; box-shadow:none}
+.otp-check-head{font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--gray-800); margin:0}
+.otp-check-sub{font-size:14.5px; color:var(--gray-500); line-height:1.5; margin:0}
+.otp-check-sub .otp-email-echo{color:var(--gray-800); font-weight:600; word-break:break-all}
+.otp-links{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; font-size:13.5px}
+.otp-links button{background:transparent; border:none; cursor:pointer; color:var(--gray-600); font:inherit; text-decoration:underline; text-underline-offset:2px; padding:2px 4px; border-radius:var(--r-sm)}
+.otp-links button:hover{color:var(--gray-800)}
+.otp-links button:disabled{color:var(--gray-400); cursor:default; text-decoration:none}
+.otp-links .sep{color:var(--gray-400)}
+.otp-error{font-size:13.5px; color:var(--red-600); margin:0; min-height:1.2em; text-align:center}
+.otp-error[hidden]{display:none}
+.ah-leadin{font-size:14.5px; color:var(--gray-500); line-height:1.6; max-width:52ch; margin:2px 0 0}
+
 @media (max-width:760px){
   main{padding:40px 18px 56px; gap:var(--sp-2xl)}
   .price-grid{grid-template-columns:1fr; max-width:420px}
   .price .amount .amt{font-size:46px}
+  .anon-hero h1{font-size:30px}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important}
@@ -216,6 +269,43 @@ main{
       <span class="rb-text"><strong>No charge yet.</strong> You left checkout before finishing. Pick your plan back up whenever you're ready.</span>
       <button type="button" class="rb-close" id="returnClose" aria-label="Dismiss">&times;</button>
     </div>
+
+    <!-- ── Anonymous signup-first hero (I-138 / COPY-INVENTORY E10 §10) — shown only to logged-out arrivals ──
+         Email step + code step (web OTP, I-137). Turnstile-gated (I-133 contract). Copy: E10 hero is LOCKED;
+         the code-step strings mirror the A1b-locked OTP code step (same component voice, other surface). -->
+    <section class="anon-hero" id="anonHero" aria-live="polite">
+      <h1 id="ahHeadline">Try illi free for 7 days.</h1>
+      <p class="ah-sub" id="ahSub">No card required. Enter your email to start, and pick up right where you install.</p>
+
+      <form class="otp-form" id="otpForm" novalidate>
+        <!-- email step -->
+        <div class="otp-step" data-step="email" id="otpEmailStep">
+          <input type="email" name="email" id="otpEmail" class="otp-field" inputmode="email"
+                 autocomplete="email" autocapitalize="off" spellcheck="false"
+                 placeholder="you@example.com" aria-label="Email address">
+          <button type="submit" class="ah-cta" id="otpSubmit" disabled>Start free trial</button>
+          <p class="otp-error" id="otpEmailError" role="alert" hidden></p>
+        </div>
+        <!-- Turnstile lives between the steps so it stays alive across email→code (resend re-mints a token) -->
+        <div class="turnstile-slot" id="turnstileSlot"></div>
+        <!-- code step -->
+        <div class="otp-step" data-step="code" id="otpCodeStep" hidden>
+          <p class="otp-check-head">Check your email</p>
+          <p class="otp-check-sub">Enter the 6-digit code we just sent to <span class="otp-email-echo" id="otpEmailEcho"></span></p>
+          <input type="text" id="otpCode" class="otp-field is-code" inputmode="numeric"
+                 autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" aria-label="6-digit code">
+          <button type="submit" class="ah-cta" id="otpVerify">Verify</button>
+          <div class="otp-links">
+            <button type="button" id="otpDiff">Use a different email</button>
+            <span class="sep" aria-hidden="true">·</span>
+            <button type="button" id="otpResend">Resend code</button>
+          </div>
+          <p class="otp-error" id="otpCodeError" role="alert" hidden></p>
+        </div>
+      </form>
+
+      <p class="ah-leadin" id="ahLeadin">Then choose your plan: lock the founder rate at $2/mo for life, or go Standard. Every plan includes everything.</p>
+    </section>
 
     <section class="chooser">
       <div class="section-head">
@@ -251,7 +341,7 @@ main{
             <div class="meter-track"><div class="meter-fill" id="scarcityFill" style="width:81.2%"></div></div>
             <p class="meter-label"><strong id="scarcityCount" data-count="188">188</strong> of 1,000 founder spots left</p>
           </div>
-          <button type="button" class="plan-cta" data-cta>Start free trial</button>
+          <button type="button" class="plan-cta" data-cta data-cta-anon="Start free trial" data-cta-signed="Lock my founder rate">Start free trial</button>
           <p class="fud">7 days free. No card required.</p>
         </div>
 
@@ -268,7 +358,7 @@ main{
             <div class="meter-track"><div class="meter-fill" style="width:100%"></div></div>
             <p class="meter-label">Open to everyone, no waitlist</p>
           </div>
-          <button type="button" class="plan-cta" data-cta>Start free trial</button>
+          <button type="button" class="plan-cta" data-cta data-cta-anon="Start free trial" data-cta-signed="Choose Standard">Start free trial</button>
           <p class="fud">7 days free. No card required.</p>
         </div>
       </div>
@@ -300,7 +390,13 @@ main{
     var cta = card.querySelector('[data-cta]');
     if(cta){
       cta.addEventListener('focus', function(){ select(card); });
-      cta.addEventListener('click', function(e){ e.preventDefault(); select(card); startCheckout(card.dataset.plan, interval); });
+      cta.addEventListener('click', function(e){
+        e.preventDefault(); select(card);
+        // Anonymous arrival (I-138): the cards are context — a plan CTA routes to the
+        // signup-first hero (sign in BEFORE tier pick, §8.11 A/E), not straight to checkout.
+        if(pageMode === 'anon'){ focusSignup(); return; }
+        startCheckout(card.dataset.plan, interval);
+      });
     }
   });
 
@@ -375,16 +471,26 @@ main{
     applyInterval(interval);
   }
 
-  /* founders_remaining === 0 → Founders sold out, Standard becomes the entry */
+  /* founders_remaining === 0 → Founders muted (celebratory, never regretful, §8.11 G),
+     Standard promoted to primary. Strings are LOCKED in COPY-INVENTORY E10 (sold-out state). */
+  var isSoldOut = false;
   function soldOut(){
+    isSoldOut = true;
     var f = cardOf('founders'); if(!f) return;
     f.classList.add('is-sold-out');
-    var label = f.querySelector('.meter-label'); if(label) label.textContent = 'All 1,000 founder seats taken';
+    // Celebratory headline in the scarcity-line slot (the "X of 1,000 left" line, now resolved).
+    var label = f.querySelector('.meter-label'); if(label) label.textContent = 'The founding 1,000 are in.';
     var fill = document.getElementById('scarcityFill'); if(fill) fill.style.width = '100%';
+    // Subline replaces the founder-exchange note.
+    var note = f.querySelector('.note'); if(note) note.textContent = "Standard's the same full illi, open to everyone, nothing held back.";
+    var fud = f.querySelector('.fud'); if(fud) fud.hidden = true;   // no trial line on a closed tier
     var cta = f.querySelector('[data-cta]');
     if(cta){ cta.setAttribute('aria-disabled','true'); cta.textContent='Founder seats full'; }
     // TODO(launch): swap the sold-out CTA for the simple "notify me when a seat opens" email capture (§8.11 G).
     select(cardOf('standard') || f);
+    // Anonymous hero lead-in swaps to the sold-out variant (E10 sold-out).
+    var leadin = document.getElementById('ahLeadin');
+    if(leadin) leadin.textContent = 'Then start your plan: Standard is open to everyone at $7/mo. Every plan includes everything.';
   }
 
   /* promo ribbon — display-only; the page can SHOW a promo, never GRANT one (§2 / §3c) */
@@ -503,8 +609,9 @@ main{
       return sb.auth.getSession().then(function(out){
         var session = out && out.data && out.data.session;
         if(!session){
-          // tokenless / not signed in — honest path; web OTP sign-in is the deferred §8.11 bridge 2
-          showStub('To start your plan, open the illi extension and click <strong>Upgrade</strong>, or use the link from your illi email. Signing in here directly is coming soon.');
+          // Not signed in (or a persisted session lapsed): web OTP sign-in is now live (I-137),
+          // so drop into the signup-first hero instead of dead-ending on "open the extension".
+          hideStub(); setMode('anon'); focusSignup();
           return null;
         }
         return fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
@@ -533,6 +640,165 @@ main{
   /* ── signed identity token (web↔extension bridge): redeem on arrival for a silent web session ── */
   var identityToken = params.get('token') || null;
   var redeemPromise = identityToken ? redeemUpgradeToken(identityToken) : null;
+
+  /* ════════ arrival mode + web OTP signup-first (I-138 view + I-137 Turnstile-gated OTP) ════════
+     Anonymous arrival (no ?token, no persisted web session) → the signup-first hero leads and the
+     cards are context below (§8.11 A/E; COPY-INVENTORY E10 §10). Signed-in / token arrival → the
+     chooser as built. Web OTP is Turnstile-gated per the I-133 contract (same-origin frame of
+     /turnstile; token consumed at signInWithOtp({options:{captchaToken}})). */
+  var WEB_SESSION_KEY = 'illi-web-auth';   // MUST match getSupabase()'s storageKey
+  var pageMode = 'chooser';                // 'anon' | 'chooser'
+  var anonHero = document.getElementById('anonHero');
+
+  function applyCtaLabels(){
+    cards.forEach(function(c){
+      var cta = c.querySelector('[data-cta]');
+      if(!cta || cta.getAttribute('aria-disabled')==='true') return;   // never relabel a sold-out CTA
+      var lbl = (pageMode==='anon') ? cta.getAttribute('data-cta-anon') : cta.getAttribute('data-cta-signed');
+      if(lbl) cta.textContent = lbl;
+    });
+  }
+  function setMode(mode){
+    pageMode = (mode==='anon') ? 'anon' : 'chooser';
+    if(anonHero) anonHero.classList.toggle('is-visible', pageMode==='anon');
+    applyCtaLabels();
+    if(pageMode==='anon') ensureTurnstile();
+  }
+  function focusSignup(){
+    if(anonHero) anonHero.scrollIntoView({ behavior:'smooth', block:'start' });
+    var email = document.getElementById('otpEmail');
+    if(email) setTimeout(function(){ try{ email.focus(); }catch(e){} }, 220);
+  }
+
+  /* ── Turnstile parent side (I-133 contract) — same-origin frame of /turnstile ── */
+  var TS_IN='illi-auth', TS_OUT='illi-turnstile', TS_V=1;
+  var tsFrame=null, captchaToken='';
+  var otpSubmit=document.getElementById('otpSubmit');
+  function setSubmitEnabled(on){ if(otpSubmit) otpSubmit.disabled = !on; }
+  function ensureTurnstile(){
+    if(tsFrame) return;
+    var slot=document.getElementById('turnstileSlot'); if(!slot) return;
+    var iframe=document.createElement('iframe');
+    iframe.src='/turnstile/?chromeless=1&action=web_signup&theme=light';
+    iframe.title='Security check'; iframe.setAttribute('scrolling','no');
+    iframe.style.border='0'; iframe.style.display='block'; iframe.style.background='transparent';
+    iframe.style.width='300px'; iframe.style.height='0px';
+    function post(type,extra){
+      var win=iframe.contentWindow; if(!win) return;
+      var msg={ source:TS_IN, v:TS_V, type:type }; if(extra){ for(var k in extra) msg[k]=extra[k]; }
+      win.postMessage(msg, location.origin);   // same-origin (illi.world → illi.world)
+    }
+    window.addEventListener('message', function(e){
+      if(e.origin!==location.origin) return;
+      if(e.source!==iframe.contentWindow) return;
+      var d=e.data; if(!d || d.source!==TS_OUT || d.v!==TS_V) return;
+      if(d.type==='rendered'){
+        if(typeof d.width==='number') iframe.style.width=d.width+'px';
+        if(typeof d.height==='number') iframe.style.height=d.height+'px';
+      } else if(d.type==='token'){
+        if(typeof d.token==='string'){ captchaToken=d.token; setSubmitEnabled(true); }
+      } else if(d.type==='expired' || d.type==='error' || d.type==='timeout'){
+        captchaToken=''; setSubmitEnabled(false);
+      }
+    });
+    iframe.addEventListener('load', function(){ post('init', { theme:'light', action:'web_signup', chromeless:true }); });
+    slot.appendChild(iframe);
+    tsFrame={ reset:function(){ post('reset'); } };
+  }
+  function resetTurnstile(){ captchaToken=''; setSubmitEnabled(false); if(tsFrame) tsFrame.reset(); }
+
+  /* ── OTP flow (email step → code step) ── */
+  var otpEmail=document.getElementById('otpEmail'), otpCode=document.getElementById('otpCode');
+  var otpVerify=document.getElementById('otpVerify');
+  var otpEmailStep=document.getElementById('otpEmailStep'), otpCodeStep=document.getElementById('otpCodeStep');
+  var otpEmailError=document.getElementById('otpEmailError'), otpCodeError=document.getElementById('otpCodeError');
+  var otpEmailEcho=document.getElementById('otpEmailEcho');
+  var otpEmailValue='', otpBusy=false;
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function showEmailErr(m){ if(otpEmailError){ otpEmailError.textContent=m||''; otpEmailError.hidden=!m; } }
+  function showCodeErr(m){ if(otpCodeError){ otpCodeError.textContent=m||''; otpCodeError.hidden=!m; } }
+  function goCodeStep(){
+    if(otpEmailStep) otpEmailStep.hidden=true;
+    if(otpCodeStep) otpCodeStep.hidden=false;
+    if(otpEmailEcho) otpEmailEcho.textContent=otpEmailValue;
+    if(otpCode){ otpCode.value=''; setTimeout(function(){ try{ otpCode.focus(); }catch(e){} }, 60); }
+  }
+  function goEmailStep(){
+    if(otpCodeStep) otpCodeStep.hidden=true;
+    if(otpEmailStep) otpEmailStep.hidden=false;
+    showCodeErr('');
+    if(otpEmail){ setTimeout(function(){ try{ otpEmail.focus(); otpEmail.select(); }catch(e){} }, 60); }
+    resetTurnstile();   // mint a fresh token for the next send
+  }
+  function sendOtp(){
+    if(otpBusy) return;
+    var email=((otpEmail&&otpEmail.value)||'').trim();
+    if(!EMAIL_RE.test(email)){ showEmailErr('Enter a valid email address.'); if(otpEmail) otpEmail.focus(); return; }
+    if(!captchaToken){ showEmailErr('Just a moment — finishing the security check.'); return; }
+    showEmailErr(''); otpBusy=true; setSubmitEnabled(false);
+    var prev=otpSubmit?otpSubmit.textContent:''; if(otpSubmit) otpSubmit.textContent='Sending…';
+    getSupabase().then(function(sb){
+      return sb.auth.signInWithOtp({ email:email, options:{ captchaToken:captchaToken } });
+    }).then(function(out){
+      otpBusy=false; if(otpSubmit) otpSubmit.textContent=prev||'Start free trial';
+      captchaToken='';                                  // consumed by the send (single-use)
+      if(out && out.error){ showEmailErr('Something went wrong. Try again.'); resetTurnstile(); return; }
+      otpEmailValue=email; goCodeStep();
+      if(tsFrame) tsFrame.reset();                       // pre-mint a fresh token for a possible Resend
+    }).catch(function(){
+      otpBusy=false; if(otpSubmit) otpSubmit.textContent=prev||'Start free trial';
+      showEmailErr('Something went wrong. Try again.'); resetTurnstile();
+    });
+  }
+  function verifyOtp(){
+    if(otpBusy) return;
+    var code=((otpCode&&otpCode.value)||'').trim();
+    if(!/^\d{6}$/.test(code)){ showCodeErr('Invalid code. Try again.'); if(otpCode) otpCode.focus(); return; }
+    showCodeErr(''); otpBusy=true;
+    var prev=otpVerify?otpVerify.textContent:''; if(otpVerify){ otpVerify.disabled=true; otpVerify.textContent='Verifying…'; }
+    getSupabase().then(function(sb){
+      return sb.auth.verifyOtp({ email:otpEmailValue, token:code, type:'email' });
+    }).then(function(out){
+      otpBusy=false; if(otpVerify){ otpVerify.disabled=false; otpVerify.textContent=prev||'Verify'; }
+      if(out && out.error){ showCodeErr('Invalid code. Try again.'); if(otpCode){ otpCode.focus(); otpCode.select(); } return; }
+      if(!(out && out.data && out.data.session)){ showCodeErr('Something went wrong. Try again.'); return; }
+      onSignedIn();
+    }).catch(function(){
+      otpBusy=false; if(otpVerify){ otpVerify.disabled=false; otpVerify.textContent=prev||'Verify'; }
+      showCodeErr('Something went wrong. Try again.');
+    });
+  }
+  function resendOtp(){
+    var email=otpEmailValue; if(!email){ goEmailStep(); return; }
+    if(!captchaToken){ showCodeErr('Just a moment — finishing the security check.'); return; }
+    showCodeErr('');
+    getSupabase().then(function(sb){
+      return sb.auth.signInWithOtp({ email:email, options:{ captchaToken:captchaToken } });
+    }).then(function(out){
+      captchaToken=''; resetTurnstile();
+      if(out && out.error){ showCodeErr('Could not resend. Try again.'); }
+    }).catch(function(){ showCodeErr('Could not resend. Try again.'); resetTurnstile(); });
+  }
+  /* signed in via web OTP → become the signed-in chooser (pick/hold a plan, or just install) */
+  function onSignedIn(){
+    setMode('chooser');
+    var chooser=document.querySelector('.chooser');
+    if(chooser) chooser.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  var otpForm=document.getElementById('otpForm');
+  if(otpForm) otpForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(otpCodeStep && !otpCodeStep.hidden) verifyOtp(); else sendOtp();
+  });
+  var otpDiff=document.getElementById('otpDiff'); if(otpDiff) otpDiff.addEventListener('click', goEmailStep);
+  var otpResend=document.getElementById('otpResend'); if(otpResend) otpResend.addEventListener('click', resendOtp);
+  if(otpEmail) otpEmail.addEventListener('input', function(){ showEmailErr(''); });
+  if(otpCode) otpCode.addEventListener('input', function(){ otpCode.value=otpCode.value.replace(/\D/g,'').slice(0,6); showCodeErr(''); });
+
+  /* initial arrival mode: token OR persisted web session ⇒ chooser; else signup-first */
+  var hasPersistedSession=false;
+  try { hasPersistedSession = !!localStorage.getItem(WEB_SESSION_KEY); } catch(e){}
+  setMode((identityToken || hasPersistedSession) ? 'chooser' : 'anon');
 
   /* initial render — resolve pricing (mock), then paint */
   getPricingInfo().then(applyPricing).catch(onPricingFail);
