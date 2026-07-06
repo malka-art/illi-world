@@ -44,7 +44,7 @@
      make it a real token; until then this is the one non-JSON-backed color on the page. */
   --bone-950:#7B6D5D;
   --gray-400:#9E9E9E; --gray-500:#6E6E6E; --gray-600:#484848; --gray-700:#333333; --gray-800:#1A1A1A;
-  --red-500:#EF4444; --red-650:#CD2222;
+  --red-500:#EF4444; --red-600:#DC2626; --red-650:#CD2222;
   --green-100:#DCFCE7; --green-600:#16A34A;
   --white:#FFFFFF;
   --font-display:'Sora',sans-serif; --font-body:'Inter',sans-serif;
@@ -153,7 +153,8 @@ main{
   background:var(--bone-950); color:var(--white); box-shadow:0 8px 20px -12px rgba(75,67,57,.5);
   transition:filter .18s ease, box-shadow .18s ease, background .18s ease;
 }
-.price.is-selected .plan-cta{background:var(--red-500); box-shadow:0 10px 24px -10px rgba(239,68,68,.5)}
+/* per-surface AA fix (white-on-red body-size needs 4.5:1): selected CTA steps red-500 3.76:1 -> red-600 4.83:1. Global accent stays red-500. */
+.price.is-selected .plan-cta{background:var(--red-600); box-shadow:0 10px 24px -10px rgba(239,68,68,.5)}
 .price .plan-cta:hover{filter:brightness(.96)}
 .price .plan-cta:focus-visible{outline:2px solid var(--gray-800); outline-offset:3px}
 .price .fud{text-align:center; margin:0; font-size:13px; color:var(--gray-400)}
