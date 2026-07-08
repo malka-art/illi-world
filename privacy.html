@@ -29,7 +29,7 @@
 <body>
   <a href="/" class="back">&larr; illi.world</a>
   <h1>Privacy Policy</h1>
-  <p class="effective"><strong>Effective Date: July 5, 2026</strong></p>
+  <p class="effective"><strong>Effective Date: July 8, 2026</strong></p>
   <p class="intro">illi is a browser extension that gives you gestural speed controls for YouTube videos. This policy explains what data illi collects, why, where it goes, and what control you have over it.</p>
 
   <hr>
@@ -98,6 +98,7 @@
     <li>Data from any site other than YouTube</li>
   </ul>
   <p>illi does not keep any record of what you watch. In one case, when illi cannot read a video's channel from the page, it sends only that video's ID to noembed.com to look up the channel name. illi stores the channel name and your speed for it, never a history of the videos you watch.</p>
+  <p>At sign-in, Cloudflare's Turnstile check uses your IP to confirm you're human. illi never receives or stores it.</p>
 
   <hr>
 
@@ -124,6 +125,7 @@
     <tr><td><strong>Sentry</strong> (sentry.io)</td><td>Error details, extension version, user ID (not email)</td><td>Crash reporting</td></tr>
     <tr><td><strong>Postmark</strong> (postmarkapp.com)</td><td>Email address, email content</td><td>Sending account and billing emails</td></tr>
     <tr><td><strong>noembed.com</strong></td><td>The ID of the video you are viewing (only when illi cannot read the channel from the page)</td><td>To look up the channel name so illi can remember your preferred speed for that channel</td></tr>
+    <tr><td><strong>Cloudflare Turnstile</strong> (cloudflare.com)</td><td>Your IP address and basic browser signals, during sign-in only</td><td>Confirm you are a real person and block automated abuse of the sign-in form</td></tr>
   </table>
 
   <hr>
@@ -169,6 +171,7 @@
     <tr><td>Sentry error reports</td><td>Per Sentry's retention policy (typically 90 days)</td></tr>
     <tr><td>Stripe billing records</td><td>Per Stripe's retention policy and financial regulations</td></tr>
     <tr><td>Postmark email logs</td><td>Per Postmark's retention policy</td></tr>
+    <tr><td>Cloudflare Turnstile sign-in checks</td><td>Per Cloudflare's retention policy</td></tr>
   </table>
 
   <hr>
@@ -188,7 +191,6 @@
   <table>
     <tr><th>Permission</th><th>What It Does</th></tr>
     <tr><td><code>storage</code></td><td>Saves your settings, bookmarks, and session data locally on your device</td></tr>
-    <tr><td><code>activeTab</code></td><td>Detects when you're on a YouTube page so illi can activate</td></tr>
     <tr><td><code>alarms</code></td><td>Runs background timers for trial status checks and sync scheduling</td></tr>
     <tr><td><code>host_permissions</code> for youtube.com and youtube-nocookie.com</td><td>Allows illi to add its interface to YouTube pages</td></tr>
   </table>
