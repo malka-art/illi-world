@@ -1,0 +1,252 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>illi</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Branded confirm-first unsubscribe — I-159. The commercial-email footer link lands here with a
+     signed ?t= token. Screen 1 CONFIRMS (guards accidental unsubscribes), then posts to the
+     `unsubscribe` Edge Function which owns suppression on this path (Postmark Broadcast Suppressions
+     API). Design: Paper "illi Unsubscribe — Proposal (I-159)" Option A. Twins: account-recovered
+     (email->hosted-confirmation) + goodbye (reason survey). Tokens inlined from primitives.json /
+     semantic.json — GitHub Pages can't pull the extension's runtime CSS. Every value is var()-driven. */
+  :root {
+    --illi-bone-50: #FAF8F5; --illi-bone-100: #F5F2EE; --illi-bone-200: #F0EDE8; --illi-bone-300: #EBE7E2; --illi-bone-900: #857869;
+    --illi-gray-400: #9E9E9E; --illi-gray-500: #6E6E6E; --illi-gray-700: #333333; --illi-gray-800: #1A1A1A; --illi-gray-600: #484848;
+    --illi-red-500: #EF4444; --illi-white: #FFFFFF;
+    --illi-font-primary: Inter; --illi-font-display: Sora; --illi-shape-lg: 12px; --illi-shape-xl: 16px;
+    --illi-surface-ground: var(--illi-bone-100); --illi-surface-card: var(--illi-bone-50); --illi-surface-chip: var(--illi-bone-200);
+    --illi-border-card: var(--illi-bone-300);
+    --illi-text-primary: var(--illi-gray-800); --illi-text-body: var(--illi-gray-600); --illi-text-heading: var(--illi-gray-700);
+    --illi-text-secondary: var(--illi-gray-500); --illi-text-muted: var(--illi-gray-400);
+    --illi-accent-default: var(--illi-red-500); --illi-mark: var(--illi-bone-900); --illi-on-accent: var(--illi-white);
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px 24px; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--illi-surface-ground); font-family:var(--illi-font-primary),-apple-system,sans-serif; }
+  .card { width:100%; max-width:560px; background:var(--illi-surface-card); border:1px solid var(--illi-border-card);
+    border-radius:var(--illi-shape-xl); padding:48px 48px 40px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; }
+  .screen { display:none; }
+  .screen.active { display:flex; flex-direction:column; align-items:center; width:100%; }
+  .wordmark { display:block; flex-shrink:0; margin-bottom:28px; }
+  h1 { margin:0 0 14px; font-family:var(--illi-font-display),-apple-system,sans-serif; font-size:28px; line-height:36px; font-weight:700; color:var(--illi-text-primary); }
+  p.body { margin:0; max-width:440px; font-size:17px; line-height:27px; color:var(--illi-text-body); }
+  /* Buttons */
+  .actions { display:flex; flex-direction:column; align-items:center; gap:12px; width:100%; margin-top:32px; }
+  .btn { display:flex; align-items:center; justify-content:center; width:300px; max-width:100%;
+    padding:14px 24px; border-radius:var(--illi-shape-lg); font-family:inherit; font-size:15px; line-height:20px; font-weight:600;
+    cursor:pointer; border:1px solid transparent; transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease; }
+  .btn.primary { background:var(--illi-accent-default); color:var(--illi-on-accent); box-shadow:0 2px 8px rgba(239,68,68,.28); }
+  .btn.primary:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(239,68,68,.34); }
+  .btn.primary:active { transform:translateY(0); box-shadow:0 1px 4px rgba(239,68,68,.28); }
+  .btn.ghost { background:var(--illi-white); color:var(--illi-text-heading); border-color:var(--illi-border-card); }
+  .btn.ghost:hover { transform:translateY(-1px); }
+  .btn:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:3px; }
+  .btn[disabled] { cursor:default; opacity:.65; transform:none; box-shadow:none; }
+  .affects { margin:22px 0 0; font-size:13px; line-height:18px; color:var(--illi-text-secondary); }
+  .err { margin:16px 0 0; font-size:14px; line-height:20px; color:var(--illi-accent-default); display:none; }
+  /* Confirmation seal (matches account-recovered) */
+  .seal { display:block; flex-shrink:0; margin-bottom:22px; }
+  .seal-ring { opacity:0; animation: illiFade .5s ease-out .1s forwards; }
+  .seal-tick { opacity:0; animation: illiFade .6s ease-out .9s forwards; }
+  @keyframes illiFade { to { opacity:1; } }
+  @media (prefers-reduced-motion: reduce) { .seal-ring, .seal-tick { animation: none; opacity:1; } }
+  /* Reason survey (mirrors goodbye) */
+  .survey { display:flex; flex-direction:column; align-items:center; gap:14px; width:100%; margin-top:32px; padding-top:36px; border-top:1px solid var(--illi-border-card); }
+  .survey .prompt { font-size:13px; line-height:18px; color:var(--illi-text-muted); }
+  .chips { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; max-width:440px; }
+  .chip { padding:9px 16px; border-radius:999px; border:1px solid var(--illi-border-card); background:var(--illi-surface-chip);
+    color:var(--illi-text-heading); font-family:inherit; font-size:14px; line-height:18px; white-space:nowrap; cursor:pointer;
+    transition:background .12s ease, color .12s ease, border-color .12s ease; }
+  .chip:hover { border-color:var(--illi-gray-400); }
+  .chip.selected { background:var(--illi-accent-default); color:var(--illi-on-accent); border-color:var(--illi-accent-default); }
+  .chip:focus-visible { outline:2px solid var(--illi-gray-800); outline-offset:2px; }
+  .toast { display:none; align-items:center; gap:8px; margin-top:32px; padding:12px 20px;
+    background:var(--illi-white); border:1px solid var(--illi-border-card); border-radius:var(--illi-shape-lg);
+    box-shadow:0 2px 10px rgba(26,26,26,.08); font-size:14px; font-weight:500; color:var(--illi-text-heading); }
+  .toast svg { flex-shrink:0; }
+  .foot { margin-top:34px; padding-top:18px; border-top:1px solid var(--illi-border-card); width:100%; }
+  .foot .l1 { font-size:13px; line-height:18px; font-weight:500; color:var(--illi-text-secondary); }
+  .foot .l2 { margin-top:2px; font-size:13px; line-height:18px; color:var(--illi-text-muted); }
+  .foot a { color:var(--illi-text-muted); text-decoration:underline; }
+  @media only screen and (max-width:480px) { .card { padding-left:24px; padding-right:24px; } h1 { font-size:25px; line-height:33px; } }
+</style></head>
+<body>
+  <div class="card">
+    <!-- SCREEN 1 — CONFIRM ------------------------------------------------------ -->
+    <div class="screen active" id="s-confirm">
+      <svg class="wordmark" width="66" height="45" viewBox="0 0 162 111" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="illi">
+        <g transform="translate(0,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+        <g transform="translate(6,0)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
+        <g transform="translate(42,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+        <g transform="translate(84,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+        <g transform="translate(126,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+        <rect x="132" y="0" width="8" height="24" rx="3" fill="#EAB308"/><rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+      </svg>
+      <h1>Turn off illi emails?</h1>
+      <p class="body">You'll stop getting product tips and updates from illi. Account and billing emails will still reach you. You can turn these back on anytime.</p>
+      <div class="actions">
+        <button class="btn primary" id="do-unsub" type="button">Unsubscribe</button>
+        <button class="btn ghost" id="do-keep" type="button">Keep them</button>
+      </div>
+      <p class="affects" id="affects"></p>
+      <p class="err" id="confirm-err">Something went wrong. Please try again, or reply to hey@illi.world.</p>
+    </div>
+
+    <!-- SCREEN 1b — KEPT (chose "Keep them") ------------------------------------ -->
+    <div class="screen" id="s-kept">
+      <svg class="wordmark" width="66" height="45" viewBox="0 0 162 111" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="illi">
+        <use href="#wm-inner"/>
+      </svg>
+      <h1>You're still subscribed</h1>
+      <p class="body">Nothing changed. You'll keep getting product tips and updates from illi. You can unsubscribe anytime from any email.</p>
+    </div>
+
+    <!-- SCREEN 2 — DONE (unsubscribed) ------------------------------------------ -->
+    <div class="screen" id="s-done">
+      <svg class="wordmark" width="66" height="45" viewBox="0 0 162 111" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="illi">
+        <use href="#wm-inner"/>
+      </svg>
+      <svg class="seal" width="52" height="52" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+        <circle class="seal-ring" cx="28" cy="28" r="25" stroke="var(--illi-mark)" stroke-width="2"/>
+        <path class="seal-tick" d="M18 28.5l6.5 6.5L39 21" stroke="var(--illi-mark)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>You're unsubscribed</h1>
+      <p class="body" id="done-body">You won't get marketing emails from illi anymore. Changed your mind? You can bring them back in one click.</p>
+      <div class="actions" id="resub-actions" style="margin-top:32px;">
+        <button class="btn primary" id="do-resub" type="button">Re-subscribe</button>
+      </div>
+      <div class="survey" id="survey">
+        <div class="prompt">Mind telling us why? (optional)</div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="toast" id="toast">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 9.5l3.2 3.2L14 6" stroke="#6E6E6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Thanks, noted.</span>
+      </div>
+    </div>
+
+    <!-- SCREEN 2b — RE-SUBSCRIBED ------------------------------------------------ -->
+    <div class="screen" id="s-resub">
+      <svg class="wordmark" width="66" height="45" viewBox="0 0 162 111" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="illi">
+        <use href="#wm-inner"/>
+      </svg>
+      <svg class="seal" width="52" height="52" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+        <circle class="seal-ring" cx="28" cy="28" r="25" stroke="var(--illi-mark)" stroke-width="2"/>
+        <path class="seal-tick" d="M18 28.5l6.5 6.5L39 21" stroke="var(--illi-mark)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>You're back on the list</h1>
+      <p class="body">You'll keep getting product tips and updates from illi. You can unsubscribe again anytime.</p>
+    </div>
+
+    <div class="foot">
+      <div class="l1">illi · gesture control for video</div>
+      <div class="l2">illi.world · Questions? Just reply to <a href="mailto:hey@illi.world">hey@illi.world</a></div>
+    </div>
+  </div>
+
+  <!-- Reusable wordmark definition (real asset: design/brand/illi-logo/illi-wordmark-color-light.svg) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="wm-inner">
+    <g transform="translate(0,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+    <g transform="translate(6,0)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
+    <g transform="translate(42,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+    <g transform="translate(84,0)"><path d="M1,0 L29,0 Q30,0 30,1 L30,100 Q30,103 33,103 L35,103 Q36,103 36,104 L36,110 Q36,111 35,111 L1,111 Q0,111 0,110 L0,104 Q0,103 1,103 L3,103 Q6,103 6,100 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+    <g transform="translate(126,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#484848"/></g>
+    <rect x="132" y="0" width="8" height="24" rx="3" fill="#EAB308"/><rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
+  </g></defs></svg>
+
+  <script>
+    // Endpoint: the `unsubscribe` Edge Function (verify_jwt=false; identity comes from the signed
+    // token, never the body — same call shape the goodbye page uses for the churn survey).
+    var API = 'https://wbobpjzkasbnkxbiiioe.supabase.co/functions/v1/unsubscribe';
+    var REASONS = ['Too many emails', 'Not relevant to me', 'Never signed up', 'Something else'];
+
+    var token = new URLSearchParams(location.search).get('t') || '';
+
+    // The token payload is base64url(JSON) + '.' + sig. The payload is readable (signed, not
+    // encrypted), so we decode it CLIENT-SIDE only to show which address this affects. The server
+    // re-verifies the signature on every action — this display is never trusted for the suppression.
+    function decodeEmail(tok) {
+      try {
+        var p = tok.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+        while (p.length % 4) p += '=';
+        var claims = JSON.parse(atob(p));
+        return claims && claims.email ? claims.email : '';
+      } catch (e) { return ''; }
+    }
+
+    var email = decodeEmail(token);
+    document.getElementById('affects').textContent = email
+      ? 'This affects ' + email
+      : 'This affects your illi email address.';
+
+    function show(id) {
+      var screens = document.querySelectorAll('.screen');
+      for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+      document.getElementById(id).classList.add('active');
+    }
+
+    function post(action, extra) {
+      var body = Object.assign({ token: token, action: action }, extra || {});
+      return fetch(API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+    }
+
+    // ── Unsubscribe (the actual suppression, after the confirm) ──
+    var unsubBtn = document.getElementById('do-unsub');
+    var confirmErr = document.getElementById('confirm-err');
+    unsubBtn.addEventListener('click', function () {
+      confirmErr.style.display = 'none';
+      unsubBtn.disabled = true; unsubBtn.textContent = 'One moment…';
+      post('unsubscribe').then(function (res) {
+        if (res.ok) { show('s-done'); }
+        else { throw new Error('bad status'); }
+      }).catch(function () {
+        unsubBtn.disabled = false; unsubBtn.textContent = 'Unsubscribe';
+        confirmErr.style.display = 'block';
+      });
+    });
+
+    // ── Keep them (no change) ──
+    document.getElementById('do-keep').addEventListener('click', function () { show('s-kept'); });
+
+    // ── Re-subscribe (undo) ──
+    var resubBtn = document.getElementById('do-resub');
+    resubBtn.addEventListener('click', function () {
+      resubBtn.disabled = true; resubBtn.textContent = 'One moment…';
+      post('resubscribe').then(function (res) {
+        if (res.ok) { show('s-resub'); }
+        else { throw new Error('bad status'); }
+      }).catch(function () {
+        resubBtn.disabled = false; resubBtn.textContent = 'Re-subscribe';
+      });
+    });
+
+    // ── Optional reason survey (fire-and-forget, mirrors goodbye) ──
+    var chipsEl = document.getElementById('chips');
+    var surveyEl = document.getElementById('survey');
+    var toastEl = document.getElementById('toast');
+    var submitted = false;
+    REASONS.forEach(function (label) {
+      var b = document.createElement('button');
+      b.className = 'chip'; b.type = 'button'; b.textContent = label;
+      b.addEventListener('click', function () {
+        if (submitted) return; submitted = true;
+        b.classList.add('selected');
+        post('reason', { reason: label }).catch(function () {});
+        surveyEl.style.display = 'none';
+        // Once they've told us why they're leaving, drop the Re-subscribe offer AND the "bring them
+        // back" line — a reason is a deliberate "I'm out" signal, so the undo would read as
+        // contradictory (owner call).
+        document.getElementById('resub-actions').style.display = 'none';
+        document.getElementById('done-body').textContent = "You won't get marketing emails from illi anymore.";
+        toastEl.style.display = 'inline-flex';
+      });
+      chipsEl.appendChild(b);
+    });
+  </script>
+</body></html>
