@@ -4,7 +4,7 @@
 
 ## What illi does
 
-illi replaces YouTube's built-in speed controls with intuitive mouse gestures. Drag up to speed up (0.1x to 16x), drag down to slow down. Scrub forward and back with horizontal gestures. Pin bookmarks on the video timeline. Auto-pause when you leave the tab. Channel memory saves your preferred speed per YouTube channel automatically.
+illi replaces YouTube's built-in speed controls with intuitive mouse gestures. Drag up to speed up (0.25x to 5x), drag down to slow down. Scrub forward and back with horizontal gestures. Pin bookmarks on the video timeline. Auto-pause when you leave the tab. Channel memory saves your preferred speed per YouTube channel automatically.
 
 Everything works from anywhere on the screen. No aiming at small buttons, no memorizing keyboard shortcuts.
 
@@ -17,7 +17,7 @@ Everything works from anywhere on the screen. No aiming at small buttons, no mem
 
 ## Key features
 
-- Mouse gesture speed control (0.1x to 16x in 0.1x increments)
+- Mouse gesture speed control (0.25x to 5x)
 - Forward and back navigation without the progress bar
 - Timeline bookmarks that persist across sessions
 - Per-channel speed memory (automatic)
@@ -30,7 +30,7 @@ Everything works from anywhere on the screen. No aiming at small buttons, no mem
 - Chrome extension (Manifest V3)
 - Built with WXT framework and Preact
 - Local-first: settings and bookmarks stored on device via chrome.storage.local
-- Cloud sync available for paid subscribers (Supabase backend)
+- Cloud sync for active accounts — free trial and paid (Supabase backend)
 - Email OTP authentication (no passwords)
 - Stripe for payments, Sentry for error monitoring, Postmark for transactional email
 
@@ -50,5 +50,5 @@ Everything works from anywhere on the screen. No aiming at small buttons, no mem
 
 ## Contact
 
-- Email: malka@wallflowerstudio.ca
-- Made by Wallflower Studio (Ontario, Canada)
+- Email: support@illi.world
+- Made by Wallflower Studio (Quebec, Canada)
