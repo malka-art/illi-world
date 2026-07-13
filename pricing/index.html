@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>illi — Pricing</title>
+<!-- /pricing was retired: /upgrade is illi's one canonical pricing + checkout surface (I-103 §8).
+     GitHub Pages can't issue a server-side 301, so this page redirects client-side and declares
+     /upgrade canonical so search engines consolidate the two. See ISSUES I-082 / I-103. -->
+<link rel="canonical" href="https://illi.world/upgrade">
+<meta http-equiv="refresh" content="0; url=/upgrade">
+<script>
+  // Redirect immediately, carry any query string / hash through, and don't leave a
+  // /pricing entry in the back-button history (replace, not assign).
+  location.replace('/upgrade' + location.search + location.hash);
+</script>
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#FAF8F5; color:#666;
+         font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+  .m { text-align:center; padding:40px 24px; font-size:16px; line-height:1.6; }
+  a { color:#EF4444; font-weight:600; }
+</style>
+</head>
+<body>
+  <div class="m">
+    Taking you to illi pricing&hellip;
+    <noscript><br>If you are not redirected, <a href="/upgrade">see illi pricing and plans</a>.</noscript>
+  </div>
+</body>
+</html>
