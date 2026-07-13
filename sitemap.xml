@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Public, indexable pages only. Transactional / token-gated surfaces (/upgrade, /welcome,
+     /goodbye, /feedback, /unsubscribe, /account-recovered, /turnstile) are noindex and excluded. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://illi.world/</loc></url>
+  <url><loc>https://illi.world/privacy</loc></url>
+  <url><loc>https://illi.world/terms</loc></url>
+  <url><loc>https://illi.world/fr/privacy</loc></url>
+  <url><loc>https://illi.world/fr/terms</loc></url>
+</urlset>
