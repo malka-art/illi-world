@@ -26,6 +26,8 @@
     .back:hover { color: #333; }
     .lang { float: right; color: #666; text-decoration: none; font-size: 14px; }
     .lang:hover { color: #333; }
+    .summary { background: #f7f7f9; border: 1px solid #e6e6ec; border-radius: 8px; padding: 18px 20px; margin-bottom: 28px; font-size: 15px; }
+    .summary strong { color: #111; }
   </style>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -35,29 +37,35 @@
   <a href="/" class="back">&larr; illi.world</a>
   <a href="/fr/privacy" class="lang">Français</a>
   <h1>Privacy Policy</h1>
-  <p class="effective"><strong>Effective Date: July 8, 2026</strong></p>
-  <p class="intro">illi is a browser extension that gives you gestural speed controls for YouTube videos. This policy explains what data illi collects, why, where it goes, and what control you have over it.</p>
+  <p class="effective"><strong>Effective Date: July 14, 2026</strong></p>
+
+  <div class="summary">
+    <strong>The short version.</strong> illi signs you in with your email (no passwords) and syncs your settings, bookmarks, and progress across your devices. We collect limited usage data that you can switch off, and we never record what you watch. Our servers and providers are in the United States, so your information is stored there. We use a few trusted providers, we do not sell your data, and you can delete your account and data at any time from within illi. Privacy questions go to our privacy officer, Malka Neuman, at <a href="mailto:privacy@illi.world">privacy@illi.world</a>.
+  </div>
+
+  <p class="intro">illi is a browser extension that adds mouse-gesture controls to YouTube: playback speed, navigation, bookmarks, and auto-pause. This policy explains what data illi collects, why, where it goes, and what control you have over it.</p>
 
   <hr>
 
   <h2>1. What Data We Collect</h2>
 
   <h3>1.1 Data Stored on Your Device</h3>
-  <p>illi is local-first: the following data is stored on your device using Chrome's storage API. While you have an active account (free trial or paid), most of it also syncs across your devices so it stays consistent — see Section 1.4.</p>
+  <p>illi is local-first: the following data is stored on your device using Chrome's storage API. While you have an active account (free trial or paid), most of it also syncs across your devices so it stays consistent (see Section 1.4).</p>
   <ul>
-    <li><strong>Preferences</strong> — playback speed, auto-pause setting, mouse type, hub position</li>
-    <li><strong>Channel memory</strong> — your preferred playback speed per YouTube channel</li>
-    <li><strong>Bookmarks</strong> — video timestamps you've saved, stored by video ID</li>
-    <li><strong>Resume positions</strong> — where you left off in videos</li>
-    <li><strong>Onboarding state</strong> — whether you've completed the tutorial</li>
+    <li><strong>Preferences</strong>: playback speed, auto-pause setting, mouse type, hub position</li>
+    <li><strong>Channel memory</strong>: your preferred playback speed per YouTube channel</li>
+    <li><strong>Bookmarks</strong>: video timestamps you've saved, stored by video ID</li>
+    <li><strong>Resume positions</strong>: where you left off in videos</li>
+    <li><strong>Onboarding state</strong>: whether you've completed the tutorial</li>
   </ul>
 
   <h3>1.2 Account Data</h3>
   <p>When you create an account, we collect and store:</p>
   <ul>
-    <li><strong>Email address</strong> — used for sign-in (one-time passcode, no passwords), billing notifications, and account-related emails</li>
-    <li><strong>Account metadata</strong> — subscription tier (trial, paid, founders), trial expiry date, onboarding completion flag</li>
-    <li><strong>Referral data</strong> — if you use a referral link, we record which user referred you</li>
+    <li><strong>Email address</strong>: used for sign-in (one-time passcode, no passwords), billing notifications, and account-related emails</li>
+    <li><strong>Account metadata</strong>: subscription tier (trial, paid, founders), trial expiry date, onboarding completion flag, and whether you have opted in to product emails</li>
+    <li><strong>Referral data</strong>: if you use a referral link, we record which user referred you</li>
+    <li><strong>Cancellation survey</strong>: if you cancel your subscription or uninstall illi and choose to tell us why, we store your reason and any note you add</li>
   </ul>
   <p>This data is stored in our database (hosted by Supabase).</p>
 
@@ -65,25 +73,28 @@
   <p>When you subscribe, payments are handled entirely by Stripe. We store only a Stripe customer ID and subscription ID to manage your plan status. We never receive or store your card number, billing address, or other payment details.</p>
 
   <h3>1.4 Cloud Sync Data</h3>
-  <p>While you have an active account — during your free trial and on a paid plan — the following data syncs to our servers so it works across your devices:</p>
+  <p>While you have an active account (during your free trial and on a paid plan), the following data syncs to our servers so it works across your devices:</p>
   <ul>
-    <li><strong>Bookmarks</strong> — video ID, timestamp, optional label, platform</li>
-    <li><strong>Preferences</strong> — playback speed, auto-pause, mouse type</li>
-    <li><strong>Channel settings</strong> — your preferred playback speed per channel and whether illi gestures are disabled there</li>
-    <li><strong>Resume positions</strong> — last playback position per video</li>
+    <li><strong>Bookmarks</strong>: video ID, timestamp, optional label, platform</li>
+    <li><strong>Preferences</strong>: playback speed, auto-pause, mouse type</li>
+    <li><strong>Channel settings</strong>: your preferred playback speed per channel and whether illi gestures are disabled there</li>
+    <li><strong>Resume positions</strong>: last playback position per video</li>
   </ul>
 
   <h3>1.5 Usage Data</h3>
-  <p>We collect usage statistics to understand which features are valuable and to find bugs. This data is linked to your user ID (a random identifier, not your email) and includes:</p>
+  <p>We collect usage analytics to understand which features are valuable and to find bugs. This data is linked to your account through your user ID (a random identifier, not your email), so <strong>it is not anonymous</strong>. It never includes what you watch. It covers:</p>
   <ul>
-    <li><strong>Gesture events</strong> — gesture type (speed, navigation, bookmark), direction, final speed value</li>
-    <li><strong>Feature interactions</strong> — which features you use (auto-pause, bookmarks)</li>
-    <li><strong>Session duration</strong> — how long illi is active per page visit</li>
-    <li><strong>Platform</strong> — which site you're on (e.g. "youtube"), as a single word, not a URL</li>
+    <li><strong>Gesture and control events</strong>: the gesture type (speed, navigation, or bookmark), its direction, and the playback speed you set</li>
+    <li><strong>Feature and setting use</strong>: which features and settings you use (for example auto-pause, bookmarks, channel memory, and setting changes)</li>
+    <li><strong>Account lifecycle events</strong>: a small number of milestone events tied to your account, such as sign-up, activation, trial start, upgrading to a paid plan, and cancellation</li>
+    <li><strong>Platform</strong>: which supported site you're on (e.g. "youtube"), as a single word, not a URL</li>
   </ul>
-  <p>Each event is sanitized before storage. Only the fields listed above are accepted; everything else is stripped both in the extension and on the server.</p>
+  <p>You can turn this off at any time (see Section 7). Each event is sanitized before storage: only the fields listed above are accepted, and everything else is stripped, both in the extension and on our server.</p>
 
-  <h3>1.6 Error Reports</h3>
+  <h3>1.6 Feedback You Send</h3>
+  <p>When you send feedback through illi, we store your message, its category (such as idea, bug, or other), and which page you were on. If you are signed in, your feedback is linked to your account and email. You can also send feedback without an account, in which case it is not linked to you. To prevent abuse, we store a one-way hashed form of your IP address (not the IP address itself) and your browser's user-agent string. Bug reports may be emailed to our team so we can follow up.</p>
+
+  <h3>1.7 Error Reports</h3>
   <p>When illi crashes or encounters a bug, an error report is sent to Sentry (our error tracking service). Reports include:</p>
   <ul>
     <li>JavaScript stack traces and error messages</li>
@@ -93,12 +104,13 @@
   </ul>
   <p>Error reports do not include what you're watching, your browsing history, or your email address.</p>
 
-  <h3>1.7 What We Do Not Collect</h3>
+  <h3>1.8 What We Do Not Collect</h3>
   <ul>
     <li>Video URLs, video titles, or any information about what you watch</li>
     <li>Browsing history</li>
-    <li>Cookies or third-party tracking pixels</li>
-    <li>Device fingerprints or IP addresses (our infrastructure may log IPs at the network level, but we do not store or use them)</li>
+    <li>Advertising cookies or third-party tracking pixels</li>
+    <li>Device fingerprints or IP addresses (our infrastructure may log IPs at the network level, but we do not store or use them; the one exception is the hashed IP for feedback abuse-prevention in Section 1.6)</li>
+    <li>Camera, video, or biometric data</li>
     <li>Data from any site other than YouTube</li>
   </ul>
   <p>illi does not keep any record of what you watch. In one case, when illi cannot read a video's channel from the page, it sends only that video's ID to noembed.com to look up the channel name. illi stores the channel name and your speed for it, never a history of the videos you watch.</p>
@@ -110,31 +122,56 @@
   <table>
     <tr><th>Data</th><th>Purpose</th></tr>
     <tr><td>Preferences and bookmarks</td><td>Provide a consistent experience across sessions (and across your devices while your account is active)</td></tr>
-    <tr><td>Email address</td><td>Sign-in authentication, billing notifications, account communications</td></tr>
+    <tr><td>Email address</td><td>Sign-in authentication, billing notifications, account communications, and product emails if you opt in</td></tr>
     <tr><td>Subscription and payment IDs</td><td>Manage your plan, process upgrades and cancellations</td></tr>
     <tr><td>Referral data</td><td>Track referral rewards</td></tr>
-    <tr><td>Usage data</td><td>Understand feature adoption, identify bugs, guide product decisions</td></tr>
+    <tr><td>Usage data</td><td>Understand feature adoption and product milestones, identify bugs, guide product decisions</td></tr>
+    <tr><td>Feedback and cancellation survey</td><td>Improve illi and understand why people leave</td></tr>
     <tr><td>Error reports</td><td>Diagnose and fix crashes</td></tr>
   </table>
   <p>We do not use any of your data for advertising, and we do not sell or rent your data to anyone.</p>
 
   <hr>
 
-  <h2>3. Who Receives Your Data</h2>
+  <h2>3. Legal Bases for EU and UK Users</h2>
+  <p>This section matters only if you are in the EU or UK, where the law asks us to name the specific reason we are allowed to use your data. Ours are:</p>
+  <ul>
+    <li><strong>Contract</strong>: to provide illi and run your account, which is what you signed up for.</li>
+    <li><strong>Consent</strong>: optional things like product emails and usage analytics happen only because you agreed, and you can withdraw that at any time.</li>
+    <li><strong>Legitimate interests</strong>: keeping illi secure and improving it, balanced against your rights.</li>
+  </ul>
+
+  <hr>
+
+  <h2>4. Who Receives Your Data</h2>
   <p>We use the following third-party services to operate illi. Each receives only the data it needs:</p>
   <table>
     <tr><th>Service</th><th>What It Receives</th><th>Why</th></tr>
-    <tr><td><strong>Supabase</strong> (supabase.com)</td><td>Email, account data, synced preferences/bookmarks, usage events</td><td>Authentication, database, server functions</td></tr>
-    <tr><td><strong>Stripe</strong> (stripe.com)</td><td>Email (to create a customer record), plan selection</td><td>Payment processing</td></tr>
+    <tr><td><strong>Supabase</strong> (supabase.com)</td><td>Email, account data, synced preferences/bookmarks, usage events, feedback</td><td>Authentication, database, server functions</td></tr>
+    <tr><td><strong>Stripe</strong> (stripe.com)</td><td>Email (to create a customer record), plan selection, payment details you enter directly with Stripe</td><td>Payment processing</td></tr>
     <tr><td><strong>Sentry</strong> (sentry.io)</td><td>Error details, extension version, user ID (not email)</td><td>Crash reporting</td></tr>
     <tr><td><strong>Postmark</strong> (postmarkapp.com)</td><td>Email address, email content</td><td>Sending account and billing emails</td></tr>
     <tr><td><strong>noembed.com</strong></td><td>The ID of the video you are viewing (only when illi cannot read the channel from the page)</td><td>To look up the channel name so illi can remember your preferred speed for that channel</td></tr>
     <tr><td><strong>Cloudflare Turnstile</strong> (cloudflare.com)</td><td>Your IP address and basic browser signals, during sign-in only</td><td>Confirm you are a real person and block automated abuse of the sign-in form</td></tr>
+    <tr><td><strong>GitHub Pages</strong> (github.com)</td><td>Standard web server logs (such as your IP address) when you visit illi.world</td><td>Hosting our website and legal pages</td></tr>
+    <tr><td><strong>Google / Chrome Web Store</strong> (google.com)</td><td>Whatever Google collects when you install or update an extension</td><td>Distributing illi and delivering updates</td></tr>
   </table>
+  <p>We do not sell your data or share it for advertising.</p>
 
   <hr>
 
-  <h2>4. Your Rights and Controls</h2>
+  <h2>5. Where Your Data Is Stored, and Transfers Outside Québec</h2>
+  <p>Our servers and service providers are located in the <strong>United States</strong>, which means your personal information is stored and processed there. While your information is in the United States, it may be accessible to US courts, law enforcement, and government authorities under US law.</p>
+  <p>As a Québec business, we assess whether your information will be adequately protected before using providers outside Québec, and we rely on our agreements with those providers to require them to protect it and to use it only for the purposes we set.</p>
+
+  <hr>
+
+  <h2>6. Cookies, Local Storage, and Tracking</h2>
+  <p>illi stores your settings, bookmarks, and progress on your own device using your browser's local storage, so the extension works and remembers your preferences. If you are signed in, this syncs to our servers. Our usage analytics are first-party (our own servers), not a third-party tracking service, and you can turn them off. We use no advertising cookies, and our website does not use tracking or advertising cookies.</p>
+
+  <hr>
+
+  <h2>7. Your Rights and Controls</h2>
 
   <h3>Opt Out of Usage Data</h3>
   <p>You can stop all usage data collection at any time:</p>
@@ -144,17 +181,21 @@
   </ol>
   <p>When disabled, no usage events are sent to our servers. All features continue to work normally.</p>
 
-  <h3>Access Your Data</h3>
-  <p>You can request a copy of the data we hold about you by emailing us at the address in Section 9.</p>
+  <h3>Access or Correct Your Data</h3>
+  <p>You can request a copy of the data we hold about you, or ask us to correct it, by emailing our privacy officer at the address in Section 14.</p>
 
   <h3>Delete Your Data</h3>
-  <p>You can request full deletion of your account and all associated data by emailing us at the address in Section 9. Upon deletion:</p>
+  <p>You can delete your account and all associated data yourself from within illi, in the extension popup or in Advanced Settings (you'll be asked to type <code>DELETE</code> to confirm). Deleting your account:</p>
   <ul>
-    <li>Your profile, preferences, bookmarks, and usage data are permanently removed from our servers</li>
-    <li>Stripe retains billing records as required by financial regulations</li>
-    <li>Sentry error data expires per their retention policy (typically 90 days)</li>
+    <li>Cancels your subscription immediately</li>
+    <li>Starts a <strong>30-day recovery window</strong>: your data is scheduled for permanent deletion but can be restored if you sign back in, or use the link in the confirmation email, before the window ends. We send a reminder about 3 days before it closes.</li>
+    <li>After 30 days, your profile, preferences, bookmarks, progress, channel settings, and usage data are permanently removed from our servers, and your customer record is deleted from Stripe.</li>
   </ul>
-  <p>If you simply uninstall illi without requesting deletion, your local data is removed with the extension. Server-side data is retained until you request deletion.</p>
+  <p>If you were a paid subscriber, recovery restores your account and data, but you will need to resubscribe (your subscription was cancelled when you deleted the account). Stripe retains billing and invoice records as required by financial and tax law, and Sentry error data expires per its retention policy (typically 90 days). You can also email us to request deletion.</p>
+  <p>If you simply uninstall illi without deleting your account, your local data is removed with the extension. Your server-side data is retained until you delete your account or request deletion.</p>
+
+  <h3>Withdraw Consent</h3>
+  <p>Optional things like product emails and usage analytics happen only with your consent, and you can withdraw it at any time: turn off analytics in settings, or unsubscribe from any product email.</p>
 
   <h3>Cancel Your Subscription</h3>
   <p>You can cancel anytime through the Stripe Customer Portal, accessible from the illi extension popup. After cancellation, your subscription remains active until the end of your current billing period, then your account transitions to an expired state.</p>
@@ -162,16 +203,25 @@
   <h3>Data Portability</h3>
   <p>If you need your data in a portable format, contact us and we will provide it within 30 days.</p>
 
+  <h3>Where to Complain</h3>
+  <ul>
+    <li><strong>Québec (Law 25) and Canada (PIPEDA):</strong> you can complain to the <strong>Commission d'accès à l'information du Québec</strong> (<a href="https://www.cai.gouv.qc.ca">cai.gouv.qc.ca</a>) or the <strong>Office of the Privacy Commissioner of Canada</strong> (<a href="https://www.priv.gc.ca">priv.gc.ca</a>).</li>
+    <li><strong>EU and UK (GDPR):</strong> you have the rights of access, rectification, erasure, restriction, objection, and portability, the right to withdraw consent, and the right to complain to your local data protection authority.</li>
+    <li><strong>California (CCPA):</strong> if the CCPA applies to us, you have the rights to know, delete, and correct your information, and to opt out of its sale or sharing. We do not sell or share your personal information for advertising.</li>
+  </ul>
+
   <hr>
 
-  <h2>5. Data Retention</h2>
+  <h2>8. Data Retention</h2>
   <table>
     <tr><th>Data</th><th>Retention</th></tr>
     <tr><td>Local data (on your device)</td><td>Until you clear extension data or uninstall</td></tr>
-    <tr><td>Account and profile data</td><td>While your account exists, deleted on request</td></tr>
-    <tr><td>Cloud-synced bookmarks and preferences</td><td>While your account exists, deleted on request</td></tr>
-    <tr><td>Soft-deleted bookmarks (cloud sync)</td><td>Permanently purged 30 days after deletion</td></tr>
-    <tr><td>Usage event records</td><td>Retained while your account exists, deleted on account deletion; aggregate statistics retained</td></tr>
+    <tr><td>Account and profile data</td><td>While your account exists; on deletion, permanently removed after the 30-day recovery window</td></tr>
+    <tr><td>Cloud-synced bookmarks, progress, preferences, and channel settings</td><td>While your account exists; removed when your account is deleted</td></tr>
+    <tr><td>Items you delete in illi (such as bookmarks)</td><td>Hidden and removed from your active data right away; permanently removed when your account is deleted</td></tr>
+    <tr><td>Usage event records</td><td>Retained while your account exists, deleted on account deletion; aggregate, non-identifying statistics may be kept</td></tr>
+    <tr><td>Feedback</td><td>Kept while useful; feedback sent without an account is not linked to you; account-linked feedback is removed or anonymized on account deletion</td></tr>
+    <tr><td>Cancellation survey responses</td><td>Kept to understand why people leave; anonymized or aggregated over time</td></tr>
     <tr><td>Sentry error reports</td><td>Per Sentry's retention policy (typically 90 days)</td></tr>
     <tr><td>Stripe billing records</td><td>Per Stripe's retention policy and financial regulations</td></tr>
     <tr><td>Postmark email logs</td><td>Per Postmark's retention policy</td></tr>
@@ -180,10 +230,11 @@
 
   <hr>
 
-  <h2>6. Data Security</h2>
+  <h2>9. Data Security</h2>
+  <p>No online service can promise perfect security, but we take reasonable measures to protect your information:</p>
   <ul>
     <li>All data in transit uses HTTPS/TLS encryption</li>
-    <li>Cloud data is stored in Supabase's managed PostgreSQL database with Row Level Security enabled — each user can only access their own data</li>
+    <li>Cloud data is stored in Supabase's managed PostgreSQL database with Row Level Security enabled, so each user can only access their own data</li>
     <li>Authentication uses one-time passcodes (no passwords are stored)</li>
     <li>Server-side functions use restricted API keys; the full-access service key is never exposed to the extension</li>
     <li>Usage event user IDs are attached server-side from authenticated tokens, not sent from the extension, preventing spoofing</li>
@@ -191,30 +242,34 @@
 
   <hr>
 
-  <h2>7. Extension Permissions</h2>
+  <h2>10. If a Confidentiality Incident Happens</h2>
+  <p>If a security incident occurs that presents a risk of serious harm to you, we will notify Québec's Commission d'accès à l'information and the people affected, as Law 25 requires, and we keep a record of any such incidents.</p>
+
+  <hr>
+
+  <h2>11. Extension Permissions</h2>
   <table>
     <tr><th>Permission</th><th>What It Does</th></tr>
     <tr><td><code>storage</code></td><td>Saves your settings, bookmarks, and session data locally on your device</td></tr>
     <tr><td><code>alarms</code></td><td>Runs background timers for trial status checks and sync scheduling</td></tr>
     <tr><td><code>host_permissions</code> for youtube.com and youtube-nocookie.com</td><td>Allows illi to add its interface to YouTube pages</td></tr>
   </table>
-  <p>illi does not request access to any other websites.</p>
+  <p>illi does not access any other websites. If we add support for other video sites in the future, illi will ask for your permission before accessing them.</p>
 
   <hr>
 
-  <h2>8. Children's Privacy</h2>
-  <p>illi is not directed at children under 13. We do not knowingly collect data from children under 13. If you believe a child has provided us with personal data, please contact us and we will delete it.</p>
+  <h2>12. Children's Privacy</h2>
+  <p>illi is not directed at children under 13 (or the minimum age where you live). We do not knowingly collect data from children under 13. If you believe a child has provided us with personal data, please contact us and we will delete it.</p>
 
   <hr>
 
-  <h2>9. Contact</h2>
-  <p>For any questions about this policy, to request your data, or to request account deletion:</p>
-  <p><strong>Email:</strong> support@illi.world</p>
-  <p>We aim to respond to all requests within 30 days.</p>
+  <h2>13. Changes to This Policy</h2>
+  <p>We may update this policy as illi evolves. The effective date at the top will always reflect the latest version. If we make material changes to how we handle your data or to your rights, we will notify you through the extension or by email before the changes take effect. Continued use after changes constitutes acceptance of the updated policy.</p>
 
   <hr>
 
-  <h2>10. Changes to This Policy</h2>
-  <p>We may update this policy as illi evolves. The effective date at the top will always reflect the latest version. If we make material changes to how we handle your data, we will notify you through the extension or by email before the changes take effect. Continued use after changes constitutes acceptance of the updated policy.</p>
+  <h2>14. Who We Are, the Laws We Follow, and How to Reach Us</h2>
+  <p>illi is made by <strong>Wallflower Studio Inc.</strong>, based in Québec, Canada. Because we are a Québec business, we follow Canadian privacy law (Québec's Law 25 and PIPEDA). Because illi is available worldwide, we also respect the GDPR for users in the EU and UK and follow applicable US law. illi handles no health, banking, or biometric data.</p>
+  <p>The person responsible for protecting your personal information (our privacy officer, as Law 25 requires) is <strong>Malka Neuman, Founder</strong>, reachable at <strong>privacy@illi.world</strong>. For general questions, contact <strong>support@illi.world</strong>. We aim to respond to all requests within 30 days.</p>
 </body>
 </html>

@@ -26,6 +26,8 @@
     .back:hover { color: #333; }
     .lang { float: right; color: #666; text-decoration: none; font-size: 14px; }
     .lang:hover { color: #333; }
+    .summary { background: #f7f7f9; border: 1px solid #e6e6ec; border-radius: 8px; padding: 18px 20px; margin-bottom: 28px; font-size: 15px; }
+    .summary strong { color: #111; }
   </style>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -35,29 +37,35 @@
   <a href="/" class="back">&larr; illi.world</a>
   <a href="/privacy" class="lang">English</a>
   <h1>Politique de confidentialité</h1>
-  <p class="effective"><strong>Date d'entrée en vigueur : 8 juillet 2026</strong></p>
-  <p class="intro">illi est une extension de navigateur qui vous offre des commandes de vitesse par gestes pour les vidéos YouTube. La présente politique explique quels renseignements illi recueille, pourquoi, où ils vont et quel contrôle vous exercez sur eux.</p>
+  <p class="effective"><strong>Date d'entrée en vigueur&#160;: 14 juillet 2026</strong></p>
+
+  <div class="summary">
+    <strong>En bref.</strong> illi vous connecte au moyen de votre adresse courriel (aucun mot de passe) et synchronise vos réglages, vos signets et votre progression entre vos appareils. Nous recueillons des données d'utilisation limitées que vous pouvez désactiver, et nous n'enregistrons jamais ce que vous regardez. Nos serveurs et nos fournisseurs sont situés aux États-Unis&#160;; vos renseignements y sont donc conservés. Nous faisons appel à quelques fournisseurs de confiance, nous ne vendons pas vos renseignements, et vous pouvez supprimer votre compte et vos données à tout moment depuis illi. Pour toute question relative à la confidentialité, communiquez avec notre responsable de la protection des renseignements personnels, Malka Neuman, à <a href="mailto:privacy@illi.world">privacy@illi.world</a>.
+  </div>
+
+  <p class="intro">illi est une extension de navigateur qui ajoute des commandes par gestes de la souris à YouTube&#160;: vitesse de lecture, navigation, signets et pause automatique. La présente politique explique quels renseignements illi recueille, pourquoi, où ils vont et quel contrôle vous exercez sur eux.</p>
 
   <hr>
 
   <h2>1. Renseignements que nous recueillons</h2>
 
   <h3>1.1 Données stockées sur votre appareil</h3>
-  <p>illi fonctionne d'abord en local : les données suivantes sont stockées sur votre appareil au moyen de l'API de stockage de Chrome. Tant que votre compte est actif (essai gratuit ou abonnement payant), la plupart d'entre elles sont aussi synchronisées entre vos appareils afin de rester cohérentes — voir la section 1.4.</p>
+  <p>illi fonctionne d'abord en local&#160;: les données suivantes sont stockées sur votre appareil au moyen de l'API de stockage de Chrome. Tant que votre compte est actif (essai gratuit ou abonnement payant), la plupart d'entre elles sont aussi synchronisées entre vos appareils afin de rester cohérentes (voir la section 1.4).</p>
   <ul>
-    <li><strong>Préférences</strong> — vitesse de lecture, réglage de la pause automatique, type de souris, position du concentrateur</li>
-    <li><strong>Mémoire des chaînes</strong> — votre vitesse de lecture préférée par chaîne YouTube</li>
-    <li><strong>Signets</strong> — les moments de vidéo que vous avez enregistrés, conservés par identifiant de vidéo</li>
-    <li><strong>Positions de reprise</strong> — l'endroit où vous vous êtes arrêté dans les vidéos</li>
-    <li><strong>État d'intégration</strong> — si vous avez terminé le tutoriel</li>
+    <li><strong>Préférences</strong>&#160;: vitesse de lecture, réglage de la pause automatique, type de souris, position du concentrateur</li>
+    <li><strong>Mémoire des chaînes</strong>&#160;: votre vitesse de lecture préférée par chaîne YouTube</li>
+    <li><strong>Signets</strong>&#160;: les moments de vidéo que vous avez enregistrés, conservés par identifiant de vidéo</li>
+    <li><strong>Positions de reprise</strong>&#160;: l'endroit où vous vous êtes arrêté dans les vidéos</li>
+    <li><strong>État d'intégration</strong>&#160;: si vous avez terminé le tutoriel</li>
   </ul>
 
   <h3>1.2 Données de compte</h3>
-  <p>Lorsque vous créez un compte, nous recueillons et conservons :</p>
+  <p>Lorsque vous créez un compte, nous recueillons et conservons&#160;:</p>
   <ul>
-    <li><strong>Adresse courriel</strong> — utilisée pour la connexion (code à usage unique, sans mot de passe), les avis de facturation et les courriels liés au compte</li>
-    <li><strong>Métadonnées de compte</strong> — niveau d'abonnement (essai, payant, fondateurs), date d'expiration de l'essai, indicateur d'intégration terminée</li>
-    <li><strong>Données de parrainage</strong> — si vous utilisez un lien de parrainage, nous enregistrons quel utilisateur vous a parrainé</li>
+    <li><strong>Adresse courriel</strong>&#160;: utilisée pour la connexion (code à usage unique, sans mot de passe), les avis de facturation et les courriels liés au compte</li>
+    <li><strong>Métadonnées de compte</strong>&#160;: niveau d'abonnement (essai, payant, fondateurs), date d'expiration de l'essai, indicateur d'intégration terminée, et si vous avez consenti à recevoir des courriels au sujet du produit</li>
+    <li><strong>Données de parrainage</strong>&#160;: si vous utilisez un lien de parrainage, nous enregistrons quel utilisateur vous a parrainé</li>
+    <li><strong>Sondage d'annulation</strong>&#160;: si vous annulez votre abonnement ou désinstallez illi et choisissez de nous dire pourquoi, nous conservons votre raison et toute note que vous ajoutez</li>
   </ul>
   <p>Ces données sont conservées dans notre base de données (hébergée par Supabase).</p>
 
@@ -65,40 +73,44 @@
   <p>Lorsque vous vous abonnez, les paiements sont entièrement traités par Stripe. Nous ne conservons qu'un identifiant client Stripe et un identifiant d'abonnement afin de gérer l'état de votre forfait. Nous ne recevons ni ne conservons jamais votre numéro de carte, votre adresse de facturation ou d'autres renseignements de paiement.</p>
 
   <h3>1.4 Données de synchronisation infonuagique</h3>
-  <p>Tant que votre compte est actif — pendant votre essai gratuit et sur un forfait payant — les données suivantes sont synchronisées vers nos serveurs afin de fonctionner sur tous vos appareils :</p>
+  <p>Tant que votre compte est actif (pendant votre essai gratuit et sur un forfait payant), les données suivantes sont synchronisées vers nos serveurs afin de fonctionner sur tous vos appareils&#160;:</p>
   <ul>
-    <li><strong>Signets</strong> — identifiant de vidéo, horodatage, étiquette facultative, plateforme</li>
-    <li><strong>Préférences</strong> — vitesse de lecture, pause automatique, type de souris</li>
-    <li><strong>Réglages de chaîne</strong> — votre vitesse de lecture préférée par chaîne et le fait que les gestes illi y soient désactivés ou non</li>
-    <li><strong>Positions de reprise</strong> — dernière position de lecture par vidéo</li>
+    <li><strong>Signets</strong>&#160;: identifiant de vidéo, horodatage, étiquette facultative, plateforme</li>
+    <li><strong>Préférences</strong>&#160;: vitesse de lecture, pause automatique, type de souris</li>
+    <li><strong>Réglages de chaîne</strong>&#160;: votre vitesse de lecture préférée par chaîne et le fait que les gestes illi y soient désactivés ou non</li>
+    <li><strong>Positions de reprise</strong>&#160;: dernière position de lecture par vidéo</li>
   </ul>
 
   <h3>1.5 Données d'utilisation</h3>
-  <p>Nous recueillons des statistiques d'utilisation afin de comprendre quelles fonctionnalités sont utiles et de repérer les bogues. Ces données sont liées à votre identifiant d'utilisateur (un identifiant aléatoire, et non votre adresse courriel) et comprennent :</p>
+  <p>Nous recueillons des données d'utilisation afin de comprendre quelles fonctionnalités sont utiles et de repérer les bogues. Ces données sont liées à votre compte au moyen de votre identifiant d'utilisateur (un identifiant aléatoire, et non votre adresse courriel)&#160;; <strong>elles ne sont donc pas anonymes</strong>. Elles n'incluent jamais ce que vous regardez. Elles comprennent&#160;:</p>
   <ul>
-    <li><strong>Événements de geste</strong> — type de geste (vitesse, navigation, signet), direction, valeur de vitesse finale</li>
-    <li><strong>Interactions avec les fonctionnalités</strong> — quelles fonctionnalités vous utilisez (pause automatique, signets)</li>
-    <li><strong>Durée de session</strong> — combien de temps illi est actif par visite de page</li>
-    <li><strong>Plateforme</strong> — sur quel site vous êtes (p. ex. « youtube »), sous forme d'un seul mot, et non d'une adresse URL</li>
+    <li><strong>Événements de geste et de commande</strong>&#160;: le type de geste (vitesse, navigation ou signet), sa direction et la vitesse de lecture que vous définissez</li>
+    <li><strong>Utilisation des fonctionnalités et des réglages</strong>&#160;: quelles fonctionnalités et quels réglages vous utilisez (par exemple la pause automatique, les signets, la mémoire des chaînes et les changements de réglage)</li>
+    <li><strong>Événements liés au cycle de vie du compte</strong>&#160;: un petit nombre d'événements marquants liés à votre compte, comme l'inscription, l'activation, le début de l'essai, le passage à un forfait payant et l'annulation</li>
+    <li><strong>Plateforme</strong>&#160;: sur quel site pris en charge vous êtes (p. ex. «&#160;youtube&#160;»), sous forme d'un seul mot, et non d'une adresse URL</li>
   </ul>
-  <p>Chaque événement est nettoyé avant d'être stocké. Seuls les champs énumérés ci-dessus sont acceptés; tout le reste est retiré, tant dans l'extension que sur le serveur.</p>
+  <p>Vous pouvez désactiver cette collecte à tout moment (voir la section 7). Chaque événement est nettoyé avant d'être stocké&#160;: seuls les champs énumérés ci-dessus sont acceptés, et tout le reste est retiré, tant dans l'extension que sur notre serveur.</p>
 
-  <h3>1.6 Rapports d'erreur</h3>
-  <p>Lorsque illi plante ou rencontre un bogue, un rapport d'erreur est envoyé à Sentry (notre service de suivi des erreurs). Les rapports comprennent :</p>
+  <h3>1.6 Commentaires que vous envoyez</h3>
+  <p>Lorsque vous nous envoyez des commentaires au moyen d'illi, nous conservons votre message, sa catégorie (par exemple idée, bogue ou autre) et la page où vous étiez. Si vous êtes connecté, vos commentaires sont liés à votre compte et à votre adresse courriel. Vous pouvez aussi envoyer des commentaires sans compte, auquel cas ils ne sont pas rattachés à vous. Pour prévenir les abus, nous conservons une forme hachée à sens unique de votre adresse IP (et non l'adresse IP elle-même) ainsi que la chaîne d'agent utilisateur de votre navigateur. Les rapports de bogues peuvent être transmis par courriel à notre équipe afin que nous puissions faire un suivi.</p>
+
+  <h3>1.7 Rapports d'erreur</h3>
+  <p>Lorsque illi plante ou rencontre un bogue, un rapport d'erreur est envoyé à Sentry (notre service de suivi des erreurs). Les rapports comprennent&#160;:</p>
   <ul>
     <li>Les traces de pile JavaScript et les messages d'erreur</li>
     <li>La version de l'extension et le contexte du navigateur (script de contenu, arrière-plan ou fenêtre contextuelle)</li>
-    <li>La plateforme (p. ex. « youtube »)</li>
+    <li>La plateforme (p. ex. «&#160;youtube&#160;»)</li>
     <li>Votre identifiant d'utilisateur (identifiant aléatoire seulement, et non votre adresse courriel)</li>
   </ul>
   <p>Les rapports d'erreur ne comprennent pas ce que vous regardez, votre historique de navigation ni votre adresse courriel.</p>
 
-  <h3>1.7 Ce que nous ne recueillons pas</h3>
+  <h3>1.8 Ce que nous ne recueillons pas</h3>
   <ul>
     <li>Les adresses URL de vidéos, les titres de vidéos ou tout renseignement sur ce que vous regardez</li>
     <li>L'historique de navigation</li>
-    <li>Les témoins (cookies) ou les pixels de suivi tiers</li>
-    <li>Les empreintes d'appareil ou les adresses IP (notre infrastructure peut journaliser des adresses IP au niveau du réseau, mais nous ne les conservons ni ne les utilisons)</li>
+    <li>Les témoins (cookies) publicitaires ou les pixels de suivi tiers</li>
+    <li>Les empreintes d'appareil ou les adresses IP (notre infrastructure peut journaliser des adresses IP au niveau du réseau, mais nous ne les conservons ni ne les utilisons&#160;; la seule exception est l'adresse IP hachée servant à prévenir les abus liés aux commentaires, décrite à la section 1.6)</li>
+    <li>Les données de caméra, de vidéo ou biométriques</li>
     <li>Les données de tout site autre que YouTube</li>
   </ul>
   <p>illi ne conserve aucun registre de ce que vous regardez. Dans un cas, lorsque illi ne peut pas lire la chaîne d'une vidéo à partir de la page, il envoie uniquement l'identifiant de cette vidéo à noembed.com pour trouver le nom de la chaîne. illi conserve le nom de la chaîne et votre vitesse pour celle-ci, jamais un historique des vidéos que vous regardez.</p>
@@ -110,69 +122,107 @@
   <table>
     <tr><th>Données</th><th>Finalité</th></tr>
     <tr><td>Préférences et signets</td><td>Offrir une expérience cohérente d'une session à l'autre (et sur tous vos appareils tant que votre compte est actif)</td></tr>
-    <tr><td>Adresse courriel</td><td>Authentification à la connexion, avis de facturation, communications liées au compte</td></tr>
+    <tr><td>Adresse courriel</td><td>Authentification à la connexion, avis de facturation, communications liées au compte, et courriels au sujet du produit si vous y consentez</td></tr>
     <tr><td>Identifiants d'abonnement et de paiement</td><td>Gérer votre forfait, traiter les mises à niveau et les résiliations</td></tr>
     <tr><td>Données de parrainage</td><td>Suivre les récompenses de parrainage</td></tr>
-    <tr><td>Données d'utilisation</td><td>Comprendre l'adoption des fonctionnalités, repérer les bogues, orienter les décisions produit</td></tr>
+    <tr><td>Données d'utilisation</td><td>Comprendre l'adoption des fonctionnalités et les étapes clés du produit, repérer les bogues, orienter les décisions produit</td></tr>
+    <tr><td>Commentaires et sondage d'annulation</td><td>Améliorer illi et comprendre pourquoi des gens nous quittent</td></tr>
     <tr><td>Rapports d'erreur</td><td>Diagnostiquer et corriger les plantages</td></tr>
   </table>
   <p>Nous n'utilisons aucune de vos données à des fins publicitaires, et nous ne vendons ni ne louons vos données à qui que ce soit.</p>
 
   <hr>
 
-  <h2>3. Qui reçoit vos renseignements</h2>
-  <p>Nous faisons appel aux services tiers suivants pour exploiter illi. Chacun ne reçoit que les données dont il a besoin :</p>
+  <h2>3. Bases légales pour les utilisateurs de l'UE et du Royaume-Uni</h2>
+  <p>Cette section ne s'applique que si vous êtes dans l'UE ou au Royaume-Uni, où la loi nous demande de nommer la raison précise pour laquelle nous sommes autorisés à utiliser vos données. Les nôtres sont&#160;:</p>
+  <ul>
+    <li><strong>Contrat</strong>&#160;: fournir illi et gérer votre compte, ce pour quoi vous vous êtes inscrit.</li>
+    <li><strong>Consentement</strong>&#160;: les éléments facultatifs, comme les courriels au sujet du produit et les données d'utilisation, n'ont lieu que parce que vous y avez consenti, et vous pouvez retirer ce consentement à tout moment.</li>
+    <li><strong>Intérêts légitimes</strong>&#160;: assurer la sécurité d'illi et l'améliorer, en tenant compte de vos droits.</li>
+  </ul>
+
+  <hr>
+
+  <h2>4. Qui reçoit vos renseignements</h2>
+  <p>Nous faisons appel aux services tiers suivants pour exploiter illi. Chacun ne reçoit que les données dont il a besoin&#160;:</p>
   <table>
     <tr><th>Service</th><th>Ce qu'il reçoit</th><th>Pourquoi</th></tr>
-    <tr><td><strong>Supabase</strong> (supabase.com)</td><td>Courriel, données de compte, préférences et signets synchronisés, événements d'utilisation</td><td>Authentification, base de données, fonctions serveur</td></tr>
-    <tr><td><strong>Stripe</strong> (stripe.com)</td><td>Courriel (pour créer une fiche client), choix de forfait</td><td>Traitement des paiements</td></tr>
+    <tr><td><strong>Supabase</strong> (supabase.com)</td><td>Courriel, données de compte, préférences et signets synchronisés, événements d'utilisation, commentaires</td><td>Authentification, base de données, fonctions serveur</td></tr>
+    <tr><td><strong>Stripe</strong> (stripe.com)</td><td>Courriel (pour créer une fiche client), choix de forfait, renseignements de paiement que vous saisissez directement auprès de Stripe</td><td>Traitement des paiements</td></tr>
     <tr><td><strong>Sentry</strong> (sentry.io)</td><td>Détails de l'erreur, version de l'extension, identifiant d'utilisateur (pas le courriel)</td><td>Rapport de plantage</td></tr>
     <tr><td><strong>Postmark</strong> (postmarkapp.com)</td><td>Adresse courriel, contenu du courriel</td><td>Envoi des courriels de compte et de facturation</td></tr>
     <tr><td><strong>noembed.com</strong></td><td>L'identifiant de la vidéo que vous regardez (uniquement lorsque illi ne peut pas lire la chaîne à partir de la page)</td><td>Trouver le nom de la chaîne afin que illi puisse retenir votre vitesse préférée pour cette chaîne</td></tr>
     <tr><td><strong>Cloudflare Turnstile</strong> (cloudflare.com)</td><td>Votre adresse IP et des signaux de base du navigateur, uniquement à la connexion</td><td>Confirmer que vous êtes une personne réelle et bloquer l'utilisation abusive automatisée du formulaire de connexion</td></tr>
+    <tr><td><strong>GitHub Pages</strong> (github.com)</td><td>Les journaux de serveur Web habituels (comme votre adresse IP) lorsque vous visitez illi.world</td><td>Héberger notre site Web et nos pages légales</td></tr>
+    <tr><td><strong>Google / Chrome Web Store</strong> (google.com)</td><td>Ce que Google recueille lorsque vous installez ou mettez à jour une extension</td><td>Distribuer illi et livrer les mises à jour</td></tr>
   </table>
+  <p>Nous ne vendons pas vos données et ne les communiquons pas à des fins publicitaires.</p>
 
   <hr>
 
-  <h2>4. Vos droits et vos contrôles</h2>
+  <h2>5. Où vos données sont conservées, et transferts à l'extérieur du Québec</h2>
+  <p>Nos serveurs et nos fournisseurs de services sont situés aux <strong>États-Unis</strong>, ce qui signifie que vos renseignements personnels y sont conservés et traités. Pendant que vos renseignements se trouvent aux États-Unis, ils peuvent être accessibles aux tribunaux, aux forces de l'ordre et aux autorités gouvernementales des États-Unis en vertu du droit américain.</p>
+  <p>En tant qu'entreprise québécoise, nous évaluons si vos renseignements bénéficieront d'une protection adéquate avant de recourir à des fournisseurs situés à l'extérieur du Québec, et nous nous appuyons sur nos ententes avec ces fournisseurs pour les obliger à les protéger et à les utiliser uniquement aux fins que nous fixons.</p>
+
+  <hr>
+
+  <h2>6. Témoins (cookies), stockage local et suivi</h2>
+  <p>illi conserve vos réglages, vos signets et votre progression sur votre propre appareil au moyen du stockage local de votre navigateur, afin que l'extension fonctionne et se souvienne de vos préférences. Si vous êtes connecté, ces données sont synchronisées avec nos serveurs. Nos données d'utilisation sont de première partie (nos propres serveurs), et non un service de suivi tiers, et vous pouvez les désactiver. Nous n'utilisons aucun témoin publicitaire, et notre site Web n'utilise pas de témoins de suivi ou de publicité.</p>
+
+  <hr>
+
+  <h2>7. Vos droits et vos contrôles</h2>
 
   <h3>Refuser les données d'utilisation</h3>
-  <p>Vous pouvez cesser toute collecte de données d'utilisation en tout temps :</p>
+  <p>Vous pouvez cesser toute collecte de données d'utilisation en tout temps&#160;:</p>
   <ol>
     <li>Cliquez sur le concentrateur illi sur n'importe quelle page YouTube</li>
-    <li>Dans le panneau des réglages, désactivez l'option <strong>« Partager les données d'utilisation »</strong></li>
+    <li>Dans le panneau des réglages, désactivez l'option <strong>«&#160;Partager les données d'utilisation&#160;»</strong></li>
   </ol>
   <p>Une fois désactivée, aucun événement d'utilisation n'est envoyé à nos serveurs. Toutes les fonctionnalités continuent de fonctionner normalement.</p>
 
-  <h3>Accéder à vos renseignements</h3>
-  <p>Vous pouvez demander une copie des renseignements que nous détenons à votre sujet en nous écrivant à l'adresse indiquée à la section 9.</p>
+  <h3>Accéder à vos renseignements ou les corriger</h3>
+  <p>Vous pouvez demander une copie des renseignements que nous détenons à votre sujet, ou nous demander de les corriger, en écrivant à notre responsable de la protection des renseignements personnels à l'adresse indiquée à la section 14.</p>
 
   <h3>Supprimer vos renseignements</h3>
-  <p>Vous pouvez demander la suppression complète de votre compte et de toutes les données associées en nous écrivant à l'adresse indiquée à la section 9. Au moment de la suppression :</p>
+  <p>Vous pouvez supprimer vous-même votre compte et toutes les données associées depuis illi, dans la fenêtre contextuelle de l'extension ou dans les Réglages avancés (on vous demandera de taper <code>DELETE</code> pour confirmer). La suppression de votre compte&#160;:</p>
   <ul>
-    <li>Votre profil, vos préférences, vos signets et vos données d'utilisation sont définitivement retirés de nos serveurs</li>
-    <li>Stripe conserve les registres de facturation comme l'exige la réglementation financière</li>
-    <li>Les données d'erreur de Sentry expirent selon sa politique de conservation (généralement 90 jours)</li>
+    <li>Résilie votre abonnement immédiatement</li>
+    <li>Déclenche une <strong>période de récupération de 30&#160;jours</strong>&#160;: vos données sont programmées pour une suppression définitive, mais peuvent être restaurées si vous vous reconnectez, ou si vous utilisez le lien du courriel de confirmation, avant la fin de cette période. Nous envoyons un rappel environ 3&#160;jours avant sa fin.</li>
+    <li>Après 30&#160;jours, votre profil, vos préférences, vos signets, votre progression, vos réglages de chaîne et vos données d'utilisation sont définitivement retirés de nos serveurs, et votre fiche client est supprimée de Stripe.</li>
   </ul>
-  <p>Si vous désinstallez simplement illi sans demander de suppression, vos données locales sont retirées avec l'extension. Les données côté serveur sont conservées jusqu'à ce que vous en demandiez la suppression.</p>
+  <p>Si vous étiez abonné payant, la récupération restaure votre compte et vos données, mais vous devrez vous réabonner (votre abonnement a été résilié lors de la suppression du compte). Stripe conserve les registres de facturation et les factures comme l'exigent la réglementation financière et fiscale, et les données d'erreur de Sentry expirent selon sa politique de conservation (généralement 90&#160;jours). Vous pouvez aussi nous écrire pour demander la suppression.</p>
+  <p>Si vous désinstallez simplement illi sans supprimer votre compte, vos données locales sont retirées avec l'extension. Vos données côté serveur sont conservées jusqu'à ce que vous supprimiez votre compte ou en demandiez la suppression.</p>
+
+  <h3>Retirer votre consentement</h3>
+  <p>Les éléments facultatifs, comme les courriels au sujet du produit et les données d'utilisation, n'ont lieu qu'avec votre consentement, et vous pouvez le retirer en tout temps&#160;: désactivez les données d'utilisation dans les réglages, ou désabonnez-vous de tout courriel au sujet du produit.</p>
 
   <h3>Résilier votre abonnement</h3>
   <p>Vous pouvez résilier en tout temps au moyen du portail client Stripe, accessible depuis la fenêtre contextuelle de l'extension illi. Après la résiliation, votre abonnement demeure actif jusqu'à la fin de votre période de facturation en cours, puis votre compte passe à un état expiré.</p>
 
   <h3>Portabilité des données</h3>
-  <p>Si vous avez besoin de vos données dans un format portable, communiquez avec nous et nous vous les fournirons dans un délai de 30 jours.</p>
+  <p>Si vous avez besoin de vos données dans un format portable, communiquez avec nous et nous vous les fournirons dans un délai de 30&#160;jours.</p>
+
+  <h3>Où porter plainte</h3>
+  <ul>
+    <li><strong>Québec (Loi 25) et Canada (LPRPDE)</strong>&#160;: vous pouvez porter plainte auprès de la <strong>Commission d'accès à l'information du Québec</strong> (<a href="https://www.cai.gouv.qc.ca">cai.gouv.qc.ca</a>) ou du <strong>Commissariat à la protection de la vie privée du Canada</strong> (<a href="https://www.priv.gc.ca">priv.gc.ca</a>).</li>
+    <li><strong>UE et Royaume-Uni (RGPD)</strong>&#160;: vous disposez des droits d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité, du droit de retirer votre consentement, et du droit de porter plainte auprès de votre autorité locale de protection des données.</li>
+    <li><strong>Californie (CCPA)</strong>&#160;: si la CCPA s'applique à nous, vous avez le droit de savoir, de supprimer et de corriger vos renseignements, et de refuser leur vente ou leur communication. Nous ne vendons ni ne communiquons vos renseignements personnels à des fins publicitaires.</li>
+  </ul>
 
   <hr>
 
-  <h2>5. Conservation des données</h2>
+  <h2>8. Conservation des données</h2>
   <table>
     <tr><th>Données</th><th>Conservation</th></tr>
     <tr><td>Données locales (sur votre appareil)</td><td>Jusqu'à ce que vous effaciez les données de l'extension ou la désinstalliez</td></tr>
-    <tr><td>Données de compte et de profil</td><td>Tant que votre compte existe, supprimées sur demande</td></tr>
-    <tr><td>Signets et préférences synchronisés</td><td>Tant que votre compte existe, supprimés sur demande</td></tr>
-    <tr><td>Signets supprimés en douceur (synchronisation infonuagique)</td><td>Définitivement purgés 30 jours après la suppression</td></tr>
-    <tr><td>Registres d'événements d'utilisation</td><td>Conservés tant que votre compte existe, supprimés à la suppression du compte; les statistiques agrégées sont conservées</td></tr>
-    <tr><td>Rapports d'erreur Sentry</td><td>Selon la politique de conservation de Sentry (généralement 90 jours)</td></tr>
+    <tr><td>Données de compte et de profil</td><td>Tant que votre compte existe&#160;; à la suppression, définitivement retirées après la période de récupération de 30&#160;jours</td></tr>
+    <tr><td>Signets, progression, préférences et réglages de chaîne synchronisés</td><td>Tant que votre compte existe&#160;; retirés lorsque votre compte est supprimé</td></tr>
+    <tr><td>Éléments que vous supprimez dans illi (comme des signets)</td><td>Masqués et retirés de vos données actives immédiatement&#160;; définitivement retirés lorsque votre compte est supprimé</td></tr>
+    <tr><td>Registres d'événements d'utilisation</td><td>Conservés tant que votre compte existe, supprimés à la suppression du compte&#160;; des statistiques agrégées et non identifiantes peuvent être conservées</td></tr>
+    <tr><td>Commentaires</td><td>Conservés tant qu'ils sont utiles&#160;; les commentaires envoyés sans compte ne sont pas rattachés à vous&#160;; les commentaires liés à un compte sont retirés ou anonymisés à la suppression du compte</td></tr>
+    <tr><td>Réponses au sondage d'annulation</td><td>Conservées pour comprendre pourquoi des gens nous quittent&#160;; anonymisées ou agrégées avec le temps</td></tr>
+    <tr><td>Rapports d'erreur Sentry</td><td>Selon la politique de conservation de Sentry (généralement 90&#160;jours)</td></tr>
     <tr><td>Registres de facturation Stripe</td><td>Selon la politique de conservation de Stripe et la réglementation financière</td></tr>
     <tr><td>Journaux de courriel Postmark</td><td>Selon la politique de conservation de Postmark</td></tr>
     <tr><td>Vérifications de connexion Cloudflare Turnstile</td><td>Selon la politique de conservation de Cloudflare</td></tr>
@@ -180,41 +230,46 @@
 
   <hr>
 
-  <h2>6. Sécurité des données</h2>
+  <h2>9. Sécurité des données</h2>
+  <p>Aucun service en ligne ne peut promettre une sécurité parfaite, mais nous prenons des mesures raisonnables pour protéger vos renseignements&#160;:</p>
   <ul>
     <li>Toutes les données en transit utilisent le chiffrement HTTPS/TLS</li>
-    <li>Les données infonuagiques sont stockées dans la base de données PostgreSQL gérée de Supabase avec la sécurité au niveau des lignes activée — chaque utilisateur ne peut accéder qu'à ses propres données</li>
+    <li>Les données infonuagiques sont stockées dans la base de données PostgreSQL gérée de Supabase avec la sécurité au niveau des lignes activée, de sorte que chaque utilisateur ne peut accéder qu'à ses propres données</li>
     <li>L'authentification utilise des codes à usage unique (aucun mot de passe n'est stocké)</li>
-    <li>Les fonctions côté serveur utilisent des clés d'API restreintes; la clé de service à accès complet n'est jamais exposée à l'extension</li>
+    <li>Les fonctions côté serveur utilisent des clés d'API restreintes&#160;; la clé de service à accès complet n'est jamais exposée à l'extension</li>
     <li>Les identifiants d'utilisateur des événements d'utilisation sont attachés côté serveur à partir de jetons authentifiés, et non envoyés depuis l'extension, ce qui empêche l'usurpation</li>
   </ul>
 
   <hr>
 
-  <h2>7. Autorisations de l'extension</h2>
+  <h2>10. En cas d'incident de confidentialité</h2>
+  <p>Si un incident de sécurité survient et présente un risque de préjudice sérieux pour vous, nous en aviserons la Commission d'accès à l'information du Québec ainsi que les personnes concernées, comme l'exige la Loi 25, et nous tenons un registre de tout incident de ce type.</p>
+
+  <hr>
+
+  <h2>11. Autorisations de l'extension</h2>
   <table>
     <tr><th>Autorisation</th><th>Ce qu'elle fait</th></tr>
     <tr><td><code>storage</code></td><td>Enregistre vos réglages, vos signets et vos données de session localement sur votre appareil</td></tr>
     <tr><td><code>alarms</code></td><td>Exécute des minuteries en arrière-plan pour les vérifications d'état d'essai et la planification de la synchronisation</td></tr>
     <tr><td><code>host_permissions</code> pour youtube.com et youtube-nocookie.com</td><td>Permet à illi d'ajouter son interface aux pages YouTube</td></tr>
   </table>
-  <p>illi ne demande l'accès à aucun autre site Web.</p>
+  <p>illi n'accède à aucun autre site Web. Si nous ajoutons la prise en charge d'autres sites vidéo à l'avenir, illi vous demandera votre permission avant d'y accéder.</p>
 
   <hr>
 
-  <h2>8. Vie privée des enfants</h2>
-  <p>illi ne s'adresse pas aux enfants de moins de 13 ans. Nous ne recueillons pas sciemment de données auprès d'enfants de moins de 13 ans. Si vous croyez qu'un enfant nous a fourni des renseignements personnels, veuillez communiquer avec nous et nous les supprimerons.</p>
+  <h2>12. Vie privée des enfants</h2>
+  <p>illi ne s'adresse pas aux enfants de moins de 13&#160;ans (ou l'âge minimal là où vous vivez). Nous ne recueillons pas sciemment de données auprès d'enfants de moins de 13&#160;ans. Si vous croyez qu'un enfant nous a fourni des renseignements personnels, veuillez communiquer avec nous et nous les supprimerons.</p>
 
   <hr>
 
-  <h2>9. Nous joindre</h2>
-  <p>Pour toute question sur la présente politique, pour demander vos renseignements ou pour demander la suppression de votre compte :</p>
-  <p><strong>Courriel :</strong> support@illi.world</p>
-  <p>Nous nous efforçons de répondre à toutes les demandes dans un délai de 30 jours.</p>
+  <h2>13. Modifications de la présente politique</h2>
+  <p>Nous pouvons mettre à jour la présente politique à mesure que illi évolue. La date d'entrée en vigueur indiquée en haut reflétera toujours la version la plus récente. Si nous apportons des modifications importantes à la façon dont nous traitons vos données ou à vos droits, nous vous en aviserons au moyen de l'extension ou par courriel avant que les modifications ne prennent effet. L'utilisation continue après des modifications constitue l'acceptation de la politique mise à jour.</p>
 
   <hr>
 
-  <h2>10. Modifications de la présente politique</h2>
-  <p>Nous pouvons mettre à jour la présente politique à mesure que illi évolue. La date d'entrée en vigueur indiquée en haut reflétera toujours la version la plus récente. Si nous apportons des modifications importantes à la façon dont nous traitons vos données, nous vous en aviserons au moyen de l'extension ou par courriel avant que les modifications ne prennent effet. L'utilisation continue après des modifications constitue l'acceptation de la politique mise à jour.</p>
+  <h2>14. Qui nous sommes, les lois que nous respectons, et comment nous joindre</h2>
+  <p>illi est développé par <strong>Wallflower Studio inc.</strong>, situé au Québec, Canada. Parce que nous sommes une entreprise québécoise, nous respectons le droit canadien en matière de vie privée (la Loi 25 du Québec et la LPRPDE). Parce qu'illi est offert dans le monde entier, nous respectons aussi le RGPD pour les utilisateurs de l'UE et du Royaume-Uni et nous nous conformons au droit américain applicable. illi ne traite aucune donnée de santé, bancaire ou biométrique.</p>
+  <p>La personne responsable de la protection de vos renseignements personnels (notre responsable de la protection des renseignements personnels, comme l'exige la Loi 25) est <strong>Malka Neuman, fondatrice</strong>, que vous pouvez joindre à <strong>privacy@illi.world</strong>. Pour des questions générales, écrivez à <strong>support@illi.world</strong>. Nous nous efforçons de répondre à toutes les demandes dans un délai de 30&#160;jours.</p>
 </body>
 </html>
