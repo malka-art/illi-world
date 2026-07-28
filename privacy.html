@@ -37,7 +37,7 @@
   <a href="/" class="back">&larr; illi.world</a>
   <a href="/fr/privacy" class="lang">Français</a>
   <h1>Privacy Policy</h1>
-  <p class="effective"><strong>Effective Date: July 21, 2026</strong></p>
+  <p class="effective"><strong>Effective Date: July 28, 2026</strong></p>
 
   <div class="summary">
     <strong>The short version.</strong> illi signs you in with your email (no passwords) and syncs your settings, bookmarks, and progress across your devices. We collect limited usage data that you can switch off, and we never record what you watch. Our servers and providers are in the United States, so your information is stored there. We use a few trusted providers, we do not sell your data, and you can delete your account and data at any time from within illi. Privacy questions go to our privacy officer, Malka Neuman, at <a href="mailto:privacy@illi.world">privacy@illi.world</a>.
@@ -72,6 +72,7 @@
 
   <h3>1.3 Payment Data</h3>
   <p>When you subscribe, payments are handled entirely by Stripe. We store only a Stripe customer ID and subscription ID to manage your plan status. We never receive or store your card number, billing address, or other payment details.</p>
+  <p>To prevent card testing and other payment fraud, we check how many recent payment attempts on your account have failed. That count comes from Stripe and we do not store it. If too many fail in a short time, we temporarily block new checkouts on your account, and we store only that block: how many times your account has been blocked, when the block lifts, and whether your next attempt needs a quick verification check. This is tied to your account alone, never to an IP address or device, and it is deleted as soon as a payment succeeds.</p>
 
   <h3>1.4 Cloud Sync Data</h3>
   <p>While you have an active account (during your free trial and on a paid plan), the following data syncs to our servers so it works across your devices:</p>
@@ -226,6 +227,7 @@
     <tr><td>Cancellation survey responses</td><td>Kept to understand why people leave; anonymized or aggregated over time</td></tr>
     <tr><td>Sentry error reports</td><td>Per Sentry's retention policy (typically 90 days)</td></tr>
     <tr><td>Stripe billing records</td><td>Per Stripe's retention policy and financial regulations</td></tr>
+    <tr><td>Checkout fraud-prevention records</td><td>Only created if payments on your account fail repeatedly; deleted as soon as a payment succeeds, and removed when your account is deleted</td></tr>
     <tr><td>Postmark email logs</td><td>Per Postmark's retention policy</td></tr>
     <tr><td>Cloudflare Turnstile sign-in checks</td><td>Per Cloudflare's retention policy</td></tr>
   </table>
