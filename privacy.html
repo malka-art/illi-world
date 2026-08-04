@@ -72,7 +72,7 @@
 
   <h3>1.3 Payment Data</h3>
   <p>When you subscribe, payments are handled entirely by Stripe. We store only a Stripe customer ID and subscription ID to manage your plan status. We never receive or store your card number, billing address, or other payment details.</p>
-  <p>To prevent card testing and other payment fraud, we check how many recent payment attempts on your account have failed. That count comes from Stripe and we do not store it. If too many fail in a short time, we temporarily block new checkouts on your account, and we store only that block: how many times your account has been blocked, when the block lifts, and whether your next attempt needs a quick verification check. This is tied to your account alone, never to an IP address or device, and it is deleted as soon as a payment succeeds.</p>
+  <p>To prevent card testing, we check your recent failed payments through Stripe without storing that count. If too many fail at once, we briefly block new checkouts and store only that block: how often it has happened, when it lifts, and whether your next attempt needs verification. It is tied to your account alone, never an IP address or device.</p>
 
   <h3>1.4 Cloud Sync Data</h3>
   <p>While you have an active account (during your free trial and on a paid plan), the following data syncs to our servers so it works across your devices:</p>
@@ -227,7 +227,7 @@
     <tr><td>Cancellation survey responses</td><td>Kept to understand why people leave; anonymized or aggregated over time</td></tr>
     <tr><td>Sentry error reports</td><td>Per Sentry's retention policy (typically 90 days)</td></tr>
     <tr><td>Stripe billing records</td><td>Per Stripe's retention policy and financial regulations</td></tr>
-    <tr><td>Checkout fraud-prevention records</td><td>Only created if payments on your account fail repeatedly; deleted as soon as a payment succeeds, and removed when your account is deleted</td></tr>
+    <tr><td>Checkout fraud-prevention records</td><td>Created only if payments repeatedly fail; deleted when a payment succeeds or your account is deleted</td></tr>
     <tr><td>Postmark email logs</td><td>Per Postmark's retention policy</td></tr>
     <tr><td>Cloudflare Turnstile sign-in checks</td><td>Per Cloudflare's retention policy</td></tr>
   </table>
