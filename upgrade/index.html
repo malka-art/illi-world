@@ -4,32 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upgrade &middot; illi</title>
-<meta name="description" content="Choose your illi plan: lock the founder rate or go standard, monthly or annual.">
+<meta name="description" content="Start your illi trial. Seven days free, no card. Then $2 a month for your first year.">
 <!-- Transaction surface, not a marketing page → noindex (matches the /welcome, /goodbye flow-page convention). -->
 <meta name="robots" content="noindex">
 
 <!-- ============================================================
-  illi /upgrade  (illi.world/upgrade)  —  the canonical transaction surface
-  Pick tier (Founders vs Standard) + billing interval (monthly/annual), then hand off to checkout.
+  illi /upgrade  (illi.world/upgrade)  :  the canonical transaction surface
+  One live offer (the early rate) plus one muted, unnamed price floor, then hand off to checkout.
   Deep-link target for: lifecycle email CTAs, the extension Upgrade button, and the Stripe cancel_url.
 
   Spec: design/PRICING-BLOCK-DESIGN.md §8.11 (funnel ruling) + §1–4 (model, data contract, visual).
-  Chooser lifted from the SHIPPED v6 #pricing component (design/landing/illi-landing-v6.html, S301):
-  same structure, data hooks, tokens, and selection/toggle/fallback engine.
+  Copy authority: marketing/V1-SHIP-COPY.md §6 (owner-locked) + §6b (/upgrade match).
+  Pricing block ported from the LIVE landing page's #pricing (site/index.html, 2026-08-04): same
+  single centered column, card treatment, notched badge, floor label + pill, and secondary CTA,
+  built on the same --illi-* tokens. The landing is the source of truth for this component's
+  design; the data hooks, wire tokens and fallback engine below are /upgrade's own and unchanged.
 
-  ── HELD pending owner decision (orchestrator, 2026-06-22): the chooser SKIN ──
-  Baseline below = the v6 "warm paper, quiet machine" treatment. If the owner picks the v7
-  "Speedemon" look instead, the reskin is contained to the "CHOOSER SKIN (v6 baseline)" CSS block
-  + the optional Caveat font; markup data-hooks and all JS stay unchanged.
+  ── THE OFFER (owner rulings, 2026-08-04) ──
+   * Early rate: $2 / month for the FIRST YEAR. Not lifetime, not locked for life.
+   * No cap. There is no seat limit, so there is no counter and no sold-out state.
+   * "Founders" is a parked deal and must not appear in any customer-visible string.
+   * Monthly only for v1. No billing-interval toggle.
+   * One selectable card + one muted, unnamed floor labelled "Base price at launch" ($7/mo).
+     Label wording adopted from the landing (2026-08-04) so the two surfaces stop disagreeing
+     one click apart in the same funnel.
+
+  ── WIRE PROTOCOL: DO NOT RENAME (2026-08-04) ──
+   The customer-visible name changed; the tokens on the wire did NOT. The DEPLOYED stripe-checkout
+   (v13) reads tier === "founders" (or null) to select the $2 price and falls through to Standard
+   at $7 for anything else. The backend rename to "early" is written but NOT deployed. Renaming the
+   token here would silently charge every buyer $7. Unchanged spots are flagged inline below.
 
   ── STATE-AWARE (plain public pricing page; owner decision 2026-07-06: no page-morph hero, no cold redirect) ──
-   * Everyone sees the same pricing chooser. Only the plan-CTA behavior adapts by sign-in state:
-       - Signed in (?token or a persisted web session): CTAs read "Lock my founder rate" / "Choose
-         Standard" and open Stripe checkout.
-       - Logged out: CTAs read "Start free trial" and open the SIGNUP MODAL (email → code, web OTP).
-   * Sold-out mutes the Founders card + promotes Standard (E10 sold-out copy).
+   * Everyone sees the same page. Only the plan-CTA behavior adapts by sign-in state:
+       - Signed in (?token or a persisted web session): CTA reads "Lock in my early rate" and
+         opens Stripe checkout.
+       - Logged out: CTA reads "Start free trial" and opens the SIGNUP MODAL (email → code, web OTP).
   ── LIVE ──
-   * pricing-info → live public endpoint (founder counter + prices); honest static fallback on failure (wired 2026-06-22).
+   * pricing-info → live public endpoint (prices); honest static fallback on failure (wired 2026-06-22).
+     The endpoint still returns founders_remaining; v1 ignores it (no cap to count against).
    * Signed-token pickup + Stripe checkout handoff → live (§8.11 funnel):
        ?token → upgrade-redeem → verifyOtp (silent web sign-in) → plan CTA → stripe-checkout → Stripe.
    * Web OTP sign-in (I-137, §8.11 bridge 2) → live: signup modal, Turnstile-gated (same-origin /turnstile
@@ -99,9 +112,15 @@ main{
 }
 .return-banner .rb-close:hover{color:var(--gray-700)}
 
-/* ── Chooser layout ── */
-.chooser{display:flex; flex-direction:column; align-items:center; gap:var(--sp-3xl); width:100%}
+/* ── Chooser layout ──
+   Vertical rhythm matches the landing's #pricing stack: 32px (--illi-space-2xl) between the
+   heading group and the card column, and the same 32px between the card column and the CTA
+   block. On the landing those two gaps are .price-grid's and .price-cta-block's margin-top;
+   here .chooser is a flex column, so the gap does the same job once. */
+.chooser{display:flex; flex-direction:column; align-items:center; gap:var(--illi-space-2xl); width:100%}
 .section-head{display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; max-width:640px}
+/* the trial line sits above the card, exactly as .trial-line does on the landing */
+.trial-line{font-size:15px; font-weight:var(--illi-weight-medium); color:var(--illi-gray-600); text-align:center; margin:0}
 .kicker{font-family:var(--font-display); font-weight:600; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--red-500)}
 .section-head h2{font-size:clamp(30px,3.4vw,42px); letter-spacing:-.015em}
 .price-subhead{font-size:17px; color:var(--gray-500); line-height:1.5; max-width:46ch; margin:0}
@@ -114,73 +133,85 @@ main{
 .promo-ribbon.is-visible{display:inline-flex}
 .promo-ribbon .promo-code{font-family:var(--font-display); font-weight:600; color:var(--gray-800); background:var(--white); border:1px solid var(--bone-300); border-radius:var(--r-sm); padding:2px 8px}
 
-/* billing interval toggle — page-only state, not in the data contract */
-.billing-toggle{
-  display:inline-flex; align-items:center; gap:var(--sp-xs);
-  background:var(--bone-200); border:1px solid var(--bone-300); border-radius:var(--r-full); padding:var(--sp-xs);
+/* ════════ PRICING BLOCK : ported from the landing's #pricing (site/index.html) ════════
+   The landing and /upgrade are one click apart in the same funnel, so they render the SAME
+   component: a single centered column holding one live card, the launch floor under it, then
+   the CTA and fine print below the card. The two-column grid and the large empty second card
+   are gone. Every value below is lifted from the landing's rules, not approximated, and uses
+   the same --illi-* tokens (assets/illi-tokens.css is already linked above) so the two
+   surfaces cannot drift apart. Behaviour is untouched: the cards keep their data-plan wire
+   tokens and the CTA keeps its data-cta hooks. */
+.price-grid{
+  margin:0 auto;
+  display:flex; flex-direction:column; align-items:center; gap:var(--illi-space-2xl);
+  max-width:520px; width:100%;
 }
-.bt-opt{
-  font-family:var(--font-display); font-weight:600; font-size:14px; color:var(--gray-500);
-  background:transparent; border:none; cursor:pointer; border-radius:var(--r-full); padding:9px 22px;
-  transition:color .15s ease, background .15s ease, box-shadow .15s ease;
-}
-.bt-opt.is-active{background:var(--white); color:var(--gray-800); box-shadow:0 1px 3px rgba(26,26,26,.1)}
-.bt-opt:focus-visible{outline:2px solid var(--red-500); outline-offset:2px}
-
-/* ════════ CHOOSER SKIN (v6 baseline — swap-point if owner picks Speedemon) ════════ */
-/* cards — two tiers, selection-follows-click (red selected / bone unselected) */
-.price-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-xl); align-items:stretch; max-width:920px; width:100%}
 .price{
-  background:var(--bone-100); border:1px solid var(--bone-300); border-radius:var(--r-xl);
-  padding:36px 30px 30px; display:flex; flex-direction:column; gap:18px; position:relative;
-  cursor:pointer; text-align:left; font:inherit; color:inherit; width:100%;
-  transition:border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
+  border-radius:var(--illi-shape-xl); padding:32px 28px;
+  display:flex; flex-direction:column; gap:var(--illi-space-lg); position:relative;
+  text-align:left; font:inherit; color:inherit;
 }
-.price:hover{transform:translateY(-2px)}
-.price:focus-visible{outline:2px solid var(--red-500); outline-offset:3px}
-.price.is-selected{background:var(--white); border:1.5px solid var(--red-500); box-shadow:0 24px 60px -24px rgba(239,68,68,.34)}
-.price-head{display:flex; flex-direction:column; gap:var(--sp-sm)}
-.price .tier{font-family:var(--font-display); font-weight:600; font-size:15px; color:var(--gray-800)}
-.price .amount{display:flex; align-items:baseline; gap:var(--sp-sm); flex-wrap:wrap}
-.price .amount .amt{font-family:var(--font-display); font-weight:800; font-size:52px; letter-spacing:-.02em; line-height:1; color:var(--gray-800)}
-.price .amount .per{font-family:var(--font-body); font-size:16px; font-weight:500; color:var(--gray-500)}
-.save-badge{font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--green-600); background:var(--green-100); border-radius:var(--r-full); padding:2px 10px; line-height:1.4}
-.price .note{font-size:14.5px; color:var(--gray-500); line-height:1.6; margin:0}
-/* meter — Founders scarcity / Standard availability, same footprint so CTAs align */
-.meter{display:flex; flex-direction:column; gap:var(--sp-sm)}
-.meter-track{height:6px; border-radius:var(--r-full); background:var(--bone-200); overflow:hidden}
-.meter-fill{height:6px; border-radius:var(--r-full); background:var(--bone-600); transition:width .4s ease, background .2s ease}
-/* whole-card selection semantics: the SELECTED card's meter goes red (both tiers); unselected stays bone */
-.price.is-selected .meter-fill{background:var(--red-500)}
-.meter-label{font-family:var(--font-display); font-weight:600; font-size:13px; color:var(--gray-500); margin:0; transition:color .2s ease}
-.price.is-selected .meter-label{color:var(--red-500)}
-/* CTA — bone-950 secondary (unselected), red primary (selected) */
-.price .plan-cta{
-  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-sm);
-  font-family:var(--font-display); font-weight:600; text-decoration:none; border:none; cursor:pointer;
-  width:100%; border-radius:var(--r-full); padding:15px 24px; font-size:16px;
-  background:var(--bone-950); color:var(--white); box-shadow:0 8px 20px -12px rgba(75,67,57,.5);
-  transition:filter .18s ease, box-shadow .18s ease, background .18s ease;
+.price:focus-visible{outline:2px solid var(--illi-red-500); outline-offset:3px}
+/* the live card: the offer. White, red hairline, soft red glow beneath. */
+.price.early{
+  width:100%; background:var(--illi-white); border:1.5px solid var(--illi-red-500);
+  box-shadow:0 24px 60px -24px rgba(239,68,68,.34);
 }
-/* per-surface AA fix (white-on-red body-size needs 4.5:1): selected CTA steps red-500 3.76:1 -> red-600 4.83:1. Global accent stays red-500. */
-.price.is-selected .plan-cta{background:var(--red-600); box-shadow:0 10px 24px -10px rgba(239,68,68,.5)}
-.price .plan-cta:hover{filter:brightness(.96)}
-.price .plan-cta:focus-visible{outline:2px solid var(--gray-800); outline-offset:3px}
-.price .fud{text-align:center; margin:0; font-size:13px; color:var(--gray-400)}
-/* Founders badge — always on the Founders card; recolors red↔bone with selection */
-.founders-badge{
-  position:absolute; top:-13px; left:30px;
-  background:var(--bone-500); color:var(--gray-700); font-family:var(--font-display); font-weight:600;
-  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
-  padding:5px 15px; border-radius:var(--r-full); white-space:nowrap;
+/* NOTE: select() still toggles .is-selected (deep-link ?tier=, click, CTA focus) and the class
+   is still in the markup, but with one live card there is no second state to draw, so it
+   deliberately carries no treatment, same as the landing, where the card is always the offer. */
+.price .tier{font-family:var(--illi-font-display),-apple-system,sans-serif; font-weight:var(--illi-weight-semibold); font-size:15px; color:var(--illi-gray-800)}
+.price .amount{display:flex; align-items:baseline; gap:var(--illi-space-sm); flex-wrap:wrap}
+.price .amt{font-family:var(--illi-font-display),-apple-system,sans-serif; font-weight:800; font-size:48px; letter-spacing:-.02em; line-height:1; color:var(--illi-gray-800)}
+.price .per{font-size:16px; font-weight:var(--illi-weight-medium); color:var(--illi-gray-500)}
+.price .note{font-size:14.5px; line-height:1.6; color:var(--illi-gray-600); margin:0}
+/* Offer badge, NOTCHED INTO the card's top border: the badge's own bone-50 fill is the page
+   background, so it paints over the hairline behind it and the border reads as broken around
+   the badge. Kept QUIET (owner framing: discovery/early, not a velvet rope): outlined, ink
+   text, one small red dot rather than a loud filled-red pill. */
+.early-badge{
+  position:absolute; top:-13px; left:28px; display:inline-flex; align-items:center; gap:7px;
+  background:var(--illi-bone-50); color:var(--illi-gray-700); border:1px solid var(--illi-red-500);
+  font-family:var(--illi-font-display),-apple-system,sans-serif;
+  font-weight:var(--illi-weight-semibold); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 14px; border-radius:var(--illi-shape-full); white-space:nowrap;
 }
-.price.is-selected .founders-badge{background:var(--red-500); color:var(--white)}
-/* sold-out treatment (founders_remaining === 0) */
-.price.is-sold-out{cursor:default}
-.price.is-sold-out .plan-cta{background:var(--bone-500); box-shadow:none; opacity:.7; pointer-events:none}
-/* ════════ /CHOOSER SKIN ════════ */
+.early-badge::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--illi-red-500)}
 
-.price-foot{text-align:center; margin:0; font-size:14px; color:var(--gray-400); max-width:60ch}
+/* the muted floor: an unnamed anchor, never selectable, never a tier. A small letterspaced
+   label over the price in a quiet bone pill. Quiet but LEGIBLE (a real price, not disabled UI). */
+.price-future{width:100%; display:flex; flex-direction:column; align-items:center; gap:var(--illi-space-md)}
+.future-label{
+  font-family:var(--illi-font-display),-apple-system,sans-serif;
+  font-size:12px; font-weight:var(--illi-weight-semibold); letter-spacing:.12em;
+  text-transform:uppercase; color:var(--illi-gray-500); margin:0;
+}
+.price.muted{
+  flex-direction:row; align-items:baseline; gap:var(--illi-space-sm);
+  padding:16px 24px; background:var(--illi-bone-100); border:1px solid var(--illi-bone-300);
+}
+.price.muted .amt{font-size:26px; color:var(--illi-gray-600)}
+.price.muted .per{font-size:14px; color:var(--illi-gray-500)}
+
+/* CTA below the card: the landing's red primary pill (.btn.btn-primary), matching the
+   landing's pricing CTA exactly so the two halves of the funnel stay identical.
+   Same element, same data-cta hooks, same two label states; only its home and skin changed. */
+.price-cta-block{text-align:center}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--illi-space-sm);
+  font-family:var(--illi-font-display),-apple-system,sans-serif;
+  font-weight:var(--illi-weight-semibold); font-size:16px; line-height:1.2;
+  text-decoration:none; border:none; cursor:pointer;
+  border-radius:var(--illi-shape-full); padding:15px 28px;
+  text-align:center; text-wrap:balance;
+  transition:filter var(--illi-motion-fast) var(--illi-motion-ease);
+}
+.btn:hover{filter:brightness(.96)}
+.btn-primary{background:var(--illi-accent-cta); color:var(--illi-on-accent); box-shadow:var(--illi-shadow-cta)} /* white on red-600 = 4.83:1 */
+.btn:focus-visible{outline:2px solid var(--illi-gray-800); outline-offset:3px}
+/* ════════ /PRICING BLOCK ════════ */
+
+.price-foot{margin:var(--illi-space-lg) auto 0; font-size:14px; line-height:1.6; color:var(--illi-gray-400); max-width:56ch}
 
 /* checkout handoff stub — honest placeholder, never a fake success */
 .checkout-stub{
@@ -272,8 +303,8 @@ main{
 
 @media (max-width:760px){
   main{padding:40px 18px 56px; gap:var(--sp-2xl)}
-  .price-grid{grid-template-columns:1fr; max-width:420px}
-  .price .amount .amt{font-size:46px}
+  /* The column already collapses on its own (it was never a grid), and the landing carries no
+     narrow-screen override for the card or the price size, so neither does this. */
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important}
@@ -311,8 +342,11 @@ main{
     <section class="chooser">
       <div class="section-head">
         <span class="kicker">Pricing</span>
-        <h2>Every plan includes everything</h2>
-        <p class="price-subhead">No feature gating, no upsells. Choose how you want to pay, and only the price changes.</p>
+        <h2>One plan. Everything included.</h2>
+        <p class="price-subhead">No feature gating, no upsells.</p>
+        <!-- Same sentence as before, moved from inside the card to the landing's slot for it
+             (its .trial-line, directly above the card). Wording unchanged. -->
+        <p class="trial-line">7 days free. No card required.</p>
       </div>
 
       <!-- promo ribbon (display-only; hidden when promo:null) -->
@@ -321,53 +355,49 @@ main{
         <span class="promo-code" id="promoCode" hidden></span>
       </div>
 
-      <!-- billing interval toggle (page-only state) -->
-      <div class="billing-toggle" role="group" aria-label="Billing interval">
-        <button type="button" class="bt-opt is-active" data-interval="monthly" aria-pressed="true">Monthly</button>
-        <button type="button" class="bt-opt" data-interval="annual" aria-pressed="false">Annual</button>
-      </div>
-
       <div class="price-grid" id="priceGrid">
-        <!-- Founders — selected on load (default) -->
-        <div class="price founders is-selected" data-plan="founders" tabindex="0" role="group" aria-label="Founders plan">
-          <span class="founders-badge">Founders &middot; Best value</span>
-          <div class="price-head">
-            <span class="tier">Founders</span>
-            <div class="amount">
-              <span class="amt" data-monthly="$2" data-annual="$24">$2</span><span class="per" data-monthly="&nbsp;/ month, locked for life" data-annual="&nbsp;/ year, locked for life">&nbsp;/ month, locked for life</span>
-            </div>
+        <!-- The live offer: the early rate. The only selectable card.
+             WIRE PROTOCOL: data-plan="founders" is the tier token the DEPLOYED stripe-checkout (v13)
+             reads to select the $2 price. It is intentionally UNCHANGED while the customer-visible
+             name is "Early rate". Renaming it to "early" before the backend rename deploys would
+             fall through to Standard and charge $7. Do not touch until that ships. -->
+        <div class="price early is-selected" data-plan="founders" tabindex="0" role="group" aria-label="Early rate plan">
+          <span class="early-badge">Not announced yet</span>
+          <span class="tier">Early rate</span>
+          <div class="amount">
+            <span class="amt">$2</span><span class="per">&nbsp;/ month, your first year</span>
           </div>
-          <p class="note">You're part of how illi gets built: a question a week, first eyes on what's next, and honest feedback when we ask. That's the exchange.</p>
-          <div class="meter" data-meter="scarcity">
-            <div class="meter-track"><div class="meter-fill" id="scarcityFill" style="width:81.2%"></div></div>
-            <p class="meter-label"><strong id="scarcityCount" data-count="188">188</strong> of 1,000 founder spots left</p>
-          </div>
-          <button type="button" class="plan-cta" data-cta data-cta-anon="Start free trial" data-cta-signed="Lock my founder rate">Start free trial</button>
-          <p class="fud">7 days free. No card required.</p>
+          <p class="note">illi is live, but the lights aren't all the way on yet. No launch, no announcement, just the extension and the people who found it early.</p>
+          <p class="note">Try it free first. If it earns its place, lock in $2 a month for your whole first year. Once we launch, pricing starts at $7.</p>
         </div>
 
-        <!-- Standard — unselected on load -->
-        <div class="price standard" data-plan="standard" tabindex="0" role="group" aria-label="Standard plan">
-          <div class="price-head">
-            <span class="tier">Standard</span>
-            <div class="amount">
-              <span class="amt" data-monthly="$7" data-annual="$70">$7</span><span class="per" data-monthly="&nbsp;/ month" data-annual="&nbsp;/ year">&nbsp;/ month</span><span class="save-badge" data-save hidden>save 17%</span>
-            </div>
+        <!-- The muted floor: an unnamed anchor, not a tier and not selectable. No name, by owner
+             ruling, so it cannot read as a card worth waiting for.
+             WIRE PROTOCOL: data-plan="standard" is intentionally UNCHANGED. It carries no CTA and
+             never posts to checkout; the attribute is only the hook applyPricing() uses to paint the
+             live $7 from pricing-info.prices.standard.monthly, and .amt is still the element it
+             paints into. -->
+        <div class="price-future">
+          <p class="future-label">Base price at launch</p>
+          <div class="price muted" data-plan="standard" aria-label="Base price at launch: 7 dollars a month">
+            <span class="amt">$7</span><span class="per">/ month</span>
           </div>
-          <p class="note">Just pay and go, no feedback obligation. Cancel anytime. Every feature included, exactly the same product.</p>
-          <div class="meter" data-meter="availability">
-            <div class="meter-track"><div class="meter-fill" style="width:100%"></div></div>
-            <p class="meter-label">Open to everyone, no waitlist</p>
-          </div>
-          <button type="button" class="plan-cta" data-cta data-cta-anon="Start free trial" data-cta-signed="Choose Standard">Start free trial</button>
-          <p class="fud">7 days free. No card required.</p>
         </div>
       </div>
 
       <!-- checkout handoff stub status (honest placeholder while Stripe handoff is deferred) -->
       <p class="checkout-stub" id="checkoutStub" role="status" aria-live="polite"></p>
 
-      <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension. Your bookmarks and settings always stay yours.</p>
+      <!-- CTA below the card (landing geometry). The button itself is UNCHANGED apart from its
+           skin classes: same data-cta hook, same anon/signed label pair, same click path into
+           the signup modal or Stripe checkout. data-cta-plan is a DOM lookup key only, added
+           because the button is no longer a descendant of its card; the value posted to
+           checkout is still the card's own data-plan. -->
+      <div class="price-cta-block">
+        <button type="button" class="btn btn-primary plan-cta" data-cta data-cta-plan="founders"
+                data-cta-anon="Start free trial" data-cta-signed="Lock in my early rate">Start free trial</button>
+        <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension. Your bookmarks and settings always stay yours.</p>
+      </div>
     </section>
   </main>
 
@@ -435,18 +465,30 @@ main{
   'use strict';
   var params = new URLSearchParams(location.search);
   var grid = document.getElementById('priceGrid');
-  var toggle = document.querySelector('.billing-toggle');
-  if(!grid || !toggle) return;
+  if(!grid) return;
   var cards = Array.prototype.slice.call(grid.querySelectorAll('.price'));
+  /* The plan CTA sits BELOW the card now (landing-page pricing geometry), so it is no longer a
+     descendant of .price. It stays bound to its card by data-cta-plan, which mirrors the card's
+     data-plan. This is a DOM lookup only, and every behaviour below is unchanged: the tier
+     posted to checkout is still card.dataset.plan, i.e. the literal string "founders". */
+  var ctaOf = function(card){
+    if(!card) return null;
+    return card.querySelector('[data-cta]') ||
+           document.querySelector('[data-cta][data-cta-plan="' + card.dataset.plan + '"]');
+  };
+  /* only cards with a CTA are selectable; the muted floor is an anchor, never a choice */
+  var selectable = cards.filter(function(c){ return !!ctaOf(c); });
   var cardOf = function(plan){ for(var i=0;i<cards.length;i++){ if(cards[i].dataset.plan===plan) return cards[i]; } return null; };
+  /* WIRE PROTOCOL: monthly only for v1 (no interval toggle), and this is still the exact string the
+     DEPLOYED stripe-checkout expects in the request body. Intentionally unchanged. */
   var interval = 'monthly';
 
-  /* ── selection-follows-click — decorative emphasis only; both CTAs always work ── */
-  function select(card){ if(!card) return; cards.forEach(function(c){ c.classList.toggle('is-selected', c===card); }); }
-  cards.forEach(function(card){
+  /* ── selection-follows-click — decorative emphasis only; the CTA always works ── */
+  function select(card){ if(!card || selectable.indexOf(card)===-1) return; cards.forEach(function(c){ c.classList.toggle('is-selected', c===card); }); }
+  selectable.forEach(function(card){
     card.addEventListener('click', function(e){ if(!e.target.closest('[data-cta]')) select(card); });
     card.addEventListener('keydown', function(e){ if((e.key===' '||e.key==='Enter') && e.target===card){ e.preventDefault(); select(card); } });
-    var cta = card.querySelector('[data-cta]');
+    var cta = ctaOf(card);
     if(cta){
       cta.addEventListener('focus', function(){ select(card); });
       cta.addEventListener('click', function(e){
@@ -459,25 +501,11 @@ main{
     }
   });
 
-  /* ── monthly ⇄ annual — swaps the shown price + suffix; "save 17%" shows on Standard annual only ── */
-  function applyInterval(next){
-    interval = (next==='annual') ? 'annual' : 'monthly';
-    toggle.querySelectorAll('.bt-opt').forEach(function(b){
-      var on = b.dataset.interval === interval;
-      b.classList.toggle('is-active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    grid.querySelectorAll('.amt').forEach(function(el){ var v=el.dataset[interval]; if(v) el.textContent=v; });
-    grid.querySelectorAll('.per').forEach(function(el){ var v=el.dataset[interval]; if(v) el.innerHTML=v; });
-    grid.querySelectorAll('[data-save]').forEach(function(el){ el.hidden = interval!=='annual'; });
-  }
-  toggle.addEventListener('click', function(e){ var b=e.target.closest('.bt-opt'); if(b) applyInterval(b.dataset.interval); });
-
   /* ════════ pricing-info — LIVE (public, keyless GET; matches LOCKED contract §2) ════════
      The page DISPLAYS this data and never SETS any of it (all money/discount authority is server-side).
-     Default path fetches the live endpoint; on ANY failure it falls back to the honest static state
-     (keep the printed prices, hide the live counter — never a stale/zero number). The ?mock= switches
-     stay for QA of states the live data won't currently produce (failure, sold-out, promo).
+     Prices are ALWAYS read live so the display can never disagree with the charge. On ANY failure it
+     falls back to the honest static state: the printed $2 / $7 in the markup stand. The ?mock=
+     switches stay for QA of states the live data won't currently produce (failure, promo).
      Wired live 2026-06-22 after confirming the endpoint returns the contract shape + CORS allow-origin *. */
   /* ── Supabase project config (public: URL + anon/publishable client key, safe to inline) ── */
   var SUPABASE_URL = 'https://wbobpjzkasbnkxbiiioe.supabase.co';
@@ -485,69 +513,42 @@ main{
   var SUPABASE_JS = '/assets/vendor/supabase-js-2.103.0.esm.js';            // self-hosted, pinned (no third-party runtime script); lazy-imported only when signing in / checking out
 
   var ENDPOINT = SUPABASE_URL + '/functions/v1/pricing-info';
-  var MOCK_PRICING_INFO = {                               // QA reference shape (used ONLY by the ?mock= switches)
-    founders_remaining: 188,
+  /* QA reference shape (used ONLY by the ?mock= switches). The endpoint also returns
+     founders_remaining and annual prices; v1 reads neither (no cap, monthly only). */
+  var MOCK_PRICING_INFO = {
     prices: {
-      founders: { monthly: 2,  annual: 24 },              // dollars; annual = 12 × monthly (no extra discount)
-      standard: { monthly: 7,  annual: 70 }               // dollars; annual ≈ 17% off monthly
+      founders: { monthly: 2 },                           // dollars; the early rate, first year
+      standard: { monthly: 7 }                            // dollars; the price floor at launch
     },
     promo: null                                           // display-only: null | { label, code }
   };
   function getPricingInfo(){
     // QA switches — preview a state without touching live data:
     if(params.get('mock')==='fail') return Promise.reject(new Error('mock fail'));                                   // → honest fallback
-    if(params.get('mock')==='soldout') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { founders_remaining:0 }));
     if(params.get('mock')==='promo') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { promo:{ label:'Launch week', code:'ILLILAUNCH' } }));
     // LIVE (default): one public GET; the .then render + .catch fallback are production-shaped.
     return fetch(ENDPOINT, { headers:{ accept:'application/json' } })
       .then(function(r){ if(!r.ok) throw new Error('pricing-info ' + r.status); return r.json(); });
   }
 
+  /* Paint the LIVE monthly prices so the display can never disagree with the charge.
+     The card markup carries the same numbers as static text, which is the honest fallback. */
+  function paintAmount(card, dollars){
+    if(!card || typeof dollars !== 'number' || !isFinite(dollars)) return;
+    var el = card.querySelector('.amt');
+    if(el) el.textContent = '$' + dollars;
+  }
   function applyPricing(d){
     var p = d && d.prices;
-    if(p && p.founders && p.standard){
-      var f = cardOf('founders'), s = cardOf('standard');
-      if(f){ var fa=f.querySelector('.amt'); fa.dataset.monthly='$'+p.founders.monthly; fa.dataset.annual='$'+p.founders.annual; }
-      if(s){ var sa=s.querySelector('.amt'); sa.dataset.monthly='$'+p.standard.monthly; sa.dataset.annual='$'+p.standard.annual; }
-    }
-    var remaining = (d && typeof d.founders_remaining==='number')
-      ? Math.max(0, Math.min(1000, Math.round(d.founders_remaining))) : null;
-    if(remaining !== null){
-      var count = document.getElementById('scarcityCount');
-      var fill  = document.getElementById('scarcityFill');
-      if(count){ count.dataset.count=remaining; count.textContent=remaining.toLocaleString(); }
-      if(fill){ fill.style.width = (((1000 - remaining)/1000)*100).toFixed(1) + '%'; }
-      if(remaining === 0) soldOut();
+    if(p){
+      if(p.founders) paintAmount(cardOf('founders'), p.founders.monthly);   // the early rate, $2
+      if(p.standard) paintAmount(cardOf('standard'), p.standard.monthly);   // the floor at launch, $7
     }
     applyPromo(d && d.promo);
-    applyInterval(interval); // re-render with the resolved numbers + honor any deep-link interval
   }
 
-  /* honest static fallback: keep the static prices, hide the live counter (never show 0/stale) */
-  function onPricingFail(){
-    var meter = grid.querySelector('.meter[data-meter="scarcity"]');
-    if(meter) meter.style.visibility = 'hidden';  // hidden, not removed, so the two CTAs stay aligned
-    applyInterval(interval);
-  }
-
-  /* founders_remaining === 0 → Founders muted (celebratory, never regretful, §8.11 G),
-     Standard promoted to primary. Strings are LOCKED in COPY-INVENTORY E10 (sold-out state). */
-  var isSoldOut = false;
-  function soldOut(){
-    isSoldOut = true;
-    var f = cardOf('founders'); if(!f) return;
-    f.classList.add('is-sold-out');
-    // Celebratory headline in the scarcity-line slot (the "X of 1,000 left" line, now resolved).
-    var label = f.querySelector('.meter-label'); if(label) label.textContent = 'The founding 1,000 are in.';
-    var fill = document.getElementById('scarcityFill'); if(fill) fill.style.width = '100%';
-    // Subline replaces the founder-exchange note.
-    var note = f.querySelector('.note'); if(note) note.textContent = "Standard's the same full illi, open to everyone, nothing held back.";
-    var fud = f.querySelector('.fud'); if(fud) fud.hidden = true;   // no trial line on a closed tier
-    var cta = f.querySelector('[data-cta]');
-    if(cta){ cta.setAttribute('aria-disabled','true'); cta.textContent='Founder seats full'; }
-    // TODO(launch): swap the sold-out CTA for the simple "notify me when a seat opens" email capture (§8.11 G).
-    select(cardOf('standard') || f);
-  }
+  /* honest static fallback: the printed $2 / $7 in the markup stand, nothing is blanked or faked */
+  function onPricingFail(){ /* no-op by design */ }
 
   /* promo ribbon — display-only; the page can SHOW a promo, never GRANT one (§2 / §3c) */
   function applyPromo(promo){
@@ -560,12 +561,17 @@ main{
     ribbon.classList.add('is-visible');
   }
 
-  /* ── {tier, interval} deep-link preselect (email CTA / extension / cancel_url carry the intent) ── */
+  /* ── {tier, interval} deep-link preselect (email CTA / extension / cancel_url carry the intent) ──
+     WIRE PROTOCOL: the parameter NAMES (tier, interval) and the accepted tier token ("founders")
+     are intentionally UNCHANGED. Live emails, the extension Upgrade button and the Stripe
+     cancel_url all round-trip these exact strings; the backend still reads "founders" for $2.
+     Only "monthly" is honored for the interval now that v1 is monthly only. */
   var wantInterval = params.get('interval');
-  if(wantInterval==='monthly' || wantInterval==='annual') interval = wantInterval;
+  if(wantInterval==='monthly') interval = wantInterval;   // "annual" is deliberately ignored in v1
   var wantTier = (params.get('tier')||'').toLowerCase();
-  if(wantTier==='founders' || wantTier==='standard') select(cardOf(wantTier));
-  // default (no/invalid tier) = Founders selected, per the markup + §4 default-on-load.
+  if(wantTier==='founders') select(cardOf('founders'));
+  // Any other tier value (including the legacy "standard") falls through to the default: the one
+  // live card is already selected in the markup, and the floor is not selectable.
 
   /* ── return-from-abandoned-checkout (Stripe cancel_url → /upgrade?status=cancelled[&tier&interval]) ── */
   var status = (params.get('status')||'').toLowerCase();
@@ -677,6 +683,11 @@ main{
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': 'Bearer ' + session.access_token
           },
+          // WIRE PROTOCOL: `tier` is data-plan, i.e. the literal string "founders", and `interval`
+          // is "monthly". Both are intentionally UNCHANGED even though the card now reads
+          // "Early rate": the DEPLOYED stripe-checkout (v13) selects the $2 price on
+          // tier === "founders" (or null) and charges $7 for anything else. The rename to "early"
+          // is written but NOT deployed. Rename here only after that backend deploy lands.
           body: JSON.stringify({ tier: tier, interval: interval })
         }).then(function(res){
           return res.json().catch(function(){ return {}; }).then(function(data){ return { status: res.status, data: data }; });
@@ -699,18 +710,18 @@ main{
 
   /* ════════ arrival state + web OTP signup (I-137) ════════
      /upgrade is a plain public pricing page (owner decision 2026-07-06: no page-morphing hero, no
-     cold-arrival redirect — a normal pricing page whose CTAs adapt by sign-in state). Signed in
-     (token or persisted web session) → plan CTAs go to checkout ("Lock my founder rate" / "Choose
-     Standard"). Logged out → plan CTAs read "Start free trial" and open the signup modal (email →
+     cold-arrival redirect — a normal pricing page whose CTA adapts by sign-in state). Signed in
+     (token or persisted web session) → the plan CTA goes to checkout ("Lock in my early rate").
+     Logged out → the plan CTA reads "Start free trial" and opens the signup modal (email →
      code), Turnstile-gated per the I-133 contract (same-origin /turnstile frame; token consumed at
      signInWithOtp({options:{captchaToken}})). */
   var WEB_SESSION_KEY = 'illi-web-auth';   // MUST match getSupabase()'s storageKey
   var signedIn = false;
 
   function applyCtaLabels(){
-    cards.forEach(function(c){
-      var cta = c.querySelector('[data-cta]');
-      if(!cta || cta.getAttribute('aria-disabled')==='true') return;   // never relabel a sold-out CTA
+    selectable.forEach(function(c){
+      var cta = ctaOf(c);
+      if(!cta) return;
       var lbl = signedIn ? cta.getAttribute('data-cta-signed') : cta.getAttribute('data-cta-anon');
       if(lbl) cta.textContent = lbl;
     });

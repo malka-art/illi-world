@@ -37,9 +37,8 @@ Everything works from anywhere on the screen. No aiming at small buttons, no mem
 ## Pricing
 
 - 7-day free trial, no credit card required
-- Founders tier: $2/month (limited availability, locked price)
-- Monthly: $7/month
-- Annual: $70/year
+- Base price: $7/month
+- Early rate: $2/month for the first year, then $7/month. Available while illi is still unannounced, before launch.
 
 ## Links
 
