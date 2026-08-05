@@ -213,14 +213,38 @@ main{
 
 .price-foot{margin:var(--illi-space-lg) auto 0; font-size:14px; line-height:1.6; color:var(--illi-gray-400); max-width:56ch}
 
-/* install escape hatch — a web arrival may not have the extension yet, and the page can't know.
-   ?token proves arrival from inside the extension (installed), so JS reveals this line only when
-   there is no token. Secondary by design: locking the rate without installing is legitimate, so
-   this never competes with the checkout CTA. */
-.install-line{display:none; margin:var(--illi-space-md) auto 0; font-size:14px; line-height:1.6; color:var(--illi-gray-500)}
-.install-line.is-visible{display:block}
-.install-line a{color:var(--illi-red-650); font-weight:var(--illi-weight-medium); text-decoration:underline; text-underline-offset:2px}
-.install-line a:focus-visible{outline:2px solid var(--illi-gray-800); outline-offset:2px; border-radius:2px}
+/* ════════ CTA pair — state-aware install/buy (Amanda 2026-08-05) ════════
+   One conversion PER ARRIVAL STATE, never two primaries at once:
+     anon   → install is the primary. The 7 free days RUN IN THE EXTENSION and no card is
+              collected, so for a visitor who just clicked "Start free trial" on the landing,
+              installing IS starting the trial. Checkout demotes to the secondary (buying
+              before installing is legitimate: it locks the rate).
+     signed → checkout is the primary (one click from buying); install stays as the secondary
+              because sign-in says NOTHING about install state.
+   WHY THERE IS NO SEPARATE "TOKEN" STATE (verified in code 2026-08-05, do not "optimize" back):
+   a ?token does NOT prove the extension is installed. Two paths mint a byte-identical upgrade
+   token — mint-upgrade-url (extension Upgrade button: installed) and checkout-redirect (the
+   "Unlock illi" CTA in the B2/B3 trial emails: install UNKNOWN, 60-day link TTL, and B3 targets
+   lapsed users, the group most likely to have uninstalled). Hiding install for token arrivals
+   dead-ends an uninstalled winback reader, so token renders as "signed". To split them properly,
+   checkout-redirect must mark its redirect (e.g. &src=email) or the extension must announce
+   itself on illi.world; until then the quiet secondary is the honest render.
+   Skins are assigned BY STATE, not per button: primary = the landing's red .btn-primary recipe;
+   secondary = the pricing block's established secondary (§6, S298) filled accent-secondary
+   (bone-950) with white text. Both treatments already exist; nothing is invented. */
+.cta-pair{display:flex; flex-direction:column; align-items:center; gap:var(--illi-space-md)}
+.price-cta-block[data-arrival="anon"] .cta-install,
+.price-cta-block[data-arrival="signed"] .plan-cta{
+  background:var(--illi-accent-cta); color:var(--illi-on-accent); box-shadow:var(--illi-shadow-cta);
+}
+.price-cta-block[data-arrival="anon"] .plan-cta,
+.price-cta-block[data-arrival="signed"] .cta-install{
+  background:var(--illi-accent-secondary); color:var(--illi-on-accent);
+}
+/* the primary always sits first in the pair; only the signed state needs a flip */
+.price-cta-block[data-arrival="signed"] .cta-install{order:2}
+/* one line that explains how the two actions coexist */
+.cta-note{margin:var(--illi-space-md) auto 0; font-size:14px; line-height:1.6; color:var(--illi-gray-500)}
 
 /* checkout handoff stub — honest placeholder, never a fake success */
 .checkout-stub{
@@ -403,12 +427,26 @@ main{
            the signup modal or Stripe checkout. data-cta-plan is a DOM lookup key only, added
            because the button is no longer a descendant of its card; the value posted to
            checkout is still the card's own data-plan. -->
-      <div class="price-cta-block">
-        <button type="button" class="btn btn-primary plan-cta" data-cta data-cta-plan="founders"
-                data-cta-anon="Start free trial" data-cta-signed="Lock in my early rate">Start free trial</button>
-        <!-- install escape hatch (hidden by default; JS reveals when arrival carries no ?token,
-             i.e. the visitor didn't come from inside the extension and may not have it yet) -->
-        <p class="install-line" id="installLine">Don't have illi yet? <a href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">Install it free from the Chrome Web Store</a>.</p>
+      <!-- ── CTA block, state-aware (install/buy pair) ──
+           data-arrival is set by JS: signed in (token OR web session) → "signed", else "anon".
+           Markup default = "anon", which is both the most likely tokenless truth and the honest
+           no-JS fallback. The plan CTA keeps its data-cta wire hooks untouched; the install CTA
+           is a plain link to the CWS listing. -->
+      <div class="price-cta-block" id="ctaBlock" data-arrival="anon">
+        <div class="cta-pair">
+          <!-- install action: the landing hero's CTA phrase reused verbatim (same function, same
+               words across surfaces; "your browser" not "Chrome" is deliberate — illi runs in
+               Chrome, Edge and other Chromium browsers). -->
+          <a class="btn cta-install" id="installCta"
+             href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">Add illi to your browser, try it free</a>
+          <!-- buy action: wire hooks unchanged. The anon label is "Lock in the early rate" because
+               under this design the anon click means BUY BEFORE INSTALLING, not "start trial" —
+               the old "Start free trial" label on this button promised the wrong thing. -->
+          <button type="button" class="btn plan-cta" data-cta data-cta-plan="founders"
+                  data-cta-anon="Lock in the early rate" data-cta-signed="Get the early rate">Lock in the early rate</button>
+        </div>
+        <!-- the one line that reconciles the two actions -->
+        <p class="cta-note">You can lock the rate before or after you install.</p>
         <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension.</p>
       </div>
     </section>
@@ -867,7 +905,9 @@ main{
   /* signed in via web OTP → close the modal, flip CTAs to the signed-in labels (pick a plan, or install) */
   function onSignedIn(){
     signedIn = true; applyCtaLabels(); closeSignup();
-    showStub('You\'re signed in. Pick a plan below, or <a href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">install illi</a> to get started.');
+    var cb=document.getElementById('ctaBlock');
+    if(cb) cb.setAttribute('data-arrival','signed');   // checkout becomes the primary
+    showStub('You\'re signed in. Pick a plan below.');
   }
   var otpForm=document.getElementById('otpForm');
   if(otpForm) otpForm.addEventListener('submit', function(e){
@@ -889,11 +929,12 @@ main{
   signedIn = !!(identityToken || hasPersistedSession);
   applyCtaLabels();
 
-  /* install escape hatch: ?token proves the visitor came from inside the extension (installed) —
-     hide it. Every other arrival may not have illi yet, so reveal the CWS line. NOTE this keys on
-     the token, not sign-in: a persisted web session (OTP signup) says nothing about install state. */
-  var installLine=document.getElementById('installLine');
-  if(installLine && !identityToken) installLine.classList.add('is-visible');
+  /* arrival state → the CTA pair. signed in (token or web session) → checkout primary, install
+     secondary; neither → install primary, lock secondary. Deliberately NOT keyed on the token as
+     install proof — see the CTA-pair CSS note: checkout-redirect mints the same token for email
+     readers whose install state is unknown. */
+  var ctaBlock=document.getElementById('ctaBlock');
+  if(ctaBlock) ctaBlock.setAttribute('data-arrival', signedIn ? 'signed' : 'anon');
 
   /* initial render — resolve pricing (mock), then paint */
   getPricingInfo().then(applyPricing).catch(onPricingFail);
