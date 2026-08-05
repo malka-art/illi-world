@@ -213,6 +213,15 @@ main{
 
 .price-foot{margin:var(--illi-space-lg) auto 0; font-size:14px; line-height:1.6; color:var(--illi-gray-400); max-width:56ch}
 
+/* install escape hatch — a web arrival may not have the extension yet, and the page can't know.
+   ?token proves arrival from inside the extension (installed), so JS reveals this line only when
+   there is no token. Secondary by design: locking the rate without installing is legitimate, so
+   this never competes with the checkout CTA. */
+.install-line{display:none; margin:var(--illi-space-md) auto 0; font-size:14px; line-height:1.6; color:var(--illi-gray-500)}
+.install-line.is-visible{display:block}
+.install-line a{color:var(--illi-red-650); font-weight:var(--illi-weight-medium); text-decoration:underline; text-underline-offset:2px}
+.install-line a:focus-visible{outline:2px solid var(--illi-gray-800); outline-offset:2px; border-radius:2px}
+
 /* checkout handoff stub — honest placeholder, never a fake success */
 .checkout-stub{
   display:none; width:100%; max-width:920px; text-align:center;
@@ -221,6 +230,7 @@ main{
 }
 .checkout-stub.is-visible{display:block}
 .checkout-stub strong{color:var(--gray-800); font-weight:600}
+.checkout-stub a{color:var(--illi-red-650); font-weight:600; text-decoration:underline; text-underline-offset:2px}
 
 /* ════════ signup modal (web OTP, I-137) ════════
    /upgrade stays a plain public pricing page for everyone. A logged-out "Start free trial"
@@ -396,7 +406,10 @@ main{
       <div class="price-cta-block">
         <button type="button" class="btn btn-primary plan-cta" data-cta data-cta-plan="founders"
                 data-cta-anon="Start free trial" data-cta-signed="Lock in my early rate">Start free trial</button>
-        <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension. Your bookmarks and settings always stay yours.</p>
+        <!-- install escape hatch (hidden by default; JS reveals when arrival carries no ?token,
+             i.e. the visitor didn't come from inside the extension and may not have it yet) -->
+        <p class="install-line" id="installLine">Don't have illi yet? <a href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">Install it free from the Chrome Web Store</a>.</p>
+        <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension.</p>
       </div>
     </section>
   </main>
@@ -854,7 +867,7 @@ main{
   /* signed in via web OTP → close the modal, flip CTAs to the signed-in labels (pick a plan, or install) */
   function onSignedIn(){
     signedIn = true; applyCtaLabels(); closeSignup();
-    showStub('You\'re signed in. Pick a plan below, or install illi to get started.');
+    showStub('You\'re signed in. Pick a plan below, or <a href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">install illi</a> to get started.');
   }
   var otpForm=document.getElementById('otpForm');
   if(otpForm) otpForm.addEventListener('submit', function(e){
@@ -875,6 +888,12 @@ main{
   try { hasPersistedSession = !!localStorage.getItem(WEB_SESSION_KEY); } catch(e){}
   signedIn = !!(identityToken || hasPersistedSession);
   applyCtaLabels();
+
+  /* install escape hatch: ?token proves the visitor came from inside the extension (installed) —
+     hide it. Every other arrival may not have illi yet, so reveal the CWS line. NOTE this keys on
+     the token, not sign-in: a persisted web session (OTP signup) says nothing about install state. */
+  var installLine=document.getElementById('installLine');
+  if(installLine && !identityToken) installLine.classList.add('is-visible');
 
   /* initial render — resolve pricing (mock), then paint */
   getPricingInfo().then(applyPricing).catch(onPricingFail);
