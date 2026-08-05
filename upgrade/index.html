@@ -84,13 +84,45 @@ a{color:inherit}
 h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.15;color:var(--gray-800)}
 
 /* ── Stripped logo-only flow-page header (matches /welcome chrome) ── */
+/* Sticky header. Wordmark left, action right — the landing's header geometry, so the two halves
+   of the funnel read as one site. Sticky so the offer's action is always one click away on a page
+   the visitor scrolls to read. */
 .site-header{
-  display:flex; align-items:center; justify-content:center;
-  padding:20px 24px; background:var(--bone-50); border-bottom:1px solid var(--bone-300);
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between; gap:var(--illi-space-lg);
+  padding:14px 24px; background:var(--bone-50); border-bottom:1px solid var(--bone-300);
 }
-.site-header a{display:inline-flex; border-radius:var(--r-sm)}
+.site-header .home{display:inline-flex; border-radius:var(--r-sm); flex-shrink:0}
 .site-header a:focus-visible{outline:2px solid var(--gray-800); outline-offset:4px}
 .wordmark{display:block}
+
+/* Header action — mirrors whichever action is PRIMARY in the CTA pair below, so the page never
+   shows two different primaries. Hidden until the main CTA scrolls out of view: while the real
+   pair is on screen, a second red button would just compete with it. */
+.header-actions{display:flex; align-items:center; min-width:0}
+.header-actions .btn{
+  font-size:14px; padding:10px 18px;
+  background:var(--illi-accent-cta); color:var(--illi-on-accent); box-shadow:var(--illi-shadow-cta);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+}
+/* reveal state — opacity+transform so it arrives rather than snaps */
+.header-actions{
+  opacity:0; visibility:hidden; transform:translateY(-4px);
+  transition:opacity var(--illi-motion-fast) var(--illi-motion-ease),
+             transform var(--illi-motion-fast) var(--illi-motion-ease), visibility 0s linear .15s;
+}
+.header-actions.is-revealed{opacity:1; visibility:visible; transform:none; transition-delay:0s}
+/* one action per arrival state, mirroring the pair below */
+.header-actions .hdr-buy,
+.header-actions[data-arrival="signed"] .hdr-install{display:none}
+.header-actions[data-arrival="signed"] .hdr-buy{display:inline-flex}
+@media (prefers-reduced-motion:reduce){ .header-actions{transition:none} }
+@media (max-width:560px){
+  .site-header{padding:10px 16px}
+  /* min-height keeps the touch target at 44px even though the label shrinks */
+  .header-actions .btn{font-size:13px; padding:9px 14px; min-height:44px}
+  .wordmark{width:64px; height:44px}
+}
 
 main{
   flex:1; width:100%; max-width:984px; margin:0 auto; padding:56px 24px 72px;
@@ -350,9 +382,10 @@ main{
 </head>
 <body>
 
-  <!-- Logo-only flow-page header (inline wordmark SVG — resolution-independent, no external asset dep) -->
+  <!-- Sticky header: wordmark left, the state's primary action right (inline wordmark SVG —
+       resolution-independent, no external asset dep) -->
   <header class="site-header">
-    <a href="https://illi.world/" aria-label="illi home">
+    <a class="home" href="https://illi.world/" aria-label="illi home">
       <svg class="wordmark" width="88" height="60" viewBox="0 0 162 111" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <g transform="translate(0,36)"><path d="M1,0 L29,0 Q30,0 30,1 L30,64 Q30,67 33,67 L35,67 Q36,67 36,68 L36,74 Q36,75 35,75 L1,75 Q0,75 0,74 L0,68 Q0,67 1,67 L3,67 Q6,67 6,64 L6,9 Q6,6 3,6 L1,6 Q0,6 0,5 L0,1 Q0,0 1,0 Z" fill="#333333"/></g>
         <g transform="translate(6,0)"><path d="M1 7.5 Q1 1 6 4 L16.5 10.5 Q23 14 16.5 17.5 L6 24 Q1 27 1 20.5 Z" fill="#EF4444"/></g>
@@ -363,6 +396,14 @@ main{
         <rect x="146" y="0" width="8" height="24" rx="3" fill="#EAB308"/>
       </svg>
     </a>
+    <!-- Header action: the same primary as the CTA pair below, same labels (no new copy).
+         data-arrival is set by the same JS that sets it on the pair. The buy variant delegates
+         to the main plan CTA's click so there is exactly one checkout code path on this page. -->
+    <div class="header-actions" id="headerActions" data-arrival="anon">
+      <a class="btn hdr-install"
+         href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">Add illi to your browser, try it free</a>
+      <button type="button" class="btn hdr-buy">Get the early rate</button>
+    </div>
   </header>
 
   <main>
@@ -905,8 +946,7 @@ main{
   /* signed in via web OTP → close the modal, flip CTAs to the signed-in labels (pick a plan, or install) */
   function onSignedIn(){
     signedIn = true; applyCtaLabels(); closeSignup();
-    var cb=document.getElementById('ctaBlock');
-    if(cb) cb.setAttribute('data-arrival','signed');   // checkout becomes the primary
+    setArrival('signed');   // checkout becomes the primary, in the pair and in the header
     showStub('You\'re signed in. Pick a plan below.');
   }
   var otpForm=document.getElementById('otpForm');
@@ -934,7 +974,27 @@ main{
      install proof — see the CTA-pair CSS note: checkout-redirect mints the same token for email
      readers whose install state is unknown. */
   var ctaBlock=document.getElementById('ctaBlock');
-  if(ctaBlock) ctaBlock.setAttribute('data-arrival', signedIn ? 'signed' : 'anon');
+  var headerActions=document.getElementById('headerActions');
+  function setArrival(state){
+    if(ctaBlock) ctaBlock.setAttribute('data-arrival', state);
+    if(headerActions) headerActions.setAttribute('data-arrival', state);
+  }
+  setArrival(signedIn ? 'signed' : 'anon');
+
+  /* Header action reveals only once the real CTA pair has scrolled out of view, so the page never
+     shows two competing primaries. No observer support (or no pair) ⇒ leave it hidden rather than
+     risk a permanently duplicated CTA. */
+  if(headerActions && ctaBlock && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(entries){
+      headerActions.classList.toggle('is-revealed', !entries[0].isIntersecting);
+    }, { threshold:0 }).observe(ctaBlock);
+  }
+  /* the header's buy button is a remote control for the main plan CTA — one checkout path only */
+  var hdrBuy=headerActions && headerActions.querySelector('.hdr-buy');
+  if(hdrBuy) hdrBuy.addEventListener('click', function(){
+    var main=ctaBlock && ctaBlock.querySelector('.plan-cta');
+    if(main) main.click();
+  });
 
   /* initial render — resolve pricing (mock), then paint */
   getPricingInfo().then(applyPricing).catch(onPricingFail);
