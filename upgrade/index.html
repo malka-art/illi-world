@@ -4,51 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upgrade &middot; illi</title>
-<meta name="description" content="Start your illi trial. Seven days free, no card. Then $2 a month for your first year.">
+<meta name="description" content="Try illi free for seven days, no card. Premium is US$10/month or US$100/year.">
 <!-- Transaction surface, not a marketing page → noindex (matches the /welcome, /goodbye flow-page convention). -->
 <meta name="robots" content="noindex">
 
-<!-- ============================================================
-  illi /upgrade  (illi.world/upgrade)  :  the canonical transaction surface
-  One live offer (the early rate) plus one muted, unnamed price floor, then hand off to checkout.
-  Deep-link target for: lifecycle email CTAs, the extension Upgrade button, and the Stripe cancel_url.
 
-  Spec: design/PRICING-BLOCK-DESIGN.md §8.11 (funnel ruling) + §1–4 (model, data contract, visual).
-  Copy authority: marketing/V1-SHIP-COPY.md §6 (owner-locked) + §6b (/upgrade match).
-  Pricing block ported from the LIVE landing page's #pricing (site/index.html, 2026-08-04): same
-  single centered column, card treatment, notched badge, floor label + pill, and secondary CTA,
-  built on the same --illi-* tokens. The landing is the source of truth for this component's
-  design; the data hooks, wire tokens and fallback engine below are /upgrade's own and unchanged.
-
-  ── THE OFFER (owner rulings, 2026-08-04) ──
-   * Early rate: $2 / month for the FIRST YEAR. Not lifetime, not locked for life.
-   * No cap. There is no seat limit, so there is no counter and no sold-out state.
-   * "Founders" is a parked deal and must not appear in any customer-visible string.
-   * Monthly only for v1. No billing-interval toggle.
-   * One selectable card + one muted, unnamed floor labelled "Base price at launch" ($7/mo).
-     Label wording adopted from the landing (2026-08-04) so the two surfaces stop disagreeing
-     one click apart in the same funnel.
-
-  ── WIRE PROTOCOL: DO NOT RENAME (2026-08-04) ──
-   The customer-visible name changed; the tokens on the wire did NOT. The DEPLOYED stripe-checkout
-   (v13) reads tier === "founders" (or null) to select the $2 price and falls through to Standard
-   at $7 for anything else. The backend rename to "early" is written but NOT deployed. Renaming the
-   token here would silently charge every buyer $7. Unchanged spots are flagged inline below.
-
-  ── STATE-AWARE (plain public pricing page; owner decision 2026-07-06: no page-morph hero, no cold redirect) ──
-   * Everyone sees the same page. Only the plan-CTA behavior adapts by sign-in state:
-       - Signed in (?token or a persisted web session): CTA reads "Lock in my early rate" and
-         opens Stripe checkout.
-       - Logged out: CTA reads "Start free trial" and opens the SIGNUP MODAL (email → code, web OTP).
-  ── LIVE ──
-   * pricing-info → live public endpoint (prices); honest static fallback on failure (wired 2026-06-22).
-     The endpoint still returns founders_remaining; v1 ignores it (no cap to count against).
-   * Signed-token pickup + Stripe checkout handoff → live (§8.11 funnel):
-       ?token → upgrade-redeem → verifyOtp (silent web sign-in) → plan CTA → stripe-checkout → Stripe.
-   * Web OTP sign-in (I-137, §8.11 bridge 2) → live: signup modal, Turnstile-gated (same-origin /turnstile
-     frame, I-133 contract) → signInWithOtp({options:{captchaToken}}) → code step → verifyOtp → signed-in.
-  Tokens inlined because GitHub Pages can't pull the extension's runtime CSS.
-============================================================ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -402,7 +362,7 @@ main{
     <div class="header-actions" id="headerActions" data-arrival="anon">
       <a class="btn hdr-install"
          href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">Add illi to your browser, try it free</a>
-      <button type="button" class="btn hdr-buy">Get the early rate</button>
+      <button type="button" class="btn hdr-buy">Get Premium</button>
     </div>
   </header>
 
@@ -431,32 +391,16 @@ main{
       </div>
 
       <div class="price-grid" id="priceGrid">
-        <!-- The live offer: the early rate. The only selectable card.
-             WIRE PROTOCOL: data-plan="founders" is the tier token the DEPLOYED stripe-checkout (v13)
-             reads to select the $2 price. It is intentionally UNCHANGED while the customer-visible
-             name is "Early rate". Renaming it to "early" before the backend rename deploys would
-             fall through to Standard and charge $7. Do not touch until that ships. -->
-        <div class="price early is-selected" data-plan="founders" tabindex="0" role="group" aria-label="Early rate plan">
-          <span class="early-badge">Not announced yet</span>
-          <span class="tier">Early rate</span>
-          <div class="amount">
-            <span class="amt">$2</span><span class="per">&nbsp;/ month, your first year</span>
-          </div>
-          <p class="note">illi is live, but the lights aren't all the way on yet. No launch, no announcement, just the extension and the people who found it early.</p>
-          <p class="note">Try it free first. If it earns its place, lock in $2 a month for your whole first year. Once we launch, pricing starts at $7.</p>
-        </div>
-
-        <!-- The muted floor: an unnamed anchor, not a tier and not selectable. No name, by owner
-             ruling, so it cannot read as a card worth waiting for.
-             WIRE PROTOCOL: data-plan="standard" is intentionally UNCHANGED. It carries no CTA and
-             never posts to checkout; the attribute is only the hook applyPricing() uses to paint the
-             live $7 from pricing-info.prices.standard.monthly, and .amt is still the element it
-             paints into. -->
-        <div class="price-future">
-          <p class="future-label">Base price at launch</p>
-          <div class="price muted" data-plan="standard" aria-label="Base price at launch: 7 dollars a month">
-            <span class="amt">$7</span><span class="per">/ month</span>
-          </div>
+        <div class="price early is-selected" data-plan="standard" tabindex="0" role="group" aria-label="illi Premium">
+          <span class="tier">illi Premium</span>
+          <div class="amount"><span class="amt">$10</span><span class="per">&nbsp;/ month</span></div>
+          <fieldset class="billing-options" style="border:0;padding:0;margin:20px 0 12px;text-align:left">
+            <legend style="margin-bottom:8px">Choose your billing</legend>
+            <label style="display:block;margin:10px 0;cursor:pointer"><input type="radio" name="billing" value="monthly" checked> Monthly — <span id="monthlyPrice">$10</span> per month</label>
+            <label style="display:block;margin:10px 0;cursor:pointer"><input type="radio" name="billing" value="annual"> Annual — <span id="annualPrice">$100</span> per year</label>
+          </fieldset>
+          <p class="note" id="billingNote">Billed monthly. Cancel future renewals anytime.</p>
+          <p class="note">The full illi experience is included with either billing option.</p>
         </div>
       </div>
 
@@ -480,14 +424,14 @@ main{
                Chrome, Edge and other Chromium browsers). -->
           <a class="btn cta-install" id="installCta"
              href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg">Add illi to your browser, try it free</a>
-          <!-- buy action: wire hooks unchanged. The anon label is "Lock in the early rate" because
+          <!-- buy action: wire hooks unchanged. The anon label is "Get Premium" because
                under this design the anon click means BUY BEFORE INSTALLING, not "start trial" —
                the old "Start free trial" label on this button promised the wrong thing. -->
-          <button type="button" class="btn plan-cta" data-cta data-cta-plan="founders"
-                  data-cta-anon="Lock in the early rate" data-cta-signed="Get the early rate">Lock in the early rate</button>
+          <button type="button" class="btn plan-cta" data-cta data-cta-plan="standard"
+                  data-cta-anon="Get Premium" data-cta-signed="Get Premium">Get Premium</button>
         </div>
         <!-- the one line that reconciles the two actions -->
-        <p class="cta-note">You can lock the rate before or after you install.</p>
+        <p class="cta-note">Your subscription begins when you purchase. You can try illi free before choosing a plan.</p>
         <p class="price-foot">Prices in USD. Tax calculated at checkout. Cancel anytime from the extension.</p>
       </div>
     </section>
@@ -515,8 +459,8 @@ main{
         <!-- email step -->
         <div class="otp-step" data-step="email" id="otpEmailStep">
           <div class="sm-headgroup">
-            <h2 class="sm-heading" id="smHeading">Start your free trial</h2>
-            <p class="sm-sub">Enter your email to start your 7 days free.</p>
+            <h2 class="sm-heading" id="smHeading">Sign in to continue</h2>
+            <p class="sm-sub">Enter your email to choose illi Premium. No charge until you complete checkout.</p>
           </div>
           <div class="sm-fieldgroup">
             <input type="email" name="email" id="otpEmail" class="otp-field" inputmode="email"
@@ -562,7 +506,7 @@ main{
   /* The plan CTA sits BELOW the card now (landing-page pricing geometry), so it is no longer a
      descendant of .price. It stays bound to its card by data-cta-plan, which mirrors the card's
      data-plan. This is a DOM lookup only, and every behaviour below is unchanged: the tier
-     posted to checkout is still card.dataset.plan, i.e. the literal string "founders". */
+     posted to checkout is card.dataset.plan, the standard Premium tier. */
   var ctaOf = function(card){
     if(!card) return null;
     return card.querySelector('[data-cta]') ||
@@ -571,8 +515,7 @@ main{
   /* only cards with a CTA are selectable; the muted floor is an anchor, never a choice */
   var selectable = cards.filter(function(c){ return !!ctaOf(c); });
   var cardOf = function(plan){ for(var i=0;i<cards.length;i++){ if(cards[i].dataset.plan===plan) return cards[i]; } return null; };
-  /* WIRE PROTOCOL: monthly only for v1 (no interval toggle), and this is still the exact string the
-     DEPLOYED stripe-checkout expects in the request body. Intentionally unchanged. */
+
   var interval = 'monthly';
 
   /* ── selection-follows-click — decorative emphasis only; the CTA always works ── */
@@ -593,77 +536,45 @@ main{
     }
   });
 
-  /* ════════ pricing-info — LIVE (public, keyless GET; matches LOCKED contract §2) ════════
-     The page DISPLAYS this data and never SETS any of it (all money/discount authority is server-side).
-     Prices are ALWAYS read live so the display can never disagree with the charge. On ANY failure it
-     falls back to the honest static state: the printed $2 / $7 in the markup stand. The ?mock=
-     switches stay for QA of states the live data won't currently produce (failure, promo).
-     Wired live 2026-06-22 after confirming the endpoint returns the contract shape + CORS allow-origin *. */
-  /* ── Supabase project config (public: URL + anon/publishable client key, safe to inline) ── */
+  /* Read standard prices from the same lookup keys as checkout. */
   var SUPABASE_URL = 'https://wbobpjzkasbnkxbiiioe.supabase.co';
-  var SUPABASE_ANON_KEY = 'sb_publishable_nj-_J2qmR2VT45qqSesaTg_rvZcXr1j'; // public client key; mirrors the extension's VITE_SUPABASE_ANON_KEY
-  var SUPABASE_JS = '/assets/vendor/supabase-js-2.103.0.esm.js';            // self-hosted, pinned (no third-party runtime script); lazy-imported only when signing in / checking out
-
+  var SUPABASE_ANON_KEY = 'sb_publishable_nj-_J2qmR2VT45qqSesaTg_rvZcXr1j';
+  var SUPABASE_JS = '/assets/vendor/supabase-js-2.103.0.esm.js';
   var ENDPOINT = SUPABASE_URL + '/functions/v1/pricing-info';
-  /* QA reference shape (used ONLY by the ?mock= switches). The endpoint also returns
-     founders_remaining and annual prices; v1 reads neither (no cap, monthly only). */
-  var MOCK_PRICING_INFO = {
-    prices: {
-      founders: { monthly: 2 },                           // dollars; the early rate, first year
-      standard: { monthly: 7 }                            // dollars; the price floor at launch
-    },
-    promo: null                                           // display-only: null | { label, code }
-  };
+  var standardPrices = { monthly: 10, annual: 100 };
+  var pricingReady = false;
   function getPricingInfo(){
-    // QA switches — preview a state without touching live data:
-    if(params.get('mock')==='fail') return Promise.reject(new Error('mock fail'));                                   // → honest fallback
-    if(params.get('mock')==='promo') return Promise.resolve(Object.assign({}, MOCK_PRICING_INFO, { promo:{ label:'Launch week', code:'ILLILAUNCH' } }));
-    // LIVE (default): one public GET; the .then render + .catch fallback are production-shaped.
     return fetch(ENDPOINT, { headers:{ accept:'application/json' } })
       .then(function(r){ if(!r.ok) throw new Error('pricing-info ' + r.status); return r.json(); });
   }
-
-  /* Paint the LIVE monthly prices so the display can never disagree with the charge.
-     The card markup carries the same numbers as static text, which is the honest fallback. */
-  function paintAmount(card, dollars){
-    if(!card || typeof dollars !== 'number' || !isFinite(dollars)) return;
-    var el = card.querySelector('.amt');
-    if(el) el.textContent = '$' + dollars;
+  function renderBilling(){
+    var card = cardOf('standard');
+    card.querySelector('.amt').textContent = '$' + standardPrices[interval];
+    card.querySelector('.per').textContent = interval === 'annual' ? ' / year' : ' / month';
+    document.getElementById('monthlyPrice').textContent = '$' + standardPrices.monthly;
+    document.getElementById('annualPrice').textContent = '$' + standardPrices.annual;
+    document.getElementById('billingNote').textContent = interval === 'annual'
+      ? 'Billed $' + standardPrices.annual + ' once per year. Cancel future renewals anytime.'
+      : 'Billed monthly. Cancel future renewals anytime.';
+    document.querySelectorAll('input[name="billing"]').forEach(function(r){ r.checked = r.value === interval; });
   }
   function applyPricing(d){
-    var p = d && d.prices;
-    if(p){
-      if(p.founders) paintAmount(cardOf('founders'), p.founders.monthly);   // the early rate, $2
-      if(p.standard) paintAmount(cardOf('standard'), p.standard.monthly);   // the floor at launch, $7
-    }
-    applyPromo(d && d.promo);
+    var p = d && d.prices && d.prices.standard;
+    if(!p || !Number.isFinite(p.monthly) || !Number.isFinite(p.annual) || p.monthly <= 0 || p.annual <= 0) throw new Error('Invalid prices');
+    standardPrices = p;
+    pricingReady = true;
+    renderBilling();
   }
-
-  /* honest static fallback: the printed $2 / $7 in the markup stand, nothing is blanked or faked */
-  function onPricingFail(){ /* no-op by design */ }
-
-  /* promo ribbon — display-only; the page can SHOW a promo, never GRANT one (§2 / §3c) */
-  function applyPromo(promo){
-    var ribbon = document.getElementById('promoRibbon');
-    if(!ribbon || !promo || !promo.label) return;
-    var label = document.getElementById('promoLabel');
-    var code  = document.getElementById('promoCode');
-    if(label) label.textContent = promo.label;
-    if(code && promo.code){ code.textContent = promo.code; code.hidden = false; }
-    ribbon.classList.add('is-visible');
+  function onPricingFail(){
+    pricingReady = false;
+    showStub('We couldn’t confirm current pricing. Refresh the page before purchasing. You can still install illi and try it free.');
   }
-
-  /* ── {tier, interval} deep-link preselect (email CTA / extension / cancel_url carry the intent) ──
-     WIRE PROTOCOL: the parameter NAMES (tier, interval) and the accepted tier token ("founders")
-     are intentionally UNCHANGED. Live emails, the extension Upgrade button and the Stripe
-     cancel_url all round-trip these exact strings; the backend still reads "founders" for $2.
-     Only "monthly" is honored for the interval now that v1 is monthly only. */
+  document.querySelectorAll('input[name="billing"]').forEach(function(r){
+    r.addEventListener('change',function(){ interval = r.value; renderBilling(); });
+  });
   var wantInterval = params.get('interval');
-  if(wantInterval==='monthly') interval = wantInterval;   // "annual" is deliberately ignored in v1
-  var wantTier = (params.get('tier')||'').toLowerCase();
-  if(wantTier==='founders') select(cardOf('founders'));
-  // Any other tier value (including the legacy "standard") falls through to the default: the one
-  // live card is already selected in the markup, and the floor is not selectable.
+  if(wantInterval === 'annual' || wantInterval === 'monthly') interval = wantInterval;
+  renderBilling();
 
   /* ── return-from-abandoned-checkout (Stripe cancel_url → /upgrade?status=cancelled[&tier&interval]) ── */
   var status = (params.get('status')||'').toLowerCase();
@@ -755,6 +666,7 @@ main{
 
   /* plan CTA -> Stripe Checkout, authed with the web session minted above (or restored after a cancel) */
   function startCheckout(tier, interval){
+    if(!pricingReady){ onPricingFail(); return Promise.resolve(); }
     showStub('Opening secure checkout…');
     var ready = redeemPromise ? redeemPromise.catch(function(){ return false; }) : Promise.resolve(false);
     return ready.then(function(){
@@ -775,11 +687,6 @@ main{
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': 'Bearer ' + session.access_token
           },
-          // WIRE PROTOCOL: `tier` is data-plan, i.e. the literal string "founders", and `interval`
-          // is "monthly". Both are intentionally UNCHANGED even though the card now reads
-          // "Early rate": the DEPLOYED stripe-checkout (v13) selects the $2 price on
-          // tier === "founders" (or null) and charges $7 for anything else. The rename to "early"
-          // is written but NOT deployed. Rename here only after that backend deploy lands.
           body: JSON.stringify({ tier: tier, interval: interval })
         }).then(function(res){
           return res.json().catch(function(){ return {}; }).then(function(data){ return { status: res.status, data: data }; });
@@ -788,7 +695,7 @@ main{
             window.location.assign(r.data.url); // hand off to Stripe Checkout
             return;
           }
-          showStub('We couldn’t open checkout just now. Please try again in a moment.');
+          showStub(r.data && r.data.error === 'offer_unavailable' ? 'This offer is no longer available. Refresh to see current pricing.' : 'We couldn’t open checkout just now. Please try again in a moment.');
         });
       });
     }).catch(function(){
@@ -800,13 +707,7 @@ main{
   var identityToken = params.get('token') || null;
   var redeemPromise = identityToken ? redeemUpgradeToken(identityToken) : null;
 
-  /* ════════ arrival state + web OTP signup (I-137) ════════
-     /upgrade is a plain public pricing page (owner decision 2026-07-06: no page-morphing hero, no
-     cold-arrival redirect — a normal pricing page whose CTA adapts by sign-in state). Signed in
-     (token or persisted web session) → the plan CTA goes to checkout ("Lock in my early rate").
-     Logged out → the plan CTA reads "Start free trial" and opens the signup modal (email →
-     code), Turnstile-gated per the I-133 contract (same-origin /turnstile frame; token consumed at
-     signInWithOtp({options:{captchaToken}})). */
+
   var WEB_SESSION_KEY = 'illi-web-auth';   // MUST match getSupabase()'s storageKey
   var signedIn = false;
 
@@ -969,10 +870,7 @@ main{
   signedIn = !!(identityToken || hasPersistedSession);
   applyCtaLabels();
 
-  /* arrival state → the CTA pair. signed in (token or web session) → checkout primary, install
-     secondary; neither → install primary, lock secondary. Deliberately NOT keyed on the token as
-     install proof — see the CTA-pair CSS note: checkout-redirect mints the same token for email
-     readers whose install state is unknown. */
+
   var ctaBlock=document.getElementById('ctaBlock');
   var headerActions=document.getElementById('headerActions');
   function setArrival(state){

@@ -37,13 +37,13 @@ Everything works from anywhere on the screen. No aiming at small buttons, no mem
 ## Pricing
 
 - 7-day free trial, no credit card required
-- Base price: $7/month
-- Early rate: $2/month for the first year, then $7/month. Available while illi is still unannounced, before launch.
+- illi Premium: US$10/month or US$100/year. Tax is calculated at checkout.
+- The founding campaign has not started. Existing subscriptions retain their agreed pricing.
 
 ## Links
 
 - [Landing page](https://illi.world): Product homepage
-- [Chrome Web Store](https://chrome.google.com/webstore): Install illi
+- [Chrome Web Store](https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg): Install illi
 - [Privacy Policy](https://illi.world/privacy): What data illi collects and how it is used
 - [Terms of Service](https://illi.world/terms): Subscription terms, trial, legal
 
