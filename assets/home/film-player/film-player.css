@@ -1,0 +1,54 @@
+/* illi film player (owner rulings 2026-11-09 and 2026-11-10).
+   The film carries a PAINTED player bar (part of the picture, driven by the surfer's gestures). The viewer's REAL controls sit
+   exactly on top of it at the measured film coordinates, show while the pointer moves over the film and fade 1 s after it stops.
+   Everything lives on a 1920x1080 layer scaled to the picture, so controls keep their exact relative size and place at every
+   player size and in fullscreen. All numbers below are film pixels on that layer. */
+@font-face{font-family:"FP Roboto";src:url(roboto-latin-v48.woff2) format("woff2");font-weight:400 500;font-display:swap}
+
+.fp{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;user-select:none;-webkit-user-select:none;outline:none}
+.fp:focus-visible{box-shadow:inset 0 0 0 3px var(--focus,#fff)}
+.fp video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.fp.idle{cursor:none}
+.fp-layer{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;pointer-events:none}
+.fp-ui{position:absolute;inset:0;opacity:0;transition:opacity .25s cubic-bezier(.4,0,1,1);font-family:"FP Roboto",Roboto,Arial,sans-serif}
+.fp.show .fp-ui{opacity:1;transition-timing-function:cubic-bezier(0,0,.2,1)}
+.fp.show .fp-ui .fp-hit{pointer-events:auto}
+.fp-ui img{position:absolute;display:block}
+.fp-gradient{left:0;top:0;width:1920px;height:1080px}
+.fp-cover{position:absolute;left:0;width:1920px;top:1009px;height:19px;backdrop-filter:blur(3px) saturate(.35);-webkit-backdrop-filter:blur(3px) saturate(.35)}
+.fp-pill{position:absolute;border-radius:22px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.fp-btn{position:absolute;cursor:pointer}
+
+.fp-tl{position:absolute;left:12.522px;top:1015.304px;width:1894.957px;height:6.261px;transition:top .1s,height .1s}
+.fp.tl-hover .fp-tl,.fp.scrubbing .fp-tl{top:1014.26px;height:8.35px}
+.fp-tl>div{position:absolute;top:0;height:100%;left:0}
+.fp-track{width:100%;background:rgba(40,40,40,.9);border-radius:1px}
+.fp-buf{background:rgba(152,152,152,.9)}
+.fp.tl-hover .fp-buf,.fp.scrubbing .fp-buf{background:rgba(175,175,175,.9)}
+.fp-hov{background:rgba(211,211,211,.95);display:none}
+.fp.tl-hover .fp-hov{display:block}
+.fp-played{background:#ff0033}
+.fp-knob{position:absolute;top:1018.43px;left:0;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:#ff0033;transition:width .1s,height .1s,margin .1s}
+.fp.tl-hover .fp-knob,.fp.scrubbing .fp-knob{width:20px;height:20px;margin:-10px 0 0 -10px}
+.fp-tlhit{position:absolute;left:12.522px;width:1894.957px;top:1003px;height:27px;cursor:pointer}
+.fp-tip{position:absolute;top:970px;transform:translateX(-50%);background:rgba(28,28,28,.9);color:#fff;font-size:14.6px;font-weight:500;padding:3px 9px;border-radius:8px;display:none;white-space:nowrap}
+.fp.tl-hover .fp-tip,.fp.scrubbing .fp-tip{display:block}
+.fp-time{position:absolute;left:117px;top:1030px;width:104px;height:42px;border-radius:21px;background:rgba(0,0,0,.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;font-size:14.6px;display:flex;align-items:center;justify-content:center;white-space:nowrap;letter-spacing:.1px}
+.fp-time b{font-weight:500}
+.fp-time span{color:#ddd;margin-left:4px}
+
+/* large play button, shown only until the first play (the poster carries no play cue of its own) */
+.fp-big{position:absolute;left:50%;top:50%;width:136px;height:96px;margin:-48px 0 0 -68px;border:0;border-radius:24px;background:rgba(15,15,15,.72);cursor:pointer;pointer-events:auto;transition:background .15s,opacity .2s}
+.fp-big::after{content:"";position:absolute;left:56px;top:30px;border-style:solid;border-width:18px 0 18px 31px;border-color:transparent transparent transparent #fff}
+.fp-big:hover{background:#DC2626}
+.fp.played .fp-big{opacity:0;pointer-events:none}
+
+/* the install button the film's hub slides aside to reveal (owner 2026-11-10): a real link, same spot and timing as the film */
+.fp-cta{position:absolute;left:34px;top:825px;transform:translateY(-50%) scale(1.5);transform-origin:0 50%;visibility:hidden}
+.fp-cta.on{visibility:visible}
+.fp-cta .button{pointer-events:auto;will-change:transform,opacity,box-shadow}
+/* touch screens: the button scales with the picture, so on a phone it is small; an invisible margin makes it easier to tap */
+@media (pointer:coarse){.fp-cta .button{position:relative}.fp-cta .button::after{content:"";position:absolute;inset:-40px -16px}}
+
+.fp:fullscreen{width:100vw;height:100vh;aspect-ratio:auto}
+@media (prefers-reduced-motion:reduce){.fp-ui,.fp-tl,.fp-knob{transition:none!important}}

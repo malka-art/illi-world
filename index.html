@@ -25,13 +25,12 @@
 <!-- illi home page, Loom-reference design (Amanda, iteration 3), published 2026-11-09 on the owner's instruction.
      Assets for this page live under assets/home/. The reviews section is held back until real customer quotes exist.
      The send-to-desktop form went live 2026-11-10: phone visitors only (landing.js shows it), posting to the
-     send-to-desktop Edge Function, which emails the install link once per address per day (COPY-INVENTORY B14). -->
-<link rel="stylesheet" href="assets/home/style.css?v=1">
-<link rel="stylesheet" href="assets/home/yt-player/yt-player.css">
-<style>
-/* YouTube's player stylesheet assumes content-box; the page's global border-box reset collapses its icons. Deliberate, do not remove. */
-.ytpc-root,.ytpc-root *,.ytpc-root *::before,.ytpc-root *::after{box-sizing:content-box}
-</style>
+     send-to-desktop Edge Function, which emails the install link once per address per day (COPY-INVENTORY B14).
+     The demo plays in illi's own film player (assets/home/film-player/, owner rulings 2026-11-09/10): real controls sit on the
+     player bar painted into the film and scale with the picture; at the end a real install button appears where the film's
+     hub slides aside (on phones it leads to the send-to-desktop form instead). -->
+<link rel="stylesheet" href="assets/home/style.css?v=2">
+<link rel="stylesheet" href="assets/home/film-player/film-player.css">
 </head>
 <body>
 <header class="site-head">
@@ -40,7 +39,7 @@
     <a href="#how">How it works</a>
     <a href="#where">Where it works</a>
     <a href="#answers">Answers</a>
-    <a class="button small cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M4 12 12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a class="button small cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
   </nav>
 </header>
 
@@ -53,7 +52,7 @@
       <p class="intro">Control YouTube with simple mouse gestures, without hunting for buttons.</p>
     </div>
     <div class="hero-action">
-      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M4 12 12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
       <p class="trial">45 days of Premium free · No card required</p>
       <p class="audience">For people who watch to learn, understand, or follow their curiosity.</p>
     </div>
@@ -163,7 +162,7 @@
     <img class="close-mark" src="assets/home/illi-wordmark-color-dark.svg" width="162" height="111" alt="" aria-hidden="true">
     <h2 id="final-cta-title">Get more out of your next video.</h2>
     <div class="cta-stack">
-      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M4 12 12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days</a>
       <p class="trial">All Premium features. No card required. Basic speed control stays free afterwards.</p>
     </div>
     <!-- Phone visitors send themselves the install link (B14). Hidden until landing.js detects a phone; posts to the
@@ -205,7 +204,6 @@
 <div class="cta-note" id="cta-note" role="status" aria-live="polite" hidden>Opened the Chrome Web Store in a new tab.</div>
 
 
-<script src="assets/home/yt-player/yt-player-icons.js"></script>
-<script src="assets/home/yt-player/yt-player.js"></script>
-<script src="assets/home/landing.js?v=2"></script>
+<script src="assets/home/film-player/film-player.js"></script>
+<script src="assets/home/landing.js?v=3"></script>
 </body></html>
