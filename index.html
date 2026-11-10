@@ -23,8 +23,9 @@
 <meta name="twitter:description" content="illi is a Chrome extension that gives your mouse gesture control over YouTube video playback.">
 <meta name="twitter:image" content="https://illi.world/assets/og-card.png">
 <!-- illi home page, Loom-reference design (Amanda, iteration 3), published 2026-11-09 on the owner's instruction.
-     Assets for this page live under assets/home/. The reviews section and the send-to-desktop form are held back
-     until real customer quotes and a working send exist. -->
+     Assets for this page live under assets/home/. The reviews section is held back until real customer quotes exist.
+     The send-to-desktop form went live 2026-11-10: phone visitors only (landing.js shows it), posting to the
+     send-to-desktop Edge Function, which emails the install link once per address per day (COPY-INVENTORY B14). -->
 <link rel="stylesheet" href="assets/home/style.css?v=1">
 <link rel="stylesheet" href="assets/home/yt-player/yt-player.css">
 <style>
@@ -165,6 +166,19 @@
       <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M4 12 12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       <p class="trial">All Premium features. No card required. Basic speed control stays free afterwards.</p>
     </div>
+    <!-- Phone visitors send themselves the install link (B14). Hidden until landing.js detects a phone; posts to the
+         send-to-desktop Edge Function (one email per address per day). The "website" field is a honeypot: off screen,
+         never shown to people, and a filled value means a bot. -->
+    <form class="send" id="send-form" novalidate hidden>
+      <label class="send-label" for="send-email">Send the install link to your computer</label>
+      <div class="send-row">
+        <input class="send-input" id="send-email" type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required aria-describedby="send-help">
+        <button class="button small" type="submit">Send</button>
+      </div>
+      <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"><label for="send-website">Website</label><input id="send-website" type="text" name="website" tabindex="-1" autocomplete="off"></div>
+      <p class="send-help" id="send-help">One email with the link, nothing else.</p>
+      <p class="send-status" id="send-status" role="status" aria-live="polite"></p>
+    </form>
     <p class="signoff"><img src="assets/home/illi-mark-color.svg" width="62" height="36" alt="" aria-hidden="true"><span>Go learn something.</span></p>
   </div>
 </section>
@@ -193,5 +207,5 @@
 
 <script src="assets/home/yt-player/yt-player-icons.js"></script>
 <script src="assets/home/yt-player/yt-player.js"></script>
-<script src="assets/home/landing.js?v=1"></script>
+<script src="assets/home/landing.js?v=2"></script>
 </body></html>
