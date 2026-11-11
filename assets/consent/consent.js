@@ -1,0 +1,255 @@
+/* illi.world privacy choices (2026-11-11): the corner question on the home page and the Privacy choices panel.
+   Design: Amanda's direction 1, the corner note (design/consent-prompt-2026-11-11). Wording: Malka's locked ask and body line,
+   Melody's anti-slop pass for the rest (marketing/consent-prompt-2026-11-11/RESEARCH-AND-WORDING.md).
+
+   What this file may write to the browser, and ONLY after the visitor clicks something:
+     illi.note     after "Remember it" (or "Remember this browser"): { id: random code, f: the campaign tags of that visit, at: time of the yes }
+                   It expires 13 months after the yes; later visits do not extend it; then the question comes back.
+     illi.answer   after "Don't remember it" (or "Forget this browser"): { a: 'no', at, v }. Never asked again.
+     illi.nocount  after "Stop counting my visits": { at }. assets/home/track.js sends nothing while it is there.
+   An ignored question writes nothing and is asked again on the next load. Phones, tablets, narrow windows and browsers that
+   send Global Privacy Control or Do Not Track are never asked; under a privacy signal nothing is counted either.
+
+   The panel works on every page that has a footer button .foot-choice and the panel markup #choices (home, privacy, terms).
+   The question needs the #ask markup (home page only). */
+(function () {
+  'use strict';
+
+  /* ---------- the two switches the owner has not ruled on yet (2026-11-11). Each is one line. ---------- */
+  var STEP_ASIDE_AT_FINAL_BUTTON = true;   // (a) the note steps aside while the final install button is on screen (Amanda's recommendation)
+  var STOP_COUNTING_ALSO_FORGETS = true;   // (b) "Stop counting my visits" also deletes the remembered note
+
+  var W = window, D = document, N = navigator, root = D.documentElement;
+  var VERSION = 'm1';                       // wording version, sent with every answer (Malka's locked ask, 2026-11-11)
+  var MONTHS = 13, HOLD = 6000, LEAVE = 260, ARRIVE = 600, GAP = 12, STRIP = 1003 / 1080;
+  var K = { note: 'illi.note', answer: 'illi.answer', nocount: 'illi.nocount' };
+  var FR = /^fr/i.test(root.lang || '');
+  var signal = !!(N.globalPrivacyControl || N.doNotTrack == '1');   // the same test as track.js
+
+  var T = FR ? {
+    noteOn: 'illi se souvient de ce navigateur jusqu’au {date}. Nous y avons enregistré un code aléatoire et l’étiquette de campagne du lien que vous avez suivi pour arriver ici.',
+    forget: 'Oublier ce navigateur',
+    noteOff: 'illi ne se souvient pas de ce navigateur. Si vous le souhaitez, nous y enregistrerons un code aléatoire et l’étiquette de campagne du lien que vous avez suivi pour arriver ici, afin de savoir quand vous revenez et quel lien vous a amené la première fois. Ces données expirent après 13 mois.',
+    remember: 'Se souvenir de ce navigateur',
+    count: 'Nous comptons aussi chaque visite sans rien enregistrer dans votre navigateur, par exemple jusqu’où vous avez fait défiler la page, quelle part du film vous avez regardée et sur quels boutons vous avez cliqué. Ces données ne nous disent pas qui vous êtes, et la politique de confidentialité en donne la liste complète.',
+    stop: 'Ne plus compter mes visites',
+    stopped: 'Ce navigateur n’enverra plus de données de visite. Nous y avons enregistré un réglage pour nous souvenir de votre choix.',
+    stoppedForgot: 'Ce navigateur n’enverra plus de données de visite. Nous y avons enregistré un réglage pour nous souvenir de votre choix, et nous avons aussi supprimé le code aléatoire.',
+    off: 'Ce navigateur n’envoie pas de données de visite, parce que vous les avez désactivées.',
+    again: 'Compter de nouveau mes visites',
+    signal: 'Votre navigateur demande aux sites de ne pas vous suivre : illi ne compte donc pas cette visite et ne se souvient pas de ce navigateur.',
+    locale: 'fr-CA'
+  } : {
+    noteOn: 'illi remembers this browser until {date}. We’ve saved a random code and the campaign label from the link that brought you.',
+    forget: 'Forget this browser',
+    noteOff: 'illi doesn’t remember this browser. If you’d like it to, we’ll save a random code and the campaign label from the link that brought you, so we can tell when you come back and which link sent you. It expires after 13 months.',
+    remember: 'Remember this browser',
+    count: 'We also count each visit without saving anything in your browser, for example how far you scrolled, how much of the film you watched, and which buttons you clicked. These counts don’t tell us who you are, and the privacy policy lists everything they include.',
+    stop: 'Stop counting my visits',
+    stopped: 'This browser won’t send visit counts anymore. We saved one setting in it so we remember your choice.',
+    stoppedForgot: 'This browser won’t send visit counts anymore. We saved one setting in it so we remember your choice, and we deleted the random code too.',
+    off: 'This browser doesn’t send visit counts, because you turned them off.',
+    again: 'Count my visits again',
+    signal: 'Your browser asks sites not to track you, so illi isn’t counting this visit or remembering this browser.',
+    locale: 'en-US'
+  };
+
+  /* ---------- storage: every access guarded; nothing is written unless a button was clicked ---------- */
+  function get(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+  function put(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function expiry(n) { var d = new Date(n.at); d.setMonth(d.getMonth() + MONTHS); return d; }
+  function liveNote() { var n = get(K.note); return n && n.id && n.at && Date.now() < expiry(n).getTime() ? n : null; }
+  function counting() { return !signal && !get(K.nocount); }
+  function ev(name, props) { if (W.illiTrack) W.illiTrack(name, props); }   // page events (track.js, home page); absent elsewhere
+  function tags() {
+    var q = new URLSearchParams(location.search), f = {}, map = { s: 'utm_source', m: 'utm_medium', c: 'utm_campaign', ct: 'utm_content', id: 'utm_id' };
+    for (var k in map) { var v = q.get(map[k]); if (v) f[k] = v.slice(0, 80); }
+    return f;
+  }
+
+  function sayYes(from) {
+    put(K.note, { id: crypto.randomUUID(), f: tags(), at: new Date().toISOString() });
+    del(K.answer);
+    ev('consent_yes', { v: VERSION, from: from });   // after the write, so this event already carries the code
+  }
+  function sayNo(from) {
+    del(K.note);
+    put(K.answer, { a: 'no', at: new Date().toISOString(), v: VERSION });
+    ev('consent_no', { v: VERSION, from: from });
+  }
+  var forgotOnStop = false;
+  function stopCounting() {
+    if (W.illiTrackStop) W.illiTrackStop();          // drop anything queued in this page, send nothing more
+    put(K.nocount, { at: new Date().toISOString() });
+    forgotOnStop = false;
+    if (STOP_COUNTING_ALSO_FORGETS && get(K.note)) { del(K.note); forgotOnStop = true; }
+    if (ask && !ask.hidden && !answered) leave();     // the question is about counting; with counting off it has no purpose
+  }
+  function countAgain() { del(K.nocount); forgotOnStop = false; }
+
+  /* ---------- the Privacy choices panel ---------- */
+  var panel = D.getElementById('choices'), bodyEl = panel && panel.querySelector('.choices-body'), opener = null, justStopped = false;
+  function row(text, label, act) {
+    var r = D.createElement('div'); r.className = 'choices-row';
+    var p = D.createElement('p'); p.textContent = text; r.appendChild(p);
+    if (label) { var b = D.createElement('button'); b.className = 'ask-btn'; b.type = 'button'; b.setAttribute('data-choice', act); b.textContent = label; r.appendChild(b); }
+    return r;
+  }
+  function render() {
+    if (!bodyEl) return;
+    bodyEl.textContent = '';
+    if (signal) { bodyEl.appendChild(row(T.signal)); return; }
+    var n = liveNote();
+    bodyEl.appendChild(n ? row(T.noteOn.replace('{date}', expiry(n).toLocaleDateString(T.locale, { year: 'numeric', month: 'long', day: 'numeric' })), T.forget, 'forget')
+                         : row(T.noteOff, T.remember, 'remember'));
+    bodyEl.appendChild(counting() ? row(T.count, T.stop, 'stop')
+                                  : row(justStopped ? (forgotOnStop ? T.stoppedForgot : T.stopped) : T.off, T.again, 'count'));
+  }
+  function seatPanel() {   // desktop: just above the footer when it is on screen, so it never hides the link that opened it
+    if (!panel || panel.hidden) return;
+    var foot = D.querySelector('[data-choices-foot]'), gap = foot ? W.innerHeight - foot.getBoundingClientRect().top : 0;
+    panel.style.bottom = (W.matchMedia('(max-width:680px)').matches || gap <= 0) ? '' : Math.min(gap + GAP, W.innerHeight * 0.5) + 'px';
+  }
+  function openPanel(from) {
+    if (!panel) return;
+    opener = from || null; justStopped = false; render(); panel.hidden = false; seatPanel();
+    D.querySelectorAll('.foot-choice').forEach(function (b) { b.setAttribute('aria-expanded', 'true'); });
+    D.getElementById('choices-title').focus();       // the visitor asked for it, so focus may move here
+  }
+  function closePanel() {
+    if (!panel || panel.hidden) return;
+    panel.hidden = true;
+    D.querySelectorAll('.foot-choice').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+    if (opener && opener.isConnected && opener.offsetParent) opener.focus();
+  }
+  if (panel) {
+    W.addEventListener('scroll', seatPanel, { passive: true });
+    W.addEventListener('resize', function () { setTimeout(seatPanel, 0); });
+    D.addEventListener('click', function (e) {
+      var o = e.target.closest('.foot-choice, [data-open-choices]');
+      if (o) { e.preventDefault(); if (panel.hidden) openPanel(o); else closePanel(); return; }
+      if (e.target.closest('.choices-close')) { closePanel(); return; }
+      var b = e.target.closest('[data-choice]');
+      if (b) {
+        var a = b.getAttribute('data-choice');
+        if (a === 'forget') sayNo('panel');
+        if (a === 'remember') { sayYes('panel'); if (ask && !ask.hidden && !answered) leave(); }
+        if (a === 'stop') { stopCounting(); justStopped = true; }
+        if (a === 'count') { countAgain(); justStopped = false; }
+        render();
+        var nb = bodyEl.querySelector('[data-choice="' + ({ forget: 'remember', remember: 'forget', stop: 'count', count: 'stop' })[a] + '"]');
+        if (nb) nb.focus();
+        return;
+      }
+      if (!panel.hidden && !e.target.closest('.choices')) closePanel();   // a click elsewhere closes it; closing means nothing
+    });
+    D.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) closePanel(); });
+  }
+
+  /* ---------- the corner question (home page only) ---------- */
+  var ask = D.getElementById('ask'), answered = false, shown = false, sentShown = false, holdTimer = 0;
+  W.illiPrivacy = { version: VERSION, signal: signal, counting: counting, note: liveNote, open: openPanel };
+  if (!ask) return;
+
+  var ua = N.userAgent, uad = N.userAgentData;
+  var desktop = !(/iPad/.test(ua) || (/Mac/.test(ua) && N.maxTouchPoints > 1) || (/Android/.test(ua) && !/Mobile/.test(ua)) || (uad && uad.mobile) || /Mobi|iPhone|Android/.test(ua));
+  var head = D.querySelector('.site-head'), heroCta = D.querySelector('.hero-action .button'), closeCta = D.querySelector('.close .cta-stack .button');
+  var stage = D.getElementById('stage'), film = D.getElementById('demo-player'), video = film && film.querySelector('video');
+  var reduced = W.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function inView(el) { var r = el.getBoundingClientRect(); return r.bottom > head.getBoundingClientRect().bottom && r.top < W.innerHeight; }
+  function hit(a, b, m) { return a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m; }
+  function played() { return film.classList.contains('played') || (video && !video.paused); }
+  function keepClear() {   // every box the note must never cover
+    var list = [], add = function (n, el) { if (el) { var r = el.getBoundingClientRect(); if (r.width && r.height) list.push({ n: n, r: r }); } };
+    add('header', D.querySelector('.site-head .cta'));
+    add('hero', heroCta);
+    if (!played()) add('play', film.querySelector('.fp-big'));
+    var st = stage.getBoundingClientRect();   // the control strip: the bottom of the picture from film pixel 1003 of 1080
+    if (st.width) list.push({ n: 'strip', r: { left: st.left, right: st.right, top: st.top + st.height * STRIP, bottom: st.bottom } });
+    add('film_end', film.querySelector('.fp-cta.on a'));
+    add('final', closeCta);
+    add('store_note', D.querySelector('#cta-note:not([hidden])'));
+    return list;
+  }
+  function topLimit(r) {
+    var top = head.getBoundingClientRect().bottom + GAP, hc = heroCta.getBoundingClientRect();
+    if (hc.bottom > 0 && hc.bottom < r.bottom && hc.left < r.right + GAP && hc.right > r.left - GAP) top = Math.max(top, hc.bottom + GAP);
+    return top;
+  }
+  function fit() { var r = ask.getBoundingClientRect(); ask.style.maxHeight = Math.max(140, r.bottom - topLimit(r)) + 'px'; return ask.getBoundingClientRect(); }
+  // Where the note sits, decided again on every scroll, resize and film event (Amanda's three seats):
+  //   home    the bottom-left corner of the window;
+  //   lifted  only the film's control strip is in the way and the film is still an unplayed poster: just above the strip;
+  //   aside   anything else in the way: it fades out where it stands, cannot be clicked or focused, and comes back when clear.
+  function seat() {
+    if (ask.hidden) return;
+    var was = ask.getAttribute('data-seat'), now = 'aside';
+    ask.style.bottom = ''; ask.style.maxHeight = '';
+    var r = fit(), st = stage.getBoundingClientRect();
+    var offFilm = played() && hit(r, st, 0);
+    var yielding = STEP_ASIDE_AT_FINAL_BUTTON && closeCta && inView(closeCta);
+    var blockers = keepClear().filter(function (k) { return hit(r, k.r, GAP); });
+    if (!yielding && !offFilm && !blockers.length) now = 'home';
+    else if (!yielding && !played() && blockers.length && blockers.every(function (k) { return k.n === 'strip'; })) {
+      ask.style.bottom = (W.innerHeight - (blockers[0].r.top - GAP)) + 'px';
+      r = fit();
+      if (r.top >= topLimit(r) - 0.5 && r.height >= ask.scrollHeight - 1 && !keepClear().some(function (k) { return hit(r, k.r, GAP - 0.5); })) now = 'lifted';
+      else { ask.style.bottom = ''; fit(); }
+    }
+    var aside = now === 'aside';
+    ask.classList.toggle('is-aside', aside); ask.inert = aside; ask.setAttribute('data-seat', now);
+    if (was === 'lifted' && now === 'home' && !reduced) { ask.classList.remove('is-hop'); void ask.offsetWidth; ask.classList.add('is-hop'); }
+    if (!aside && !sentShown && !answered) { sentShown = true; ev('consent_shown', { v: VERSION }); }   // once per page load, when really visible
+  }
+  function leave() {   // gone for this page load; an unanswered leave saves nothing and sends nothing
+    clearTimeout(holdTimer);
+    if (ask.hidden) return;
+    if (reduced) { ask.hidden = true; return; }
+    ask.classList.add('is-out');
+    setTimeout(function () { ask.hidden = true; ask.classList.remove('is-out'); }, LEAVE);
+  }
+  function answer(which) {
+    answered = true;
+    if (which === 'yes') sayYes('note'); else sayNo('note');
+    ask.setAttribute('data-state', which);
+    var done = ask.querySelector('.ask-done');
+    done.querySelector('[data-when="yes"]').hidden = which !== 'yes';
+    done.querySelector('[data-when="no"]').hidden = which !== 'no';
+    seat();
+    holdTimer = setTimeout(leave, HOLD);
+  }
+  function arrive() {
+    if (shown || answered) return;
+    shown = true; ask.hidden = false; ask.setAttribute('data-state', 'ask');
+    if (!reduced) { ask.classList.add('is-out'); void ask.offsetWidth; ask.classList.remove('is-out'); }
+    var live = D.getElementById('ask-live'); if (live) live.textContent = live.getAttribute('data-text');   // polite announcement; focus never moves
+    seat();
+  }
+
+  // Who is asked: a desktop browser, wide enough for the note, no privacy signal, counting on, no clicked no, no live yes.
+  var n = get(K.note);
+  if (n && !liveNote()) del(K.note);              // a yes older than 13 months: delete it, then ask again
+  var eligible = desktop && !W.matchMedia('(max-width:680px)').matches && !signal && !get(K.nocount) && !get(K.answer) && !liveNote();
+  if (!eligible) return;
+
+  ask.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-answer]');
+    if (b) { answer(b.getAttribute('data-answer')); return; }
+    var m = e.target.closest('.ask-more');
+    if (m) { var open = m.getAttribute('aria-expanded') !== 'true'; m.setAttribute('aria-expanded', String(open)); D.getElementById('ask-note').hidden = !open; seat(); }
+  });
+  ask.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !answered) leave(); });
+  ['pointerenter', 'focusin'].forEach(function (t) { ask.addEventListener(t, function () { clearTimeout(holdTimer); }); });
+  ['pointerleave', 'focusout'].forEach(function (t) { ask.addEventListener(t, function () { if (answered && !ask.hidden) { clearTimeout(holdTimer); holdTimer = setTimeout(leave, HOLD); } }); });
+  D.addEventListener('click', function (e) {     // an install click ends the question for this page load, unanswered
+    if (e.target.closest('[data-cta]') && !answered) { if (shown) leave(); else answered = true; }
+  }, true);
+  function tick() { if (shown && !ask.hidden) seat(); }
+  W.addEventListener('scroll', tick, { passive: true });
+  W.addEventListener('resize', tick);
+  if (video) ['play', 'pause', 'ended', 'timeupdate'].forEach(function (t) { video.addEventListener(t, tick); });
+  function go() { setTimeout(arrive, ARRIVE); }
+  if (D.fonts && D.fonts.ready) D.fonts.ready.then(go); else W.addEventListener('load', go);
+})();

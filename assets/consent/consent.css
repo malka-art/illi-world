@@ -1,0 +1,87 @@
+/* illi.world: the corner question (home page) and the Privacy choices panel (every page that loads it).
+   Built from Amanda's direction 1, the corner note (design/consent-prompt-2026-11-11, revision 2).
+   On the home page it sits on top of assets/home/style.css and uses its role aliases and board tokens; on the plain
+   pages (privacy, terms) load assets/consent/plain-page.css first, which supplies the same names.
+   Hard rule: the two answers share ONE class (.ask-btn) and no selector anywhere styles one answer differently from the
+   other (consent must be as easy to refuse as to give). Keep it that way; the page test checks their computed styles. */
+
+:root{
+  /* PROVISIONAL tokens from the design (to lock in the token pass) */
+  --p-consent-w:440px;
+  --p-consent-inset:var(--illi-space-xl);
+  --p-consent-btn-h:40px;
+  --p-consent-btn-line:1.5px;
+  --p-consent-shadow:0 var(--illi-space-md) var(--illi-space-3xl) color-mix(in srgb,var(--illi-bone-950) 24%,transparent);
+  --p-consent-rise:var(--illi-space-md);
+  --p-consent-q:18px;
+  --p-choices-w:420px;
+  --p-close:32px;
+}
+
+/* ================= the question: anatomy ================= */
+.ask{color:var(--ink);font-family:var(--illi-type-body-family),sans-serif;text-align:left}
+.ask[hidden]{display:none!important}
+.ask-q{font-family:var(--title-family),sans-serif;font-weight:var(--title-weight);letter-spacing:var(--p-track-title);font-size:var(--p-consent-q);line-height:var(--illi-type-h2-line);color:var(--ink);text-wrap:balance;margin:0}
+.ask-why{margin:var(--illi-space-sm) 0 0;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);color:var(--ink);text-wrap:pretty}
+.ask-more{appearance:none;background:none;border:0;padding:0;margin-top:var(--illi-space-md);display:inline-flex;align-items:center;gap:var(--illi-space-xs);font:inherit;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);font-weight:var(--illi-weight-medium);color:var(--heading);text-decoration:underline;text-underline-offset:var(--p-underline-offset);text-decoration-thickness:var(--p-underline-width);cursor:pointer}
+.ask-more .chev{width:var(--p-chev);height:var(--p-chev);flex-shrink:0;transition:transform var(--t-settle) var(--ease-out)}
+.ask-more[aria-expanded="true"] .chev{transform:rotate(180deg)}
+/* the expansion reads as the note itself: a small bone slip */
+.ask-note{margin-top:var(--illi-space-md);padding:var(--illi-space-md) var(--illi-space-lg);background:var(--band);border-radius:var(--illi-shape-md);font-size:var(--illi-type-caption-size);line-height:var(--illi-type-body-line);color:var(--heading)}
+.ask-note p{margin:0}
+.ask-note p+p{margin-top:var(--illi-space-sm)}
+.ask-note[hidden]{display:none}
+.ask-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--illi-space-md);margin-top:var(--illi-space-lg)}
+/* ONE class for both answers. Never add a modifier for yes or no. */
+.ask-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:var(--p-consent-btn-h);padding:var(--illi-space-sm) var(--illi-space-md);font:inherit;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-small-line);font-weight:var(--illi-weight-medium);text-align:center;color:var(--ink);background:var(--card);border:var(--p-consent-btn-line) solid var(--accent-2);border-radius:var(--illi-shape-full);cursor:pointer;transition:background var(--t-fast) var(--ease-out),transform var(--t-fast) var(--ease-out)}
+.ask-btn:hover{background:var(--band)}
+.ask-btn:active{transform:translateY(var(--p-press-shift))}
+.ask-done{display:none;margin:0;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);font-weight:var(--illi-weight-medium);color:var(--ink)}
+.ask-done a{font-weight:var(--illi-weight-medium);color:var(--heading);text-decoration:underline}
+.ask[data-state="yes"] .ask-body,.ask[data-state="no"] .ask-body{display:none}
+.ask[data-state="yes"] .ask-done,.ask[data-state="no"] .ask-done{display:block}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* ================= the corner note ================= */
+.ask--corner{position:fixed;left:var(--p-consent-inset);bottom:var(--p-consent-inset);z-index:15;width:var(--p-consent-w);max-width:calc(100vw - var(--p-consent-inset) * 2);max-height:calc(100vh - var(--p-header-h) - var(--p-consent-inset) * 2);overflow:hidden;padding:var(--illi-space-xl);background:var(--card);border:var(--p-hairline) solid var(--line);border-radius:var(--illi-shape-xl);box-shadow:var(--p-consent-shadow);transition:opacity var(--t-settle) var(--ease-out),transform var(--t-settle) var(--ease-out);display:flex;flex-direction:column;box-sizing:border-box}
+.ask--corner.is-out{opacity:0;transform:translateY(var(--p-consent-rise));pointer-events:none}
+.ask--corner.is-hop{animation:ask-hop var(--t-settle) var(--ease-out)}
+@keyframes ask-hop{from{opacity:0}to{opacity:1}}
+/* stepping aside: it fades where it stands and cannot be clicked or focused; it never slides across what it avoids */
+.ask--corner.is-aside{opacity:0;visibility:hidden;pointer-events:none;transition:opacity var(--t-fast) var(--ease-out),visibility 0s var(--t-fast)}
+/* however long the text, the two answers stay in view: only the note's own text scrolls */
+.ask--corner .ask-body{display:flex;flex-direction:column;min-height:0}
+.ask--corner .ask-text{display:flex;flex-direction:column;align-items:flex-start;min-height:0}
+.ask--corner .ask-note{overflow:auto;min-height:0;align-self:stretch}
+.ask--corner .ask-actions{flex-shrink:0}
+.ask--corner[data-state="yes"],.ask--corner[data-state="no"]{width:auto;max-width:var(--p-consent-w);padding:var(--illi-space-lg) var(--illi-space-xl)}
+
+/* ================= Privacy choices: footer control and panel (every device) ================= */
+.foot-choice{appearance:none;background:none;border:0;padding:0;font:inherit;font-weight:inherit;color:inherit;cursor:pointer;text-underline-offset:var(--p-underline-offset);text-decoration-thickness:var(--p-underline-width)}
+.foot-choice:hover,.foot-choice[aria-expanded="true"]{text-decoration:underline}
+.choices{position:fixed;right:var(--p-consent-inset);bottom:var(--p-consent-inset);z-index:25;width:min(var(--p-choices-w),calc(100vw - var(--p-consent-inset) * 2));max-height:calc(100vh - var(--p-consent-inset) * 2);overflow:auto;padding:var(--illi-space-xl);background:var(--card);color:var(--ink);border:var(--p-hairline) solid var(--line);border-radius:var(--illi-shape-xl);box-shadow:var(--p-consent-shadow);font-family:var(--illi-type-body-family),sans-serif;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);text-align:left;box-sizing:border-box}
+.choices[hidden]{display:none}
+.choices-title{margin:0;font-family:var(--title-family),sans-serif;font-weight:var(--title-weight);letter-spacing:var(--p-track-title);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--ink);padding-right:var(--illi-space-3xl);outline-offset:var(--p-focus-offset)}
+.choices-close{position:absolute;top:var(--illi-space-lg);right:var(--illi-space-lg);width:var(--p-close);height:var(--p-close);display:grid;place-items:center;appearance:none;background:none;border:0;border-radius:var(--illi-shape-circle);color:var(--heading);cursor:pointer;transition:background var(--t-fast) var(--ease-out)}
+.choices-close:hover{background:var(--band)}
+.choices-close svg{width:var(--p-chev);height:var(--p-chev)}
+.choices-row{padding-block:var(--illi-space-lg);border-top:var(--p-hairline) solid var(--line)}
+.choices-body{margin-top:var(--illi-space-sm)}
+.choices-row:first-child{border-top:0}
+.choices-row p{margin:0;color:var(--ink);text-wrap:pretty}
+.choices-row .ask-btn{margin-top:var(--illi-space-md)}
+.choices-policy{display:inline-block;padding-top:var(--illi-space-lg);border-top:var(--p-hairline) solid var(--line);width:100%;font-weight:var(--illi-weight-medium);color:var(--heading);text-decoration:underline}
+.site-foot .choices a{color:var(--heading)}
+
+/* ================= phones and narrow windows: no question at all; the panel fills the gutters ================= */
+@media(max-width:680px){
+  .ask{display:none!important}
+  :root{--p-consent-inset:var(--illi-space-lg)}
+}
+
+/* ================= reduced motion: nothing travels, states simply change ================= */
+@media(prefers-reduced-motion:reduce){
+  .ask--corner,.ask--corner.is-aside,.ask-btn,.ask-more .chev,.choices-close{transition:none}
+  .ask--corner.is-out{transform:none}
+  .ask--corner.is-hop{animation:none}
+}

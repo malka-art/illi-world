@@ -1,0 +1,46 @@
+/* Privacy choices on the plain pages (privacy, terms and any page without the home page's stylesheet). Amanda, 2026-11-11.
+   Load this file, then consent.css, then consent.js. It gives the shared panel the board tokens and role names it
+   expects, and adds a slim footer in the plain pages' own style (those pages are not on the token system, so the footer's few raw
+   values below are copied from their existing rules: the #eee hairline, the #666 and #333 text, 14px). */
+@import url('../home/illi-tokens.css');
+@font-face{font-family:Inter;src:url('../home/inter-latin-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:Inter;src:url('../home/inter-latin-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:Sora;src:url('../home/sora-latin-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+
+:root{
+  /* the role names the panel uses, with the same values as on the home page */
+  --paper:var(--illi-surface-card);
+  --band:var(--illi-surface-sunken);
+  --card:var(--illi-surface-raised);
+  --art:var(--illi-bone-200);
+  --ink:var(--illi-text-primary);
+  --heading:var(--illi-text-heading);
+  --line:var(--illi-border-divider);
+  --accent-2:var(--illi-accent-secondary);
+  --focus:var(--illi-bone-950);
+  --title-family:var(--illi-font-display);
+  --title-weight:var(--illi-weight-bold);
+  --p-track-title:-.02em;
+  --p-hairline:1px;
+  --p-focus-width:2px;
+  --p-focus-offset:4px;
+  --p-underline-offset:4px;
+  --p-underline-width:1px;
+  --p-press-shift:1px;
+  --p-header-h:60px;
+  --p-chev:16px;
+  --ease-out:cubic-bezier(.2,0,0,1);
+  --t-fast:150ms;
+  --t-settle:260ms;
+}
+
+/* the slim footer: the same links as the home page footer, in this page's plain voice */
+.pc-foot{margin-top:48px;padding-top:20px;border-top:1px solid #eee;font-size:14px;line-height:1.5;color:#666}
+.pc-foot>nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+.pc-foot>nav a,.pc-foot>nav .foot-choice{color:#333;text-decoration:none}
+.pc-foot>nav a:hover,.pc-foot>nav .foot-choice:hover,.pc-foot>nav .foot-choice[aria-expanded="true"]{text-decoration:underline}
+.pc-foot>p{margin:12px 0 0;font-size:13px}
+.pc-foot :where(a,button):focus-visible,.choices :where(a,button,[tabindex]):focus-visible{outline:var(--p-focus-width) solid var(--focus);outline-offset:var(--p-focus-offset);border-radius:var(--illi-shape-sm)}
+.choices,.choices *{box-sizing:border-box}
+.choices h2,.choices p{margin:0}
+.choices[hidden]{display:none}
