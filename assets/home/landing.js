@@ -15,8 +15,8 @@
   var CWS = 'https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg';
   var player = window.FilmPlayer.create(document.getElementById('demo-player'), {
     src: 'assets/home/illi-demo.mp4?v=2', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
-    cta: isMobile ? { href: '#send-form', label: 'Send it to my computer', start: 2602 }
-                  : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602 }
+    cta: isMobile ? { href: '#send-form', label: 'Send it to my computer', start: 2602, id: 'film_end_send' }
+                  : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602, id: 'film_end' }
   });
   if (isMobile) player.el.querySelector('.fp-cta a').classList.remove('cta');   // no "opened the store" note for the phone path
   player.video.addEventListener('error', function () { document.getElementById('stage-error').hidden = false; });
@@ -76,6 +76,7 @@
     });
     var input = document.getElementById('send-email'); var status = document.getElementById('send-status'); var button = form.querySelector('button');
     var trap = document.getElementById('send-website');
+    function report(result) { if (window.illiTrack) window.illiTrack('send_form_submit', { result: result }); }   // page events (track.js)
     function setStatus(text, isError) { status.textContent = text; status.classList.toggle('is-error', !!isError); input.setAttribute('aria-invalid', isError ? 'true' : 'false'); }
     input.addEventListener('input', function () { if (input.getAttribute('aria-invalid') === 'true' && input.validity.valid) setStatus('', false); });
     form.addEventListener('submit', function (e) {
@@ -86,11 +87,12 @@
       fetch(SEND_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, website: trap ? trap.value : '' }) })
         .then(function (res) { return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok && data.ok === true, error: data.error }; }); })
         .then(function (r) {
+          report(r.ok ? 'sent' : r.error === 'already_sent' ? 'already_sent' : 'error');
           if (r.ok) { form.classList.add('is-sent'); setStatus(SEND_MESSAGES.sent, false); return; }
           button.disabled = false;
           setStatus(SEND_MESSAGES[r.error] || SEND_MESSAGES.failed, r.error === 'invalid_email' || r.error === 'disposable_email');
         })
-        .catch(function () { button.disabled = false; setStatus(SEND_MESSAGES.failed, false); });
+        .catch(function () { report('error'); button.disabled = false; setStatus(SEND_MESSAGES.failed, false); });
     });
   }
 

@@ -39,14 +39,14 @@
     <a href="#how">How it works</a>
     <a href="#where">Where it works</a>
     <a href="#answers">Answers</a>
-    <a class="button small cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
+    <a class="button small cta" data-cta="header" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
   </nav>
 </header>
 
 <main>
 <!-- HERO, side by side (owner request 2026-11-10): claim, CTA and supporting lines left, the film right, the moving strip under both.
      On a desktop screen the header and this whole section fit the first screen; the film is never cut. Tablet and phone stack. -->
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero" data-section="hero" aria-labelledby="hero-title">
   <div class="hero-main container">
   <div class="hero-grid">
     <div class="hero-copy">
@@ -54,7 +54,7 @@
       <p class="intro">Control YouTube with simple mouse gestures, without hunting for buttons.</p>
     </div>
     <div class="hero-action">
-      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
+      <a class="button cta" data-cta="hero" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
       <p class="trial">45 days of Premium free · No card required</p>
       <p class="audience">For people who watch to learn, understand, or follow their curiosity.</p>
     </div>
@@ -144,15 +144,15 @@
   <div class="container">
     <div class="section-head"><h2 id="faq-title">What people ask</h2></div>
     <dl class="faq-stack">
-      <div class="faq-item" tabindex="0">
+      <div class="faq-item" data-faq="learn" tabindex="0">
         <dt>Do I have to learn all the gestures? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></dt>
         <dd><div>Start with one: hold your mouse’s scroll-wheel button and move up or down to change speed. Try the others when you need them.</div></dd>
       </div>
-      <div class="faq-item" tabindex="0">
+      <div class="faq-item" data-faq="setup" tabindex="0">
         <dt>Will it work with my setup? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></dt>
         <dd><div>Use illi on YouTube in Chrome, Edge, or another Chromium browser on your desktop or laptop. Use a mouse with a scroll-wheel button, choose right-click activation in settings, or use your trackpad.</div></dd>
       </div>
-      <div class="faq-item" tabindex="0">
+      <div class="faq-item" data-faq="after45" tabindex="0">
         <dt>What happens after the 45 days? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></dt>
         <dd><div>Keep basic speed control free, or choose Premium for the full experience at US$10/month or US$100/year. No card is required for the trial, and it won’t automatically turn into a paid subscription.</div></dd>
       </div>
@@ -160,12 +160,12 @@
   </div>
 </section>
 
-<section class="close band-dark" aria-labelledby="final-cta-title">
+<section class="close band-dark" data-section="close" aria-labelledby="final-cta-title">
   <div class="container close-inner">
     <img class="close-mark" src="assets/home/illi-wordmark-color-dark.svg" width="162" height="111" alt="" aria-hidden="true">
     <h2 id="final-cta-title">Get more out of your next video.</h2>
     <div class="cta-stack">
-      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days</a>
+      <a class="button cta" data-cta="close" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days</a>
       <p class="trial">All Premium features. No card required. Basic speed control stays free afterwards.</p>
     </div>
     <!-- Phone visitors send themselves the install link (B14). Hidden until landing.js detects a phone; posts to the
