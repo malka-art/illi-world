@@ -49,7 +49,7 @@
     font-size:var(--illi-type-caption-size); line-height:var(--illi-type-caption-line);
     font-weight:var(--illi-type-caption-weight); color:var(--illi-text-secondary);
   }
-  #widget { min-height:65px; display:flex; align-items:center; justify-content:center; } /* 65px = Turnstile's intrinsic widget height */
+  #widget { min-height:65px; min-width:300px; display:flex; align-items:center; justify-content:center; } /* 65px x 300px = Turnstile's intrinsic widget size. min-width: an empty #widget must never measure 0 wide, or a later checkbox is squashed to 0 px (2026-11-11 fix) */
   /* Shown only if the Turnstile script fails to load / is blocked. `caption` role, text-muted. */
   .fallback {
     display:none;
@@ -117,7 +117,9 @@
         var el = document.getElementById('widget');
         if (!el) return;
         var r = el.getBoundingClientRect();
-        send('rendered', { width: Math.ceil(r.width), height: Math.ceil(r.height) });
+        // Width never below 300 (Cloudflare's widget width): parents copy this width, and a 0 here
+        // squashed the "Verify you are human" checkbox to 0 px (2026-11-11 fix). Height still follows.
+        send('rendered', { width: Math.max(300, Math.ceil(r.width)), height: Math.ceil(r.height) });
       }
 
       // Inbound control from the extension.

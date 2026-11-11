@@ -308,7 +308,12 @@ main{
   font-family:var(--illi-font-display),-apple-system,sans-serif; font-weight:var(--illi-weight-bold); font-size:20px; line-height:24px;
 }
 /* interaction-only Turnstile: collapses to ~0 for the ~all who pass invisibly (I-133 BP) */
-.turnstile-slot{display:flex; justify-content:center; width:100%; min-height:0}
+.turnstile-slot{display:flex; flex-direction:column; align-items:center; width:100%; min-height:0}
+/* human-check status line (live region): pending / failed / way forward. Empty = no height. */
+.ts-status{margin:0; max-width:300px; font-size:12px; line-height:16px; color:var(--illi-text-secondary); text-align:center}
+.ts-status:not(:empty){margin-top:6px}
+.ts-status a, .ts-status button{color:inherit; text-decoration:underline}
+.ts-status button{background:none; border:none; padding:0; font:inherit; cursor:pointer}
 .turnstile-slot:empty{display:none}
 .ah-cta{
   width:100%; box-sizing:border-box; padding:13px; border:none; cursor:pointer;
@@ -472,7 +477,7 @@ main{
         </div>
         <!-- Turnstile lives between the steps so it stays alive across email→code (resend re-mints a token).
              interaction-only → invisible for ~all users; a challenge box only appears if Cloudflare needs one. -->
-        <div class="turnstile-slot" id="turnstileSlot"></div>
+        <div class="turnstile-slot" id="turnstileSlot"><p class="ts-status" id="tsStatus" role="status" aria-live="polite"></p></div>
         <!-- code step -->
         <div class="otp-step" data-step="code" id="otpCodeStep" hidden>
           <div class="sm-headgroup">
@@ -740,6 +745,47 @@ main{
   var tsFrame=null, captchaToken='';
   var otpSubmit=document.getElementById('otpSubmit');
   function setSubmitEnabled(on){ if(otpSubmit) otpSubmit.disabled = !on; }
+  /* Visible check state (2026-11-11 fix): Continue's disabled state is always explained by #tsStatus
+     (a live region). Pending while the check runs; after an error / timeout / expiry a retry; after a
+     second failed attempt a way forward. Presentation only: token flow and enforcement unchanged. */
+  var TS_MIN_W=300;          // Cloudflare's widget width: the frame is never narrower
+  var TS_SILENT_MS=20000;    // no token and nothing drawn for 20 s = timed out (an invisible pass takes ~1-5 s)
+  var TS_COPY={              // PROPOSED copy, owner approves before publishing
+    checking:'Checking you’re human…',                          // PROPOSED
+    failed:'The check didn’t go through.',                           // PROPOSED
+    stuckLead:'Still stuck? Try another browser, or email ',             // PROPOSED (then the address)
+    retry:'Try again'                                                    // PROPOSED
+  };
+  var tsState={ phase:'checking', failures:0, visible:false }, tsReady=false, tsTimer=null, tsShown='';
+  var tsStatus=document.getElementById('tsStatus');
+  function tsViewOf(s){ return s.phase==='passed' ? 'none' : s.phase==='checking' ? 'checking' : (s.failures>=2 ? 'stuck' : 'failed'); }
+  function tsRender(){
+    if(!tsStatus) return;
+    var v=tsViewOf(tsState); if(v===tsShown) return; tsShown=v;
+    tsStatus.textContent='';
+    if(v==='none') return;
+    if(v==='checking'){ tsStatus.textContent=TS_COPY.checking; return; }
+    if(v==='failed'){ tsStatus.appendChild(document.createTextNode(TS_COPY.failed+' ')); }
+    else {
+      var a=document.createElement('a'); a.href='mailto:support@illi.world'; a.textContent='support@illi.world';
+      tsStatus.appendChild(document.createTextNode(TS_COPY.stuckLead)); tsStatus.appendChild(a); tsStatus.appendChild(document.createTextNode('. '));
+    }
+    var b=document.createElement('button'); b.type='button'; b.textContent=TS_COPY.retry;
+    b.addEventListener('click', function(){ captchaToken=''; setSubmitEnabled(false); if(tsFrame) tsFrame.retry(); });
+    tsStatus.appendChild(b);
+  }
+  function tsEvent(type, height){
+    var s=tsState;
+    if(type==='retry'){ s.phase='checking'; if(tsTimer){ clearTimeout(tsTimer); tsTimer=null; } }
+    else if(type==='token'){ s.phase='passed'; }
+    else if(type==='error' || type==='timeout'){ if(s.phase!=='failed'){ s.phase='failed'; s.failures++; } }  // once per attempt (Cloudflare auto-retries)
+    else if(type==='expired'){ if(s.phase!=='failed') s.phase='failed'; }                                   // asks for a retry, not counted
+    else if(type==='rendered'){ s.visible = height>0; }
+    if(s.phase==='checking' && !s.visible){
+      if(!tsTimer) tsTimer=setTimeout(function(){ tsTimer=null; captchaToken=''; setSubmitEnabled(false); tsEvent('timeout'); }, TS_SILENT_MS);
+    } else if(tsTimer){ clearTimeout(tsTimer); tsTimer=null; }   // a visible checkbox waits for the visitor; Cloudflare's own timeout applies
+    tsRender();
+  }
   function ensureTurnstile(){
     if(tsFrame) return;
     var slot=document.getElementById('turnstileSlot'); if(!slot) return;
@@ -747,7 +793,7 @@ main{
     iframe.src='/turnstile/?chromeless=1&action=web_signup&theme=light';
     iframe.title='Security check'; iframe.setAttribute('scrolling','no');
     iframe.style.border='0'; iframe.style.display='block'; iframe.style.background='transparent';
-    iframe.style.width='300px'; iframe.style.height='0px';
+    iframe.style.width=TS_MIN_W+'px'; iframe.style.height='0px';
     function post(type,extra){
       var win=iframe.contentWindow; if(!win) return;
       var msg={ source:TS_IN, v:TS_V, type:type }; if(extra){ for(var k in extra) msg[k]=extra[k]; }
@@ -757,18 +803,25 @@ main{
       if(e.origin!==location.origin) return;
       if(e.source!==iframe.contentWindow) return;
       var d=e.data; if(!d || d.source!==TS_OUT || d.v!==TS_V) return;
-      if(d.type==='rendered'){
-        if(typeof d.width==='number') iframe.style.width=d.width+'px';
-        if(typeof d.height==='number') iframe.style.height=d.height+'px';
+      if(d.type==='ready'){ tsReady=true; }
+      else if(d.type==='rendered'){
+        // never narrower than the widget (a copied 0 hid the checkbox); height follows
+        iframe.style.width=Math.max(TS_MIN_W, (typeof d.width==='number' && isFinite(d.width)) ? Math.ceil(d.width) : 0)+'px';
+        if(typeof d.height==='number' && isFinite(d.height)){ var h=Math.max(0, Math.ceil(d.height)); iframe.style.height=h+'px'; tsEvent('rendered', h); }
       } else if(d.type==='token'){
-        if(typeof d.token==='string'){ captchaToken=d.token; setSubmitEnabled(true); }
+        if(typeof d.token==='string'){ captchaToken=d.token; setSubmitEnabled(true); tsEvent('token'); }
       } else if(d.type==='expired' || d.type==='error' || d.type==='timeout'){
-        captchaToken=''; setSubmitEnabled(false);
+        captchaToken=''; setSubmitEnabled(false); tsEvent(d.type);
       }
     });
     iframe.addEventListener('load', function(){ post('init', { theme:'light', action:'web_signup', chromeless:true }); });
-    slot.appendChild(iframe);
-    tsFrame={ reset:function(){ post('reset'); } };
+    slot.insertBefore(iframe, tsStatus);
+    tsFrame={
+      reset:function(){ post('reset'); tsEvent('retry'); },
+      // visitor's "Try again": reload the frame if it never came up, else re-run the live widget
+      retry:function(){ if(!tsReady) iframe.src=iframe.src; else post('reset'); tsEvent('retry'); }
+    };
+    tsEvent('retry');   // first check: pending line + silent-timeout clock
   }
   function resetTurnstile(){ captchaToken=''; setSubmitEnabled(false); if(tsFrame) tsFrame.reset(); }
 
