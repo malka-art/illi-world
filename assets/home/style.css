@@ -77,6 +77,8 @@
   --p-strip-dur:90s;                         /* reference marquee loop */
   --p-strip-glyph:28px;
   --p-chip:48px;
+  --p-head-real:calc(var(--p-header-h) + var(--illi-space-md) * 2);   /* header min-height plus its padding */
+  --p-hero-min:560px;                        /* below this the page scrolls rather than shrink the film further */
   --p-card-radius:var(--illi-shape-lg);
   --p-card-art-ratio:1 / 1;
   --p-diagram:136px;
@@ -306,6 +308,15 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 /* ---------- conversion feedback and the review switch ---------- */
 .cta-note{position:fixed;left:50%;bottom:var(--illi-space-xl);translate:-50% 0;background:var(--dark-bg);color:var(--dark-ink);font-size:var(--illi-type-body-sm-size);padding:var(--illi-space-md) var(--illi-space-lg);border-radius:var(--illi-shape-full);opacity:0;transition:opacity var(--t-settle) var(--ease-out);pointer-events:none;z-index:10}
 .cta-note.is-on{opacity:1}
+
+/* ---------- desktop first screen (owner 2026-11-10): header, claim and CTA, the WHOLE film and the moving strip fit one screen.
+   The film takes the height left over and keeps 16:9 (container query units), so it is never cut at the bottom of the hero. ---------- */
+@media(min-width:1025px){
+  .hero{display:flex;flex-direction:column;padding-top:var(--illi-space-2xl);height:max(var(--p-hero-min),calc(100svh - var(--p-head-real) - var(--illi-space-2xl) - var(--p-chip) - var(--illi-space-lg)))}
+  .stage{flex:1 1 0;min-height:0;margin-top:var(--illi-space-2xl);container-type:size;display:flex;justify-content:center;align-items:flex-start;background:none;border-radius:0;overflow:visible}
+  .stage .player.fp,.stage .player{width:min(100cqw,100cqh * 16 / 9);border-radius:var(--illi-shape-xl);overflow:hidden;background:var(--stage-bg)}
+  .strip-wrap{padding-top:var(--illi-space-2xl)}
+}
 
 /* ---------- tablet ---------- */
 @media(max-width:1024px){
