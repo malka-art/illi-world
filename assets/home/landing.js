@@ -2,6 +2,7 @@
    1. illi's own film player on the final cut, with the end install button (phones: send-to-desktop).
    2. Moving strip under the film: option A (gestures and effects) runs by default; ?strip=a|b|none or the ?review=1 switch flips it.
    3. Story rail arrows. 4. Conversion feedback. 5. Sticky header hairline. 6. Phone detection.
+   8. A phone turned sideways: the film fills the screen.
    7. Phone send-to-desktop: real since 2026-11-10, posts to the send-to-desktop Edge Function (one email per address per day, B14). */
 (function () {
   'use strict';
@@ -92,5 +93,21 @@
         .catch(function () { button.disabled = false; setStatus(SEND_MESSAGES.failed, false); });
     });
   }
+
+  // ---------- 8. a phone turned sideways: if the film was on screen, or is playing, bring it up so it fills the screen
+  //             (the layout for this lives in style.css, "a phone turned sideways"; the media query here must match that one) ----------
+  var turned = window.matchMedia('(orientation: landscape) and (max-height: 500px) and (max-width: 1024px)');
+  var stageEl = document.getElementById('stage'); var filmOnScreen = false;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) { if (!turned.matches) filmOnScreen = entries[entries.length - 1].intersectionRatio >= 0.5; }, { threshold: [0, 0.5, 1] }).observe(stageEl);
+  }
+  var broughtUp = false;
+  function onTurn() {
+    var up = turned.matches && (filmOnScreen || !player.video.paused);
+    if (!up && !broughtUp) return;
+    broughtUp = up;   // turned back upright after we brought the film up: keep the film in the middle of the screen, clear of the header
+    setTimeout(function () { stageEl.scrollIntoView({ block: up ? 'start' : 'center' }); }, 300);   // after the browser has laid the turned page out
+  }
+  if (turned.addEventListener) turned.addEventListener('change', onTurn); else if (turned.addListener) turned.addListener(onTurn);
 
 })();

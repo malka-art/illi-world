@@ -42,7 +42,7 @@
   --scroll-track:var(--illi-bone-100);
 
   /* ---- PROVISIONAL tokens, adapted from the reference's proportions ---- */
-  --p-page-max:1440px;                      /* owner-approved ceiling */
+  --p-page-max:1680px;                      /* owner 2026-11-11: raised from 1440 so the film grows on big monitors */
   --p-content:80vw;                         /* reference: 1152 of 1440 */
   --p-gutter-min:var(--illi-space-lg);
   --p-hairline:1px;
@@ -77,8 +77,14 @@
   --p-strip-dur:90s;                         /* reference marquee loop */
   --p-strip-glyph:28px;
   --p-chip:48px;
-  --p-head-real:calc(var(--p-header-h) + var(--illi-space-md) * 2);   /* header min-height plus its padding */
-  --p-hero-min:560px;                        /* below this the page scrolls rather than shrink the film further */
+  --p-head-real:calc(var(--illi-type-body-sm-size) + var(--illi-space-md) * 4);   /* the header's real height: its small button (one text line plus its padding) plus the header's own padding */
+  --p-hero-gap:var(--illi-space-3xl);         /* between the claim and the film */
+  --p-hero-cols:minmax(0,4fr) minmax(0,7fr);  /* claim to film */
+  --p-hero-pad:clamp(var(--illi-space-xl),4svh,var(--illi-space-3xl));   /* one breathing step, used above the film and above and below the strip; it grows with the window's height */
+  --p-hero-film-room:calc(100svh - var(--p-head-real) - var(--p-hero-pad) * 3 - var(--p-chip));   /* the height the first screen has left for the film */
+  --p-hero-film-floor:240px;                 /* the film is never shorter than this; a window too short for it scrolls instead */
+  --p-hero-display:clamp(36px,min(4.2vw - 3px,8svh),var(--illi-type-display-size));   /* the claim always sets in two lines inside its column, and yields to a short window */
+  --p-hero-intro:clamp(var(--illi-type-body-size),1.45vw,var(--illi-type-h3-size));    /* the intro stays on two lines as the column narrows */
   --p-card-radius:var(--illi-shape-lg);
   --p-card-art-ratio:1 / 1;
   --p-diagram:136px;
@@ -152,19 +158,21 @@ ul,ol{list-style:none;margin:0;padding:0}
 .brand img{width:var(--p-wordmark-head);height:auto}
 .site-head nav{display:flex;align-items:center;gap:var(--illi-space-2xl);font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium)}
 
-/* ---------- hero: split claim and action, film full width ---------- */
+/* ---------- hero: claim and action, then the film (stacked here; side by side on desktop, see "desktop first screen") ---------- */
 .hero{padding-block:var(--illi-space-3xl) 0}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--illi-space-4xl);align-items:start}
 h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);max-width:var(--p-measure-h1)}
-.intro{margin-top:var(--illi-space-lg);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--muted);max-width:var(--p-measure-intro)}
+.intro{margin-top:var(--illi-space-lg);text-wrap:pretty;font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--muted);max-width:var(--p-measure-intro)}
 .hero-action{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md);padding-top:var(--illi-space-sm)}
 .hero-action .trial{margin:0}
 .audience{margin-top:var(--illi-space-lg);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted);max-width:var(--p-measure-intro)}
-.stage{position:relative;margin-top:var(--illi-space-3xl);border-radius:var(--illi-shape-xl);overflow:hidden;background:var(--stage-bg)}
-.player{width:100%}
+.stage{position:relative;margin-top:var(--illi-space-3xl)}
+.stage .player{width:100%;aspect-ratio:16 / 9;border-radius:var(--illi-shape-xl);overflow:hidden;background:var(--stage-bg)}   /* the film holds its 16:9 place before the player script runs */
+/* keyboard focus on the film: a ring outside the picture, in the page's focus ink (the player's own inset ring sits under the video and cannot be seen) */
+.stage .player:focus-visible{outline:var(--p-focus-width) solid var(--focus);outline-offset:var(--p-focus-offset);box-shadow:none}
 .stage-error{margin-top:var(--illi-space-sm);font-size:var(--illi-type-body-sm-size);color:var(--heading)}
 
-/* ---------- moving strip under the film (reference marquee: 64 below, 90s loop): chip + what it does + how ---------- */
+/* ---------- moving strip, the last row of the hero (reference marquee: 64 below, 90s loop): chip + what it does + how ---------- */
 .strip-wrap{padding-block:var(--p-strip-gap) var(--illi-space-6xl);overflow:hidden}
 .strip{position:relative;mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent)}
 .strip-track{display:flex;align-items:center;gap:var(--p-strip-gap);width:max-content;animation:strip-scroll var(--p-strip-dur) linear infinite}
@@ -309,20 +317,50 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 .cta-note{position:fixed;left:50%;bottom:var(--illi-space-xl);translate:-50% 0;background:var(--dark-bg);color:var(--dark-ink);font-size:var(--illi-type-body-sm-size);padding:var(--illi-space-md) var(--illi-space-lg);border-radius:var(--illi-shape-full);opacity:0;transition:opacity var(--t-settle) var(--ease-out);pointer-events:none;z-index:10}
 .cta-note.is-on{opacity:1}
 
-/* ---------- desktop first screen (owner 2026-11-10): header, claim and CTA, the WHOLE film and the moving strip fit one screen.
-   The film takes the height left over and keeps 16:9 (container query units), so it is never cut at the bottom of the hero. ---------- */
-@media(min-width:1025px){
-  .hero{display:flex;flex-direction:column;padding-top:var(--illi-space-2xl);height:max(var(--p-hero-min),calc(100svh - var(--p-head-real) - var(--illi-space-2xl) - var(--p-chip) - var(--illi-space-lg)))}
-  .stage{flex:1 1 0;min-height:0;margin-top:var(--illi-space-2xl);container-type:size;display:flex;justify-content:center;align-items:flex-start;background:none;border-radius:0;overflow:visible}
-  .stage .player.fp,.stage .player{width:min(100cqw,100cqh * 16 / 9);border-radius:var(--illi-shape-xl);overflow:hidden;background:var(--stage-bg)}
-  .strip-wrap{padding-top:var(--illi-space-2xl)}
-}
-
 /* ---------- tablet ---------- */
 @media(max-width:1024px){
   .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
   .hero-grid{grid-template-columns:minmax(0,1fr);gap:var(--illi-space-xl)}
+}
+
+/* ---------- desktop first screen, side by side (owner 2026-11-10): header, claim and CTA on the left, the WHOLE film on the right and the
+   moving strip under both fit one screen. Nothing is stretched to the window: the film is as wide as its column, or narrower when the
+   window is too short to show all of it (--p-hero-film-room), and the hero is exactly as tall as the film plus the strip. So there are no
+   empty bands; on a tall window the next section shows under the strip instead. The claim column is centred against the film.
+   A tablet held sideways gets the same layout. ---------- */
+@media(min-width:1025px),(min-width:960px) and (orientation:landscape) and (min-height:501px){
+  .hero{padding-block:0}
+  .hero-main{display:grid;grid-template-columns:var(--p-hero-cols);column-gap:var(--p-hero-gap);align-items:center;padding-top:var(--p-hero-pad)}
+  .hero-grid{grid-column:1;grid-row:1 / span 2;display:flex;flex-direction:column;gap:var(--illi-space-2xl)}
+  .hero h1{font-size:var(--p-hero-display)}
+  .hero .intro{font-size:var(--p-hero-intro)}
+  .hero-action{padding-top:0}
+  .stage{grid-column:2;grid-row:1;margin-top:0;display:flex;justify-content:flex-end}
+  .stage .player{width:min(100%,max(var(--p-hero-film-floor),var(--p-hero-film-room)) * 16 / 9)}
+  .stage-error{grid-column:2;grid-row:2}
+  .strip-wrap{padding-block:var(--p-hero-pad)}
+}
+@media(max-width:1199px){
+  :root{--p-hero-cols:minmax(0,2fr) minmax(0,3fr);--p-hero-gap:var(--illi-space-2xl)}   /* a narrow window gives the claim a little more of the row, so no line of it breaks early */
+}
+@media(min-width:1025px) and (max-height:640px),(min-width:960px) and (orientation:landscape) and (min-height:501px) and (max-height:640px){
+  .hero-grid{gap:var(--illi-space-xl)}
+  .hero .intro{margin-top:var(--illi-space-md)}
+  .audience{margin-top:var(--illi-space-sm)}
+}
+
+/* ---------- a phone turned sideways: the film becomes the screen. It is as large as the screen allows at 16:9 on a dark full-width stage;
+   the header stops sticking so it does not cover the picture, and the page settles on the film when it is scrolled near it
+   (landing.js also brings the film up when the phone is turned while the film is on screen or playing). The rest of the page runs on below. ---------- */
+@media(orientation:landscape) and (max-height:500px) and (max-width:1024px){
+  html{scroll-padding-top:0;scroll-snap-type:y proximity}
+  .site-head{position:static}
+  .hero-main{width:auto}
+  .hero-grid,.stage-error{width:min(var(--p-content),var(--p-page-max));margin-inline:auto}
+  .stage{display:flex;justify-content:center;background:var(--stage-bg);scroll-snap-align:start}
+  .stage .player{width:min(100%,100svh * 16 / 9);border-radius:0}
+  .stage .player:focus-visible{outline-color:var(--dark-ink);outline-offset:calc(var(--p-focus-width) * -1)}
 }
 
 /* ---------- phone ---------- */
@@ -336,7 +374,8 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
   h1{font-size:var(--p-h1-phone)}
   h2{font-size:var(--illi-type-h2-size);line-height:var(--illi-type-h2-line)}
   .intro{font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);margin-top:var(--illi-space-md)}
-  .stage{margin-top:var(--illi-space-2xl);border-radius:var(--illi-shape-md)}
+  .stage{margin-top:var(--illi-space-2xl)}
+  .stage .player{border-radius:var(--illi-shape-md)}
   .strip-wrap{padding-block:var(--illi-space-2xl) var(--illi-space-4xl)}
   .section-head{margin-bottom:var(--illi-space-xl)}
   .features,.faq{padding-block:var(--illi-space-4xl)}

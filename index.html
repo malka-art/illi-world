@@ -29,7 +29,7 @@
      The demo plays in illi's own film player (assets/home/film-player/, owner rulings 2026-11-09/10): real controls sit on the
      player bar painted into the film and scale with the picture; at the end a real install button appears where the film's
      hub slides aside (on phones it leads to the send-to-desktop form instead). -->
-<link rel="stylesheet" href="assets/home/style.css?v=4">
+<link rel="stylesheet" href="assets/home/style.css?v=7">
 <link rel="stylesheet" href="assets/home/film-player/film-player.css">
 </head>
 <body>
@@ -44,8 +44,10 @@
 </header>
 
 <main>
-<!-- HERO: the reference's split hero (claim left, action block right), film full width below -->
-<section class="hero container" aria-labelledby="hero-title">
+<!-- HERO, side by side (owner request 2026-11-10): claim, CTA and supporting lines left, the film right, the moving strip under both.
+     On a desktop screen the header and this whole section fit the first screen; the film is never cut. Tablet and phone stack. -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-main container">
   <div class="hero-grid">
     <div class="hero-copy">
       <h1 id="hero-title">Video that listens to you.</h1>
@@ -61,10 +63,10 @@
     <div class="player" id="demo-player" aria-label="illi demo video"></div>
   </div>
   <p class="stage-error" id="stage-error" role="status" hidden>The demo didn’t load. Reload the page to try again.</p>
-</section>
+  </div>
 
-<!-- MOVING STRIP under the demo (the reference runs a logo marquee here): the gestures and what they do. Owner chose this option 2026-11-08; no numbers. -->
-<section class="strip-wrap" id="strip" aria-label="What illi does">
+<!-- MOVING STRIP, part of the hero since 2026-11-10 (the reference runs a logo marquee here): the gestures and what they do. Owner chose this option 2026-11-08; no numbers. -->
+<div class="strip-wrap" id="strip" role="group" aria-label="What illi does">
   <div class="strip">
     <ul class="strip-track">
       <li><span class="chip"><svg class="g" viewBox="0 0 32 32"><path class="ink" d="M16 5a5 5 0 0 1 5 5v12a5 5 0 0 1-10 0V10a5 5 0 0 1 5-5Z"/><rect class="fill" x="14.8" y="8" width="2.4" height="5" rx="1.2"/><path class="acc" d="M6 20V9M3.5 11.5 6 9l2.5 2.5"/></svg></span><span class="txt"><span class="do">Speed up</span><span class="how">hold the wheel, move up</span></span></li>
@@ -78,6 +80,7 @@
       <li><span class="chip"><svg class="g" viewBox="0 0 32 32"><rect class="ink" x="3" y="7" width="16" height="11" rx="2"/><rect class="ink" x="21" y="12" width="8" height="13" rx="2"/><path class="acc" d="M8 24h8M13 21.5l3 2.5-3 2.5"/></svg></span><span class="txt"><span class="do">Synced across your devices</span><span class="how">bookmarks and settings follow you</span></span></li>
     </ul>
   </div>
+</div>
 </section>
 
 <!-- FEATURES in the "Ready, set, record" composition: image-top cards over a solid body, label + title + body -->
@@ -205,5 +208,5 @@
 
 
 <script src="assets/home/film-player/film-player.js?v=2"></script>
-<script src="assets/home/landing.js?v=3"></script>
+<script src="assets/home/landing.js?v=4"></script>
 </body></html>
