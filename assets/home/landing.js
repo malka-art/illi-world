@@ -14,7 +14,7 @@
   // ---------- 1. player: illi's own film player; the install button at the end leads phones to the send-to-desktop form ----------
   var CWS = 'https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg';
   var player = window.FilmPlayer.create(document.getElementById('demo-player'), {
-    src: 'assets/home/illi-demo.mp4', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
+    src: 'assets/home/illi-demo.mp4?v=2', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
     cta: isMobile ? { href: '#send-form', label: 'Send it to my computer', start: 2602 }
                   : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602 }
   });
