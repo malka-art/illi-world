@@ -341,6 +341,37 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
   .stage-error{grid-column:2;grid-row:2}
   .strip-wrap{padding-block:var(--p-hero-pad)}
 }
+/* wide screens (owner 2026-11-11): the claim grows with the film, so the two columns keep the proportions they have at 1440 and the claim
+   stays centred against the film. --p-hero-u is the film's width over its width at 1440 (703), as a length: 1px at 1440, stopping at
+   1.2857px, where the headline reaches 72px (above that the page's other titles would look small beside it).
+   The multipliers are the board sizes in px: display 56, h3 21, body 16, body-sm 14, and spaces 12 16 24 32. */
+@media(min-width:1441px){
+  /* the header and the strip grow by the same step, worked out from the page width alone (--p-wide-v: 1px at 1440, 1.2857px from 1920),
+     so the whole first screen stays in proportion. Multipliers: header 60 and its real height 62, wordmark 52, chip 48, glyph 28, strip gap 64 */
+  :root{--p-wide-v:clamp(1px,min(var(--p-content),var(--p-page-max)) / 1152,1.2857px);
+    --p-header-h:calc(60 * var(--p-wide-v));--p-head-real:calc(62 * var(--p-wide-v));--p-wordmark-head:calc(52 * var(--p-wide-v));
+    --p-chip:calc(48 * var(--p-wide-v));--p-strip-glyph:calc(28 * var(--p-wide-v));--p-strip-gap:calc(64 * var(--p-wide-v))}
+  .site-head{padding-block:calc(12 * var(--p-wide-v))}
+  .site-head nav{font-size:calc(14 * var(--p-wide-v));gap:calc(32 * var(--p-wide-v))}
+  .site-head .button.small{font-size:calc(14 * var(--p-wide-v));padding:calc(12 * var(--p-wide-v)) calc(16 * var(--p-wide-v))}
+  .strip-track li{gap:calc(12 * var(--p-wide-v))}
+  .txt{gap:calc(4 * var(--p-wide-v))}
+  .txt .do{font-size:calc(14 * var(--p-wide-v))}
+  .txt .how{font-size:calc(13 * var(--p-wide-v))}
+  :root{--p-hero-u:clamp(.8px,min((min(var(--p-content),var(--p-page-max)) - var(--p-hero-gap)) * 7 / 11,max(var(--p-hero-film-floor),var(--p-hero-film-room)) * 16 / 9) / 703,1.2857px)}
+  .hero-grid{gap:calc(32 * var(--p-hero-u))}
+  .hero h1{font-size:calc(56 * var(--p-hero-u))}
+  .hero .intro{font-size:calc(21 * var(--p-hero-u));margin-top:calc(16 * var(--p-hero-u))}
+  .hero-action{gap:calc(12 * var(--p-hero-u))}
+  .hero-action .button{font-size:calc(16 * var(--p-hero-u));padding:calc(16 * var(--p-hero-u)) calc(24 * var(--p-hero-u))}
+  .hero-action .trial,.hero .audience{font-size:calc(14 * var(--p-hero-u))}
+  .hero .audience{margin-top:calc(16 * var(--p-hero-u))}
+}
+@media(min-width:1200px) and (max-width:1365px){
+  .hero-grid{gap:var(--illi-space-xl)}          /* on these widths the film is a little shorter than the claim at full spacing; two tighter gaps keep the claim inside the film's height */
+  .hero .audience{margin-top:var(--illi-space-md)}
+  .hero .intro{margin-top:var(--illi-space-md)}
+}
 @media(max-width:1199px){
   :root{--p-hero-cols:minmax(0,2fr) minmax(0,3fr);--p-hero-gap:var(--illi-space-2xl)}   /* a narrow window gives the claim a little more of the row, so no line of it breaks early */
 }
@@ -360,6 +391,7 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
   .hero-grid,.stage-error{width:min(var(--p-content),var(--p-page-max));margin-inline:auto}
   .stage{display:flex;justify-content:center;background:var(--stage-bg);scroll-snap-align:start}
   .stage .player{width:min(100%,100svh * 16 / 9);border-radius:0}
+  .strip-wrap{padding-block:var(--illi-space-2xl)}
   .stage .player:focus-visible{outline-color:var(--dark-ink);outline-offset:calc(var(--p-focus-width) * -1)}
 }
 
