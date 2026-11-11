@@ -138,9 +138,13 @@ ul,ol{list-style:none;margin:0;padding:0}
 .cta-stack{display:flex;flex-direction:column;align-items:center;gap:var(--illi-space-md);text-align:center}
 
 /* ---------- header ---------- */
+/* the header band runs edge to edge as a box-shadow, not a 100vw-wide box: 100vw also counts the Windows scrollbar, so a box that wide
+   overhangs the page and makes a 7 px sideways scroll; a shadow never widens the page. clip-path keeps the shadow to the header's height. */
 .site-head{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;min-height:var(--p-header-h);width:min(var(--p-content),var(--p-page-max));margin-inline:auto;padding-block:var(--illi-space-md);background:var(--paper)}
-.site-head::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:var(--paper);border-bottom:var(--p-hairline) solid transparent;z-index:-1;transition:border-color var(--t-fast) var(--ease-out)}
-.site-head.is-stuck::before{border-bottom-color:var(--line)}
+.site-head::before,.site-head::after{content:"";position:absolute;left:0;right:0;z-index:-1;clip-path:inset(0 -100vmax)}
+.site-head::before{top:0;bottom:0;background:var(--paper);box-shadow:0 0 0 100vmax var(--paper)}
+.site-head::after{bottom:0;height:var(--p-hairline);background:transparent;box-shadow:0 0 0 100vmax transparent;transition:background-color var(--t-fast) var(--ease-out),box-shadow var(--t-fast) var(--ease-out)}
+.site-head.is-stuck::after{background:var(--line);box-shadow:0 0 0 100vmax var(--line)}
 .brand{display:inline-flex;align-items:center;flex-shrink:0;line-height:1}
 .brand:hover{text-decoration:none}
 .brand img{width:var(--p-wordmark-head);height:auto}

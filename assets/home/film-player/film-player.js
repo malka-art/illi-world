@@ -9,7 +9,7 @@
   var APPEAR = [8, 12], PULSES = [22, 48], PULSE_LEN = 24, PULSE_SCALE = 0.06, RING_PX = 20, RING_A = 0.5;
   // the ending (owner 2026-11-10): the film holds its last frame one extra second; on that still the button slides over his fingertip
   // and dips as if he pressed it, then stays. Absolute film frames and film px, as in cta-slide.py.
-  var MOVE = [2967, 14], TARGET = [915, 700], TARGET_SCALE = 1.75, PRESS = [2979, 8], PRESS_DIP = 0.07, ZOOM = 1.5;
+  var MOVE = [2955, 14], TARGET = [915, 700], TARGET_SCALE = 1.75, PRESS = [2967, 8], PRESS_DIP = 0.07, ZOOM = 1.5;
 
   function bezier(x1, y1, x2, y2) {
     return function (t) {
