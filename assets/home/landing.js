@@ -9,16 +9,31 @@
 
   var params = new URLSearchParams(location.search);
   var ua = navigator.userAgent || '';
-  var isMobile = (navigator.userAgentData && navigator.userAgentData.mobile) || /Android|iPhone|iPad|iPod/i.test(ua) || params.get('device') === 'mobile';
+  // An iPad introduces itself as a Mac. What gives it away: it has a touch screen and its browser is never a Chromium one
+  // (only Chromium browsers have navigator.userAgentData). A touch-screen MacBook running Chrome or Edge therefore stays a computer.
+  var isIpadAsMac = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1 && !navigator.userAgentData;
+  var isMobile = (navigator.userAgentData && navigator.userAgentData.mobile) || /Android|iPhone|iPad|iPod/i.test(ua) || isIpadAsMac || params.get('device') === 'mobile';
 
   // ---------- 1. player: illi's own film player; the install button at the end leads phones to the send-to-desktop form ----------
   var CWS = 'https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg';
   var player = window.FilmPlayer.create(document.getElementById('demo-player'), {
     src: 'assets/home/illi-demo.mp4?v=2', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
-    cta: isMobile ? { href: '#send-form', label: 'Send it to my computer', start: 2602 }
+    cta: isMobile ? { href: '#send-form', label: 'Remind me on my computer', start: 2602 }
                   : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602 }
   });
   if (isMobile) player.el.querySelector('.fp-cta a').classList.remove('cta');   // no "opened the store" note for the phone path
+
+  // ---------- 1b. phones and tablets cannot install a Chrome extension, so the store is a dead end there (owner request 2026-11-11):
+  //             every install button says "Remind me on my computer" instead and opens the send popup (section 7) ----------
+  var sendDialog = document.getElementById('send-dialog');
+  if (isMobile && sendDialog) {
+    document.documentElement.classList.add('is-phone');
+    document.getElementById('device-note').hidden = false;   // why the button offers a reminder instead of installing
+    document.querySelectorAll('.site-head a.cta, .hero-action a.cta, .close a.cta').forEach(function (a) {
+      a.href = '#send-form'; a.removeAttribute('target'); a.removeAttribute('rel'); a.classList.remove('cta');
+      a.textContent = a.closest('.site-head') ? 'Get illi now' : 'Remind me on my computer';   // the top button stays short; the popup explains
+    });
+  }
   player.video.addEventListener('error', function () { document.getElementById('stage-error').hidden = false; });
 
   // ---------- 2. moving strip: duplicate the track once so the loop is seamless ----------
@@ -69,12 +84,19 @@
     failed: 'The email didn’t go out. Please try again in a minute.'
   };
   var form = document.getElementById('send-form');
-  if (isMobile && form) {
-    form.hidden = false;
+  if (isMobile && form && sendDialog) {
+    var input = document.getElementById('send-email'); var status = document.getElementById('send-status'); var button = form.querySelector('button[type="submit"]');
+    // every "Remind me on my computer" button opens the popup with the email field ready
     document.querySelectorAll('a[href="#send-form"]').forEach(function (a) {
-      a.addEventListener('click', function () { setTimeout(function () { document.getElementById('send-email').focus({ preventScroll: true }); }, 450); });
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (sendDialog.showModal) sendDialog.showModal(); else sendDialog.setAttribute('open', '');
+        input.focus();
+      });
     });
-    var input = document.getElementById('send-email'); var status = document.getElementById('send-status'); var button = form.querySelector('button');
+    function closeSend() { if (sendDialog.close) sendDialog.close(); else sendDialog.removeAttribute('open'); }
+    document.getElementById('send-close').addEventListener('click', closeSend);
+    sendDialog.addEventListener('click', function (e) { if (e.target === sendDialog) closeSend(); });   // a tap outside the box closes it
     var trap = document.getElementById('send-website');
     function setStatus(text, isError) { status.textContent = text; status.classList.toggle('is-error', !!isError); input.setAttribute('aria-invalid', isError ? 'true' : 'false'); }
     input.addEventListener('input', function () { if (input.getAttribute('aria-invalid') === 'true' && input.validity.valid) setStatus('', false); });

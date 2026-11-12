@@ -29,7 +29,7 @@
      The demo plays in illi's own film player (assets/home/film-player/, owner rulings 2026-11-09/10): real controls sit on the
      player bar painted into the film and scale with the picture; at the end a real install button appears where the film's
      hub slides aside (on phones it leads to the send-to-desktop form instead). -->
-<link rel="stylesheet" href="assets/home/style.css?v=18">
+<link rel="stylesheet" href="assets/home/style.css?v=22">
 <link rel="stylesheet" href="assets/home/film-player/film-player.css">
 </head>
 <body>
@@ -54,6 +54,8 @@
       <p class="intro">Control YouTube with simple mouse gestures, without hunting for buttons.</p>
     </div>
     <div class="hero-action">
+      <!-- phones and tablets only (landing.js shows it): says why the button offers a reminder instead of installing -->
+      <p class="device-note" id="device-note" hidden>illi works on your desktop or laptop.</p>
       <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
       <p class="trial">45 days of Premium free · No card required</p>
       <p class="audience">For people who watch to learn, understand, or follow their curiosity.</p>
@@ -169,19 +171,6 @@
       <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days</a>
       <p class="trial">All Premium features. No card required. Basic speed control stays free afterwards.</p>
     </div>
-    <!-- Phone visitors send themselves the install link (B14). Hidden until landing.js detects a phone; posts to the
-         send-to-desktop Edge Function (one email per address per day). The "website" field is a honeypot: off screen,
-         never shown to people, and a filled value means a bot. -->
-    <form class="send" id="send-form" novalidate hidden>
-      <label class="send-label" for="send-email">Send the install link to your computer</label>
-      <div class="send-row">
-        <input class="send-input" id="send-email" type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required aria-describedby="send-help">
-        <button class="button small" type="submit">Send</button>
-      </div>
-      <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"><label for="send-website">Website</label><input id="send-website" type="text" name="website" tabindex="-1" autocomplete="off"></div>
-      <p class="send-help" id="send-help">One email with the link, nothing else.</p>
-      <p class="send-status" id="send-status" role="status" aria-live="polite"></p>
-    </form>
     <p class="signoff"><img src="assets/home/illi-mark-color.svg" width="62" height="36" alt="" aria-hidden="true"><span>Go learn something.</span></p>
   </div>
 </section>
@@ -207,7 +196,25 @@
 
 <div class="cta-note" id="cta-note" role="status" aria-live="polite" hidden>Opened the Chrome Web Store in a new tab.</div>
 
+<!-- Phones and tablets only (B14, reworked 2026-11-11 by owner request): every install button there says "Remind me on my computer"
+     and opens this popup. It posts to the send-to-desktop Edge Function (one email per address per day). The "website" field is a
+     honeypot: off screen, never shown to people, and a filled value means a bot. -->
+<dialog class="send-dialog" id="send-dialog" aria-labelledby="send-title">
+  <form class="send" id="send-form" novalidate>
+    <button class="send-close" id="send-close" type="button" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></button>
+    <p class="send-title" id="send-title">illi works on your desktop or laptop.</p>
+    <p class="send-why" id="send-why">We’ll email you a link to open when you’re there.</p>
+    <label class="send-label" for="send-email">Your email</label>
+    <div class="send-row">
+      <input class="send-input" id="send-email" type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required aria-describedby="send-why">
+      <button class="button" type="submit">Send me the link</button>
+    </div>
+    <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"><label for="send-website">Website</label><input id="send-website" type="text" name="website" tabindex="-1" autocomplete="off"></div>
+    <p class="send-status" id="send-status" role="status" aria-live="polite"></p>
+  </form>
+</dialog>
+
 
 <script src="assets/home/film-player/film-player.js?v=2"></script>
-<script src="assets/home/landing.js?v=6"></script>
+<script src="assets/home/landing.js?v=10"></script>
 </body></html>

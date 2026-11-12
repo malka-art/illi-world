@@ -66,12 +66,12 @@
   --p-measure-note:56ch;
   --p-measure-close:16ch;
   --p-measure-stack:760px;
-  --p-measure-field:280px;
+  --p-measure-send:400px;                    /* the send-to-computer box: one email field's worth of width */
   --p-header-h:60px;
   --p-wordmark-head:52px;
   --p-wordmark-head-phone:44px;
   --p-wordmark-close:clamp(96px,9vw,132px);
-  --p-field-h:44px;
+  --p-field-h:48px;                          /* touch target: the field and its button are used on phones only */
   --p-mark-h:32px;                           /* reference marquee mark height */
   --p-strip-gap:var(--illi-space-4xl);       /* reference marquee gap 64 */
   --p-strip-dur:90s;                         /* reference marquee loop */
@@ -165,6 +165,16 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 .intro{margin-top:var(--illi-space-lg);text-wrap:pretty;font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--muted);max-width:var(--p-measure-intro)}
 .hero-action{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md);padding-top:var(--illi-space-sm)}
 .hero-action .trial{margin:0}
+.device-note{font-weight:var(--illi-weight-medium);color:var(--heading)}   /* phones and tablets only: illi is for a computer, so the button below offers a reminder */
+/* phones and tablets held upright (owner request 2026-11-11): the film comes before the button, so the order is claim, film, action */
+@media(max-width:1024px) and (orientation:portrait){
+  .is-phone .hero-main{display:flex;flex-direction:column}
+  .is-phone .hero-grid{display:contents}
+  .is-phone .hero-copy{order:1}
+  .is-phone .stage{order:2}
+  .is-phone .stage-error{order:3}
+  .is-phone .hero-action{order:4;margin-top:var(--illi-space-xl);padding-top:0}
+}
 .audience{margin-top:var(--illi-space-lg);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted);max-width:var(--p-measure-intro)}
 .stage{position:relative;margin-top:var(--illi-space-3xl)}
 .stage .player{width:100%;aspect-ratio:16 / 9;border-radius:var(--illi-shape-xl);overflow:hidden;background:var(--stage-bg)}   /* the film holds its 16:9 place before the player script runs */
@@ -347,17 +357,24 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 .signoff{display:inline-flex;align-items:center;gap:var(--illi-space-md);margin-top:var(--illi-space-3xl);font-family:var(--title-family),sans-serif;font-weight:var(--title-weight);letter-spacing:var(--p-track-title);font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);color:var(--dark-muted)}
 .signoff img{height:var(--p-glyph-h);width:auto}
 .band-dark :where(a,[tabindex],input,button):focus-visible{outline-color:var(--dark-ink)}
-.send{margin-top:var(--illi-space-2xl);width:100%;max-width:var(--p-measure-stack);text-align:left}
-.send-label{display:block;font-weight:var(--illi-weight-medium);color:var(--dark-ink)}
-.send-row{display:flex;gap:var(--illi-space-sm);margin-top:var(--illi-space-md)}
-.send-input{flex:1;min-width:0;max-width:var(--p-measure-field);height:var(--p-field-h);padding:0 var(--illi-space-lg);font:inherit;color:var(--dark-ink);background:var(--dark-field);border:var(--p-hairline) solid var(--dark-line);border-radius:var(--illi-shape-full);caret-color:var(--dark-ink)}
-.send-input:focus{border-color:var(--dark-muted);outline:none}
-.send-input[aria-invalid="true"]{border-color:var(--illi-red-400)}
-.send-row .button{height:var(--p-field-h);padding-block:0}
-.send-help{margin-top:var(--illi-space-sm);font-size:var(--illi-type-caption-size);line-height:var(--illi-type-caption-line);color:var(--dark-muted)}
-.send-status{margin-top:var(--illi-space-sm);font-size:var(--illi-type-body-sm-size);color:var(--dark-ink);min-height:var(--illi-space-xl)}
-.send-status.is-error{color:var(--illi-red-400)}
-.send.is-sent .send-row,.send.is-sent .send-help{display:none}
+/* send popup, phones and tablets only (reworked 2026-11-11, owner request): every install button there opens it. A light card over a
+   dimmed page: why (illi is for a computer), what happens (a link by email), one labelled field, one full-width button */
+.send-dialog{width:calc(100vw - var(--illi-space-xl) * 2);max-width:var(--p-measure-send);margin:var(--illi-space-5xl) auto auto;padding:0;border:0;border-radius:var(--p-card-radius);background:var(--paper);color:var(--ink)}
+.send-dialog::backdrop{background:color-mix(in srgb,var(--illi-gray-900) 70%,transparent)}
+.send{position:relative;padding:var(--illi-space-2xl) var(--illi-space-xl) var(--illi-space-xl)}
+.send-close{position:absolute;top:var(--illi-space-sm);right:var(--illi-space-sm);display:grid;place-items:center;width:var(--illi-space-3xl);height:var(--illi-space-3xl);padding:0;border:0;border-radius:var(--illi-shape-circle);background:none;color:var(--muted);cursor:pointer}
+.send-title{padding-right:var(--illi-space-2xl);font-family:var(--title-family),sans-serif;font-weight:var(--title-weight);letter-spacing:var(--p-track-title);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--ink);text-wrap:balance}
+.send-why{margin-top:var(--illi-space-sm);color:var(--muted);text-wrap:pretty}
+.send-label{display:block;margin-top:var(--illi-space-xl);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);font-weight:var(--illi-weight-medium);color:var(--heading)}
+.send-row{display:flex;flex-direction:column;gap:var(--illi-space-md);margin-top:var(--illi-space-sm)}
+.send-input{width:100%;height:var(--p-field-h);padding:0 var(--illi-space-lg);font:inherit;color:var(--ink);background:var(--card);border:var(--p-hairline) solid var(--line-soft);border-radius:var(--illi-shape-full);caret-color:var(--ink)}
+.send-input:focus{border-color:var(--heading);outline:none}
+.send-input[aria-invalid="true"]{border-color:var(--red)}
+.send-row .button{height:var(--p-field-h);padding-block:0;justify-content:center}
+.send-status{margin-top:var(--illi-space-md);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--ink)}
+.send-status:empty{display:none}
+.send-status.is-error{color:var(--red-hover)}
+.send.is-sent .send-why,.send.is-sent .send-label,.send.is-sent .send-row{display:none}
 
 /* ---------- footer: one slim row (owner ruling 2026-11-09): mark, tagline, the real pages, legal ---------- */
 .site-foot{padding-block:var(--illi-space-xl);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted)}
