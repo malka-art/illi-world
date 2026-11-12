@@ -1,0 +1,480 @@
+/* illi pricing page (/upgrade/). Built from Amanda's revision 6 design (design/upgrade-page-2026-11-11, upgrade-final.css), 2026-11-12.
+   Changes against the design sheet are marked BUILD. The design sheet stays the reference; this is the production copy.
+   Revision 6:
+   Free, illi Premium monthly and illi Premium annual are three separate cards of one anatomy, each holding its own list.
+   It is built the way the live home sheet (assets/home/style.css) is built: the site token file, the home page's role names,
+   then named provisional tokens for anything the board does not hold yet.
+   Outside the token block the only raw numbers are the breakpoints, percentages and viewport units, the one-pixel screen-reader clip,
+   line-height 1 on single-line controls, grid spans and rows, stacking order and item order, the icon stroke width (the home page's 1.75),
+   and the white stroke inside the tick images (a data image cannot read a token).
+   Rule numbers in comments (T = type, S = spacing, H = hierarchy, F = surfaces, C = colour, B = buttons and states, D = detail)
+   are the checklist in DESIGN-NOTES.md, "Revision 4: craft pass". R6 marks what revision 6 added. */
+
+@import url("/assets/illi-tokens.css");
+
+@font-face{font-family:Inter;src:url("/assets/home/inter-latin-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:Inter;src:url("/assets/home/inter-latin-500.woff2") format("woff2");font-weight:500 600;font-style:normal;font-display:swap}
+@font-face{font-family:Sora;src:url("/assets/home/sora-latin-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+
+:root{
+  /* ---- role names, the home page's (board tokens) ---- */
+  --paper:var(--illi-surface-card);
+  --band:var(--illi-surface-sunken);
+  --card:var(--illi-surface-raised);
+  --chip:var(--illi-surface-chip);
+  --notice:var(--illi-surface-notice);
+  --ink:var(--illi-text-primary);
+  --heading:var(--illi-text-heading);
+  --muted:var(--illi-text-secondary);
+  --line:var(--illi-border-field);            /* warm hairline, bone-400 */
+  --line-flat:var(--illi-bone-500);           /* R6: the edge of a flat card (no shadow to help it): one step firmer than the hairline */
+  --control:var(--illi-bone-900);             /* outlines of fields, radios and boxes: 4.3:1 on white */
+  --pick:var(--illi-bone-950);                /* chosen and recommended: dark bone, never cold grey (project taste) */
+  --on-pick:var(--illi-white);                /* 5.0:1 on bone-950 */
+  --red:var(--illi-red-600);
+  --red-hover:var(--illi-red-700);
+  --on-red:var(--illi-on-accent);
+  --focus:var(--illi-bone-950);
+  --error:var(--illi-red-800);
+  --accent-2:var(--illi-accent-secondary);
+  --pause:var(--illi-yellow-500);
+  --dark-bg:var(--illi-gray-800);
+  --dark-ink:var(--illi-bone-50);
+  --dark-alert:var(--illi-red-400);
+  --bar-bg:var(--illi-bone-950);              /* the banner: the home feature cards' body colour */
+  --bar-ink:var(--illi-bone-50);              /* 4.7:1 on bone-950 */
+  --scrim:var(--illi-scrim-light);
+  --scroll-thumb:var(--illi-bone-600);
+  --scroll-track:var(--illi-bone-100);
+
+  /* ---- PROVISIONAL tokens (loose until the consolidating pass) ---- */
+  --p-page-max:1440px;                         /* home */
+  --p-content-hold:1152px;                     /* R6: the column's width at 1440, the size the three cards are drawn for */
+  /* home: 80 percent of the window (1152 of 1440). R6: on a narrower window the column holds 1152 for as long as the window can give it
+     48 either side, so three cards keep their one-line names and buttons on a 1280 or 1366 laptop; from 1440 up it is the home page's 80 percent */
+  --p-content:max(80vw,min(var(--p-content-hold),calc(100vw - var(--illi-space-3xl) * 2)));
+  --p-gutter:var(--illi-space-xl);             /* 12 columns, 24 between: three equal thirds of 368 at 1440 */
+  --p-hairline:1px;
+  --p-outline:2px;
+  --p-track-display:-.03em;                    /* home */
+  --p-track-title:-.02em;                      /* home */
+  --p-fluid-display:clamp(36px,4.4vw,var(--illi-type-display-size));   /* home */
+  --p-h1-phone:36px;                           /* home */
+  --p-measure-h1:17ch;
+  --p-measure-intro:44ch;
+  --p-measure-text:62ch;                       /* T5: 45 to 75 characters a line */
+  --p-measure-toast:560px;
+  --p-header-h:60px;                           /* home */
+  --p-wordmark-head:52px;                      /* home */
+  --p-wordmark-head-phone:44px;                /* home */
+  --p-wordmark-foot:40px;                      /* home */
+  --p-wordmark-dialog:64px;
+  --p-glyph-h:18px;                            /* home: the sign-off mark */
+  --p-tap:48px;                                /* B5: nothing pressable under 48 on a phone */
+  --p-field-h:48px;
+  --p-code-h:64px;
+  --p-chip:48px;                               /* home strip */
+  --p-strip-glyph:28px;                        /* home strip */
+  --p-control:20px;
+  --p-icon:16px;
+  --p-icon-button:40px;
+  --p-dialog-w:480px;
+  --p-send-w:420px;
+  --p-check-w:300px;                           /* Cloudflare's checkbox frame is 300 by 65 */
+  --p-check-h:65px;
+  --p-focus-width:2px;                         /* home */
+  --p-focus-offset:4px;                        /* home */
+  --p-underline-offset:4px;                    /* home */
+  --p-underline-width:1px;                     /* home */
+  --p-press-shift:1px;                         /* home */
+  --p-pulse:1.4s;
+  --p-pulse-low:.25;
+  --p-track-code:.3em;                         /* the six digits, spaced so each reads as its own place */
+  --ease-out:cubic-bezier(.2,0,0,1);           /* home */
+  --t-fast:150ms;                              /* home */
+  --t-settle:260ms;                            /* home */
+  /* F3, F4: soft, low, wide shadows, tinted with the bone the surface sits on, never neutral grey. Two layers: a contact line and a lift. */
+  --p-shadow-card:0 var(--p-hairline) var(--illi-space-xs) color-mix(in srgb,var(--illi-bone-950) 6%,transparent),0 var(--illi-space-md) var(--illi-space-2xl) color-mix(in srgb,var(--illi-bone-950) 8%,transparent);
+  --p-shadow-pick:0 var(--p-outline) var(--illi-space-sm) color-mix(in srgb,var(--illi-bone-950) 10%,transparent),0 var(--illi-space-xl) var(--illi-space-3xl) color-mix(in srgb,var(--illi-bone-950) 18%,transparent);
+  --p-shadow-float:0 var(--illi-space-xl) var(--illi-space-4xl) color-mix(in srgb,var(--illi-gray-800) 28%,transparent);
+}
+
+/* ---------- base (the home page's) ---------- */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--p-header-h) + var(--illi-space-xl));scrollbar-color:var(--scroll-thumb) var(--scroll-track)}
+body{margin:0;min-height:100dvh;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);font-family:var(--illi-type-body-family),system-ui,sans-serif;font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);-webkit-font-smoothing:antialiased}
+::selection{background:var(--illi-accent-tint);color:var(--ink)}
+a{color:inherit;text-decoration:none;text-underline-offset:var(--p-underline-offset);text-decoration-thickness:var(--p-underline-width)}
+a:hover{text-decoration:underline}
+a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:where(a,button,summary,input,[tabindex]):focus-visible{outline:var(--p-focus-width) solid var(--focus);outline-offset:var(--p-focus-offset);border-radius:var(--illi-shape-sm)}
+img,svg{display:block}
+p{margin:0}
+ul{list-style:none;margin:0;padding:0}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip{position:absolute;left:var(--illi-space-lg);top:calc(var(--illi-space-5xl) * -1);padding:var(--illi-space-md);background:var(--ink);color:var(--paper);z-index:70;border-radius:var(--illi-shape-md)}
+.skip:focus{top:var(--illi-space-lg)}
+
+/* T1 one scale, the board's: 56 display, 40, 28, 21, 16, 14, 13. Nothing set between the steps. T2 two families, one job each. T3 tight leading on big type. */
+h1,h2{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);color:var(--ink);margin:0;text-wrap:balance}
+h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);letter-spacing:var(--p-track-display);max-width:var(--p-measure-h1)}
+h2{font-size:var(--illi-type-h2-size);line-height:var(--illi-type-h2-line);letter-spacing:var(--p-track-title)}
+
+/* D5 a short page still ends at the bottom of the window: the band runs down to the footer, no stray strip of paper under it */
+main{flex:1;display:flex;flex-direction:column}
+.plans-band{flex:1}
+
+/* S1 one content column for the whole page (the home page's 80 percent); header, claim, cards and footer share its left edge */
+.container{width:min(var(--p-content),var(--p-page-max));margin-inline:auto}
+
+/* ---------- B: buttons. One shape, one size per level, every state drawn ---------- */
+.button{display:inline-flex;align-items:center;justify-content:center;gap:var(--illi-space-sm);min-height:var(--p-tap);padding:var(--illi-space-md) var(--illi-space-xl);border:0;border-radius:var(--illi-shape-full);background:var(--red);color:var(--on-red);font-weight:var(--illi-weight-semibold);font-size:var(--illi-type-button-size);line-height:var(--illi-type-button-line);white-space:nowrap;text-decoration:none;transition:background var(--t-fast) var(--ease-out),box-shadow var(--t-fast) var(--ease-out),transform var(--t-fast) var(--ease-out)}
+.button:is(:hover,.is-hover){background:var(--red-hover);box-shadow:var(--illi-shadow-cta);text-decoration:none}
+.button:is(:active,.is-active){transform:translateY(var(--p-press-shift));box-shadow:none}
+.button.is-focus{outline:var(--p-focus-width) solid var(--focus);outline-offset:var(--p-focus-offset)}
+.button:focus-visible{border-radius:var(--illi-shape-full)}
+.button.small{min-height:0;padding:var(--illi-space-md) var(--illi-space-lg);font-size:var(--illi-type-body-sm-size);line-height:1}
+/* B2 the second level: an outline in dark bone on whatever it sits on */
+.button.secondary{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 var(--p-hairline) var(--pick)}
+.button.secondary:is(:hover,.is-hover){background:var(--band);box-shadow:inset 0 0 0 var(--p-outline) var(--pick)}
+.button.secondary:is(:active,.is-active){background:var(--chip);box-shadow:inset 0 0 0 var(--p-outline) var(--pick)}
+/* on the dark bone banner: bone on bone, so red stays the page's one action */
+.button.light{background:var(--bar-ink);color:var(--ink)}
+.button.light:hover{background:var(--card);box-shadow:none}
+/* B4 cannot be pressed yet = an outline that says what it waits for; never a faded red */
+.button:disabled{cursor:default;background:transparent;color:var(--muted);box-shadow:inset 0 0 0 var(--p-hairline) var(--line);transform:none}
+/* B3 working = the same button, same colour, with a pulse; it does not lift or take a second press */
+.button.is-busy{cursor:progress;pointer-events:none}
+.button.is-busy:not(.secondary){box-shadow:none}
+.button.is-busy .busy::before{margin-right:0}
+.linklike{border:0;background:none;padding:0;color:var(--ink);font-weight:var(--illi-weight-medium);text-decoration:underline;text-underline-offset:var(--p-underline-offset);text-decoration-thickness:var(--p-underline-width);font-size:inherit}
+.linklike:hover{text-decoration-thickness:var(--p-outline)}
+.icon-button{flex-shrink:0;display:grid;place-items:center;width:var(--p-icon-button);height:var(--p-icon-button);border:0;border-radius:var(--illi-shape-circle);background:none;color:var(--heading);transition:background var(--t-fast) var(--ease-out)}
+.icon-button:hover{background:var(--chip)}
+.icon-button svg{width:var(--p-icon);height:var(--p-icon);fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round}
+.icon-button.on-dark{color:var(--bar-ink)}
+.icon-button.on-dark:hover{background:color-mix(in srgb,var(--bar-ink) 16%,transparent)}
+.busy::before{content:"";width:var(--illi-space-sm);height:var(--illi-space-sm);border-radius:var(--illi-shape-circle);background:currentColor;display:inline-block;margin-right:var(--illi-space-sm);vertical-align:middle;animation:pulse var(--p-pulse) ease-in-out infinite}
+@keyframes pulse{50%{opacity:var(--p-pulse-low)}}
+
+/* ---------- founding banner: dark bone, one line, the button in bone ---------- */
+.offer-bar{background:var(--bar-bg);color:var(--bar-ink)}
+.offer-bar-inner{display:flex;align-items:center;gap:var(--illi-space-lg);padding-block:var(--illi-space-sm)}
+.offer-bar-text{flex:1;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);text-wrap:pretty}
+.offer-bar-text b{font-weight:var(--illi-weight-semibold)}
+.offer-bar :where(a,button):focus-visible{outline-color:var(--bar-ink)}
+
+/* ---------- header: the home header ---------- */
+.site-head{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;min-height:var(--p-header-h);width:min(var(--p-content),var(--p-page-max));margin-inline:auto;padding-block:var(--illi-space-md);background:var(--paper)}
+.site-head::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:var(--paper);border-bottom:var(--p-hairline) solid transparent;z-index:-1;transition:border-color var(--t-fast) var(--ease-out)}
+.site-head.is-stuck::before{border-bottom-color:var(--line)}
+.brand{display:inline-flex;align-items:center;flex-shrink:0;line-height:1}
+.brand img{width:var(--p-wordmark-head);height:auto}
+.site-head nav{display:flex;align-items:center;gap:var(--illi-space-2xl);font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium)}
+.head-signin{background:none;border:0;padding:var(--illi-space-sm) 0;font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium);color:var(--ink)}
+.head-signin:hover{text-decoration:underline;text-underline-offset:var(--p-underline-offset)}
+/* D4 signed in: a small chip with a tick, not a grey sentence */
+.head-state{display:inline-flex;align-items:center;gap:var(--illi-space-sm);padding:var(--illi-space-sm) var(--illi-space-md);border-radius:var(--illi-shape-full);background:var(--chip);font-size:var(--illi-type-caption-size);line-height:var(--illi-type-caption-line);font-weight:var(--illi-weight-medium);color:var(--ink)}
+.head-state::before{content:"";width:var(--p-icon);height:var(--p-icon);border-radius:var(--illi-shape-circle);background:var(--pick) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4.5 8.3 2.4 2.4 4.6-5.2' fill='none' stroke='%23fff' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+body[data-auth="in"] .for-anon,body[data-auth="in"] .for-anon-inline{display:none}
+
+/* ---------- claim: the home split. S3 section rhythm 48 above and below ---------- */
+.hero{padding-block:var(--illi-space-3xl)}
+.hero-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--p-gutter);align-items:start}
+.hero-copy{grid-column:span 8}
+.hero-action{grid-column:span 4;padding-top:var(--illi-space-sm)}
+/* T4 the line under the claim is the second-largest text on the page and the only large grey */
+.intro{margin-top:var(--illi-space-lg);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--muted);max-width:var(--p-measure-intro);text-wrap:pretty}
+.visitor-act{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md)}
+.have{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted)}
+/* H3 where the account stands: first sentence in ink at reading size, the reassurance under it; no box */
+.account{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md)}
+.account-mark{height:var(--p-glyph-h);width:auto}
+.status{display:flex;flex-direction:column;gap:var(--illi-space-xs);max-width:var(--p-measure-intro)}
+.status strong{font-weight:var(--illi-weight-medium);color:var(--ink);text-wrap:balance}
+.status span{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);color:var(--muted);text-wrap:balance}
+.paid-act{display:none}
+body[data-tier="paid"] .paid-act{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md)}
+.purchase-note{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted)}
+/* left checkout: one row above the claim, in the board's notice surface */
+.notice{display:flex;align-items:center;gap:var(--illi-space-lg);width:fit-content;max-width:100%;margin-bottom:var(--illi-space-2xl);padding:var(--illi-space-sm) var(--illi-space-sm) var(--illi-space-sm) var(--illi-space-lg);border-radius:var(--illi-shape-lg);background:var(--notice);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line)}
+.notice p{flex:1;font-weight:var(--illi-weight-medium)}
+.back-link{display:none}
+body[data-view="founding"] .back-link{display:inline-flex;align-items:center;gap:var(--illi-space-sm);min-height:var(--p-tap);margin-bottom:var(--illi-space-sm);font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium)}
+.back-link svg{width:var(--p-icon);height:var(--p-icon);fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* phone visitor: send the install link to a computer (the home form, on paper) */
+.send{display:flex;flex-direction:column;gap:var(--illi-space-sm);width:100%;max-width:var(--p-send-w)}
+.send-row{display:flex;gap:var(--illi-space-sm)}
+.send-row .field{flex:1;min-width:0}
+.send-row .button{flex-shrink:0;min-height:var(--p-field-h)}
+/* BUILD: the live send-to-desktop function answers; its sentence shows under the form (the home page's messages) */
+.send-status{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--heading)}
+.send-status:empty{display:none}
+.send-status.is-error{color:var(--error);font-weight:var(--illi-weight-medium)}
+.send.is-sent .send-row{display:none}
+.trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+
+/* ---------- fields: one field style everywhere ---------- */
+.field-label{display:block;font-size:var(--illi-type-label-size);line-height:var(--illi-type-label-line);font-weight:var(--illi-weight-medium);color:var(--ink)}
+.field{display:block;width:100%;height:var(--p-field-h);padding:0 var(--illi-space-lg);border:var(--p-hairline) solid var(--control);border-radius:var(--illi-shape-full);background:var(--card);color:var(--ink);font-size:var(--illi-type-body-size);caret-color:var(--pick);transition:box-shadow var(--t-fast) var(--ease-out)}
+.field::placeholder{color:var(--muted)}
+.field:hover{box-shadow:inset 0 0 0 var(--p-hairline) var(--control)}
+.field:focus{outline:none;box-shadow:inset 0 0 0 var(--p-hairline) var(--pick),0 0 0 var(--illi-space-xs) color-mix(in srgb,var(--pick) 22%,transparent)}
+.field[aria-invalid="true"]{border-color:var(--error);box-shadow:inset 0 0 0 var(--p-hairline) var(--error)}
+/* the code is one field (MO-4) with the digits set large, as FI-1 asks */
+.field.is-code{height:var(--p-code-h);font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:var(--illi-type-h2-size);letter-spacing:var(--p-track-code);text-align:center;padding-inline:var(--illi-space-lg) var(--illi-space-sm)}
+.field-help{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted)}
+/* C4 an error is a colour, an icon and words */
+.field-error{display:flex;align-items:flex-start;gap:var(--illi-space-sm);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);font-weight:var(--illi-weight-medium);color:var(--error)}
+.field-error::before{content:"";flex-shrink:0;width:var(--p-icon);height:var(--p-icon);margin-top:var(--illi-space-xs);background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 3.6h1.8l-.3 4.8H7.4l-.3-4.8ZM8 12.2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 3.6h1.8l-.3 4.8H7.4l-.3-4.8ZM8 12.2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* ---------- plans band. F1 depth from layers: paper, then a soft band, then white cards ---------- */
+.plans-band{background:var(--band);padding-block:var(--illi-space-4xl) var(--illi-space-5xl)}
+.plans-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--p-gutter);align-items:start}
+.plans-lead{grid-column:1 / -1}
+/* the path in one sentence, at reading size, directly over the plans it describes */
+.plans-path{grid-column:1 / -1;margin-top:var(--illi-space-sm);max-width:var(--p-measure-text);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--heading);text-wrap:pretty}
+.plans-main{grid-column:1 / -1;min-width:0}
+.plans-lead + .plans-path + .plans-main{margin-top:var(--illi-space-xl)}
+body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
+/* R6 three separate cards on the page's own three thirds (S1), equal in height, their lines agreeing across the row (S4) */
+.offer-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--p-gutter)}
+
+/* F2 a plan is a white card with a soft shadow and one hairline round it. R6: all three cards share one anatomy from top to bottom:
+   the plan's name, how you pay, the price, its line, what you do, then what the plan holds. S2 inside: 32 around, 16 name to term,
+   4 term to price, 4 price to its line, 24 to the action, 12 action to its note, 32 to the list */
+.plan{display:flex;flex-direction:column;background:var(--card);border-radius:var(--illi-shape-xl);padding:var(--illi-space-2xl);box-shadow:inset 0 0 0 var(--p-hairline) var(--line),var(--p-shadow-card)}
+/* H2 annual is the recommended way to pay, marked three ways: a word (the tag), a dark bone outline, a deeper shadow */
+.plan.is-pick{box-shadow:inset 0 0 0 var(--p-outline) var(--pick),var(--p-shadow-pick)}
+/* R6 a ladder of three surfaces, so illi Premium looks the better choice without Free looking worse, and never by colour alone (F1, H2):
+   Free is a calm card of paper, flat on the band; illi Premium is white and lifted; annual adds the outline and the deeper shadow.
+   Free keeps the same shape, the same type and full ink: it is quieter, not fainter */
+.plan-free{background:var(--paper);box-shadow:inset 0 0 0 var(--p-hairline) var(--line-flat)}
+.plan-free .chip{background:var(--chip)}
+/* R6 the plan's name leads every card at 21: "Free", "illi Premium", "illi Premium". The paid plan is never nameless */
+.plan-head{display:flex;align-items:center;justify-content:space-between;gap:var(--illi-space-md);min-height:var(--illi-space-2xl)}
+.plan h2{font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line)}
+/* "you are here": a quiet chip, so it never competes with the recommended tag */
+.here{display:inline-flex;align-items:center;padding:var(--illi-space-xs) var(--illi-space-md);border-radius:var(--illi-shape-full);background:var(--chip);color:var(--ink);font-size:var(--illi-type-caption-size);line-height:var(--illi-type-caption-line);font-weight:var(--illi-weight-semibold);white-space:nowrap}
+.tag{display:inline-flex;align-items:center;padding:var(--illi-space-xs) var(--illi-space-md);border-radius:var(--illi-shape-full);background:var(--pick);color:var(--on-pick);font-size:var(--illi-type-caption-size);line-height:var(--illi-type-caption-line);font-weight:var(--illi-weight-semibold);white-space:nowrap}
+/* R6 how you pay sits on the price it belongs to (PX-1): "Monthly", "Annual", "Stays free", 4 above the number */
+.term{margin-top:var(--illi-space-lg);font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);letter-spacing:var(--p-track-title);color:var(--ink)}
+/* H1 the price is the largest thing in the card and the second-largest on the page: 40 against the claim's 56 and the name's 21 */
+.price{display:flex;align-items:baseline;gap:var(--illi-space-sm);margin-top:var(--illi-space-xs)}
+.amount{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:var(--illi-type-h1-size);line-height:var(--illi-type-h1-line);letter-spacing:var(--p-track-display);color:var(--ink)}
+.unit{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);font-weight:var(--illi-weight-medium);color:var(--muted)}
+.plan-desc{margin-top:var(--illi-space-xs);color:var(--heading)}
+.plan-act{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md);padding-top:var(--illi-space-xl)}
+.plan-act .button{max-width:100%}
+/* where the paid cards have a button, Free has a plain statement of the same height: there is nothing to press, and that is the point */
+.stay{display:flex;align-items:center;gap:var(--illi-space-sm);min-height:var(--p-tap);font-weight:var(--illi-weight-medium);color:var(--ink);text-wrap:balance}
+.stay::before{content:"";flex-shrink:0;width:var(--p-control);height:var(--p-control);border-radius:var(--illi-shape-circle);background:var(--pick) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4.5 8.3 2.4 2.4 4.6-5.2' fill='none' stroke='%23fff' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+/* R6 what each plan holds lives inside its own card, under the one interior hairline: the home strip's own drawings and words.
+   Free: the two speed gestures. Each illi Premium card: everything in Free, plus five */
+.feats{flex:1;margin-top:var(--illi-space-2xl);padding-top:var(--illi-space-xl);border-top:var(--p-hairline) solid var(--line)}
+.feats-label{margin:0 0 var(--illi-space-lg);font-size:var(--illi-type-label-size);line-height:var(--illi-type-label-line);font-weight:var(--illi-weight-semibold);color:var(--heading)}
+.feats ul{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--illi-space-lg)}
+.feats li,.includes li{display:flex;align-items:center;gap:var(--illi-space-md)}
+.chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);background:var(--band);color:var(--heading);flex-shrink:0}
+.chip .g{width:var(--p-strip-glyph);height:var(--p-strip-glyph)}
+.chip .g .ink{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.chip .g .fill{fill:currentColor}
+.chip .g .acc{fill:none;stroke:var(--accent-2);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.chip .g .fill-acc{fill:var(--accent-2)}
+.chip .g .pause{fill:var(--pause)}
+.txt{display:flex;flex-direction:column;min-width:0}
+.txt .do{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);letter-spacing:var(--p-track-title);font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);color:var(--ink)}
+.txt .how{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted);text-wrap:pretty}
+
+/* T6 the smallest text on the page is 14, and it is short */
+.legal{margin-top:var(--illi-space-2xl);max-width:var(--p-measure-text);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);color:var(--muted);text-wrap:balance}
+.legal a{color:var(--ink);text-decoration:underline}
+
+/* ---------- people who already pay: no plans to buy; the band says what they have ("With illi Premium"), five across.
+   For everyone else that list lives inside each illi Premium card ---------- */
+.includes{display:none}
+body[data-paying]:not([data-view]) .includes{display:block;grid-column:span 4;padding-top:var(--illi-space-2xl)}
+body[data-paying] .plans-main,body[data-view] .plans-main{grid-column:span 8}
+.includes h2{font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);margin-bottom:var(--illi-space-xl)}
+.includes ul{display:flex;flex-direction:column;gap:var(--illi-space-lg)}
+.includes .chip{background:var(--card)}
+body[data-paying] #plans,body[data-tier="paid"] .legal{display:none}
+body[data-tier="paid"] .plans-main{display:none}
+body[data-tier="paid"]:not([data-view]) .includes{grid-column:1 / -1;padding-top:0}
+body[data-tier="paid"] .includes ul{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--p-gutter)}
+body[data-tier="paid"] .includes li{flex-direction:column;align-items:flex-start;gap:var(--illi-space-lg);padding:var(--illi-space-xl);border-radius:var(--illi-shape-lg);background:var(--card);box-shadow:inset 0 0 0 var(--p-hairline) var(--line),var(--p-shadow-card)}
+body[data-tier="paid"] .includes .chip{background:var(--band)}
+body[data-tier="paid"] .includes .txt{gap:var(--illi-space-xs)}
+body[data-paying]:not([data-view]) .to-plans{display:none}
+
+/* ---------- panels: the founding plan and the founding step share the card surface ---------- */
+.panel{background:var(--card);border-radius:var(--illi-shape-xl);padding:var(--illi-space-2xl);box-shadow:inset 0 0 0 var(--p-hairline) var(--line),var(--p-shadow-card)}
+.panel > p,.panel details p{max-width:var(--p-measure-text);text-wrap:pretty}
+.billing-management h2{margin-bottom:var(--illi-space-lg)}
+.panel-lead{font-weight:var(--illi-weight-medium)}
+.panel-sub{margin-top:var(--illi-space-sm);color:var(--heading)}
+.panel-sub:empty{display:none}
+.management-actions{display:flex;flex-wrap:wrap;gap:var(--illi-space-md);margin-top:var(--illi-space-xl)}
+.management-actions:not(:has(> :not([hidden]))){display:none}
+.panel-foot{margin-top:var(--illi-space-xl);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);color:var(--muted)}
+.to-plans{margin-top:var(--illi-space-lg);font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium)}
+.to-plans a{text-decoration:underline}
+
+.founding-step{display:none}
+body[data-view="founding"] .founding-step{display:block}
+body[data-view="founding"] #plans,body[data-view="founding"] .for-anon,body[data-view="founding"] .account,body[data-view="founding"] #foundingBanner,body[data-view="founding"] .includes{display:none!important}
+body[data-view="manage"] #plans,body[data-view="manage"] .for-anon,body[data-view="manage"] .account,body[data-view="manage"] .includes{display:none!important}
+.founding-step > p + p{margin-top:var(--illi-space-md)}
+.founding-step strong{font-weight:var(--illi-weight-semibold)}
+.term-options{border:0;padding:0;margin:var(--illi-space-2xl) 0 0;min-width:0}
+.term-options legend{padding:0;margin-bottom:var(--illi-space-lg);font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);letter-spacing:var(--p-track-title)}
+/* a choice is a whole tile (LY-3); chosen = dark bone outline and a soft fill, plus the filled dot */
+.term-option{display:flex;align-items:flex-start;gap:var(--illi-space-md);padding:var(--illi-space-lg) var(--illi-space-xl);border-radius:var(--illi-shape-lg);box-shadow:inset 0 0 0 var(--p-hairline) var(--line);cursor:pointer;transition:box-shadow var(--t-fast) var(--ease-out),background var(--t-fast) var(--ease-out)}
+.term-option + .term-option{margin-top:var(--illi-space-md)}
+.term-option:hover{box-shadow:inset 0 0 0 var(--p-hairline) var(--control)}
+.term-option:has(input:checked){background:var(--paper);box-shadow:inset 0 0 0 var(--p-outline) var(--pick)}
+.term-option:has(input:focus-visible){outline:var(--p-focus-width) solid var(--focus);outline-offset:var(--p-focus-offset)}
+.term-option strong,.term-option small{display:block}
+.term-option small{margin-top:var(--illi-space-xs);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);color:var(--muted)}
+/* D2 one drawn control style for the radio and the box, in dark bone */
+.term-option input,.renewal-consent input{appearance:none;-webkit-appearance:none;flex-shrink:0;width:var(--p-control);height:var(--p-control);margin:var(--p-outline) 0 0;border:var(--p-hairline) solid var(--control);background:var(--card);cursor:pointer;transition:background var(--t-fast) var(--ease-out),box-shadow var(--t-fast) var(--ease-out)}
+.term-option input{border-radius:var(--illi-shape-circle)}
+.term-option input:checked{border-color:var(--pick);background:var(--pick);box-shadow:inset 0 0 0 var(--illi-space-xs) var(--card)}
+.term-option input:focus-visible{outline:none}
+.renewal-consent input{border-radius:var(--illi-shape-sm)}
+.renewal-consent input:checked{border-color:var(--pick);background:var(--pick) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3.8 8.4 2.7 2.7 5.7-6.3' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.renewal-consent{display:flex;align-items:flex-start;gap:var(--illi-space-md);margin-top:var(--illi-space-xl);max-width:var(--p-measure-text);cursor:pointer}
+#foundingChoice > .button{margin-top:var(--illi-space-xl);max-width:100%;white-space:normal;text-align:left}
+.founding-step details{margin-top:var(--illi-space-2xl);padding-top:var(--illi-space-lg);border-top:var(--p-hairline) solid var(--line)}
+.founding-step summary{display:flex;align-items:center;justify-content:space-between;gap:var(--illi-space-lg);min-height:var(--p-tap);font-weight:var(--illi-weight-medium);cursor:pointer;list-style:none}
+.founding-step summary::-webkit-details-marker{display:none}
+.chev{flex-shrink:0;width:var(--p-icon);height:var(--p-icon);fill:none;stroke:var(--muted);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--t-settle) var(--ease-out)}
+details[open] .chev{transform:rotate(180deg)}
+.founding-step details p{margin-top:var(--illi-space-md);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);color:var(--heading)}
+
+/* ---------- footer: the home footer ---------- */
+.site-foot{padding-block:var(--illi-space-xl);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted)}
+.foot-row{display:flex;align-items:center;flex-wrap:wrap;gap:var(--illi-space-md) var(--illi-space-xl)}
+.foot-row .brand img{width:var(--p-wordmark-foot)}
+.foot-tag{margin-right:auto}
+.foot-links{display:flex;flex-wrap:wrap;gap:var(--illi-space-sm) var(--illi-space-xl);font-weight:var(--illi-weight-medium);color:var(--heading)}
+.foot-links a[aria-current="page"]{color:var(--ink);text-decoration:underline}
+.foot-legal{font-size:var(--illi-type-small-size);line-height:var(--illi-type-small-line)}
+
+/* ---------- the bottom note (the home page's), for working, done and failed ---------- */
+.toast{position:fixed;left:50%;bottom:var(--illi-space-xl);translate:-50% 0;z-index:65;display:flex;align-items:flex-start;gap:var(--illi-space-sm);width:max-content;max-width:min(var(--p-measure-toast),calc(100vw - var(--illi-space-2xl)));padding:var(--illi-space-md) var(--illi-space-xl);border-radius:var(--illi-shape-xl);background:var(--dark-bg);color:var(--dark-ink);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);font-weight:var(--illi-weight-medium);box-shadow:var(--p-shadow-float)}
+.toast:empty{display:none}
+.toast[data-kind="busy"]::before{content:"";flex-shrink:0;width:var(--illi-space-sm);height:var(--illi-space-sm);margin-top:var(--illi-space-sm);border-radius:var(--illi-shape-circle);background:currentColor;animation:pulse var(--p-pulse) ease-in-out infinite}
+.toast a{color:inherit;text-decoration:underline}
+.toast strong{font-weight:var(--illi-weight-semibold)}
+.toast[data-kind="error"]::before{content:"";flex-shrink:0;width:var(--p-icon);height:var(--p-icon);margin-top:var(--p-outline);background:var(--dark-alert);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 3.6h1.8l-.3 4.8H7.4l-.3-4.8ZM8 12.2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-.9 3.6h1.8l-.3 4.8H7.4l-.3-4.8ZM8 12.2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z'/%3E%3C/svg%3E") center/contain no-repeat}
+
+/* ---------- sign-in dialog ---------- */
+.signup-modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:var(--illi-space-lg)}
+.sm-scrim{position:absolute;inset:0;background:var(--scrim)}
+.sm-dialog{position:relative;width:min(var(--p-dialog-w),100%);max-height:calc(100dvh - var(--illi-space-2xl));overflow:auto;background:var(--card);padding:var(--illi-space-3xl);border-radius:var(--illi-shape-xl);box-shadow:var(--p-shadow-float);animation:rise var(--t-settle) var(--ease-out)}
+@keyframes rise{from{opacity:0;transform:translateY(var(--illi-space-sm))}}
+.sm-close{position:absolute;right:var(--illi-space-lg);top:var(--illi-space-lg)}
+.sm-wordmark{width:var(--p-wordmark-dialog);height:auto;margin-bottom:var(--illi-space-2xl)}
+.sm-sub{margin-top:var(--illi-space-sm);color:var(--muted);text-wrap:pretty}
+.otp-email-echo{color:var(--ink);font-weight:var(--illi-weight-medium)}
+/* S2 a label sits 8 from its own field and 24 from whatever is above it */
+.otp-step .field-label{margin-top:var(--illi-space-xl)}
+.otp-step .field{margin-top:var(--illi-space-sm);background:var(--paper)}
+.otp-step .field-error{margin-top:var(--illi-space-sm)}
+/* BUILD: the human check. The Cloudflare frame (#tsFrame, inside .check-frame-slot) is ALWAYS laid out while the dialog is open:
+   never display:none and never narrower than 300 (the 74fe57f fix), because an invisible pass still runs inside it and a box that
+   needs a click must show at its full 300 by 65. Only the words around it follow the state. An invisible pass draws the frame 0 high. */
+.check{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-sm);margin-top:var(--illi-space-lg);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line)}
+.check[data-check="ok"]{margin-top:0}
+.check > .check-pending,.check > .check-hint,.check > .check-failed,.check > .check-way{display:none}
+.check[data-check="pending"] .check-pending,.check[data-check="click"] .check-hint,.check[data-check="failed"] .check-failed,.check[data-check="failed2"] .check-failed{display:flex}
+.check[data-check="failed2"] .check-way{display:block}
+.check-pending{align-items:center;color:var(--heading)}
+.check-failed{flex-direction:column;align-items:flex-start;gap:var(--illi-space-sm)}
+.check-hint{color:var(--heading)}
+.check-frame-slot{display:block;min-width:var(--p-check-w);max-width:100%}
+/* an invisible pass leaves the frame 0 high: take back the row gap it would add above the words */
+.check[data-check^="failed"] .check-frame-slot{margin-top:calc(var(--illi-space-sm) * -1)}
+.check-frame-slot iframe{display:block;border:0;background:transparent;min-width:var(--p-check-w)}
+.check-way{color:var(--muted)}
+.otp-actions{margin-top:var(--illi-space-2xl)}
+.otp-links{display:flex;flex-wrap:wrap;align-items:center;gap:var(--illi-space-sm) var(--illi-space-md);margin-top:var(--illi-space-lg);font-size:var(--illi-type-body-sm-size)}
+.otp-links .linklike{min-height:var(--illi-space-2xl)}
+.otp-links .sep{color:var(--muted)}
+
+/* ---------- narrow desktop and tablet: three cards no longer fit their buttons, so Free takes a full row (its list beside its price)
+   and the two illi Premium cards sit side by side under or over it ---------- */
+@media(max-width:1220px){
+  .offer-plans{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .plan-free{grid-column:1 / -1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--p-gutter);align-content:start}
+  .plan-free > *{grid-column:1}
+  .plan-free > .feats{grid-column:2;grid-row:1 / span 5;margin-top:0;padding-top:0;border-top:0}
+}
+@media(max-width:1024px){
+  .hero-copy,.hero-action{grid-column:1 / -1}
+  body[data-paying] .plans-main,body[data-view] .plans-main,body[data-paying]:not([data-view]) .includes{grid-column:1 / -1}
+  .hero-action{padding-top:var(--illi-space-xl)}
+  body[data-paying]:not([data-view]) .includes{padding-top:var(--illi-space-3xl)}
+  .includes ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--illi-space-lg) var(--p-gutter)}
+  body[data-tier="paid"] .includes ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body[data-tier="paid"] .includes li{flex-direction:row;align-items:center;padding:var(--illi-space-lg)}
+}
+@media(max-width:860px){
+  .plan{padding:var(--illi-space-xl)}
+}
+/* R6 one card a row, from a small tablet down. BUILD: the order is set in the markup by upgrade.js (orderCards), so keyboard and
+   screen-reader order always match what is seen. The order is decided, not inherited:
+   a visitor reads Free first (the answer to "am I trapped?"), then annual, then monthly;
+   someone signed in came to choose, so annual with its red button comes first, then monthly, then Free.
+   Among the paid cards the recommended one always comes first once they stack */
+@media(max-width:780px){
+  .offer-plans{grid-template-columns:minmax(0,1fr)}
+  .plan-free{display:flex}
+  .plan-free > .feats{margin-top:var(--illi-space-xl);padding-top:var(--illi-space-xl);border-top:var(--p-hairline) solid var(--line)}
+}
+
+/* ---------- phone (the home page's breakpoint and gutter) ---------- */
+@media(max-width:680px){
+  :root{--p-content:calc(100vw - var(--illi-space-2xl) * 2);--p-icon-button:var(--p-tap)}   /* B5: icon buttons grow to 48 on a phone */
+  .site-head{padding-block:var(--illi-space-sm)}
+  .brand img{width:var(--p-wordmark-head-phone)}
+  .site-head nav{gap:var(--illi-space-lg)}
+  .site-head nav > a:not(.button){display:none}
+  .head-signin{min-height:var(--p-tap)}
+  .otp-links .linklike{min-height:var(--p-tap)}
+  .hero{padding-block:var(--illi-space-xl) var(--illi-space-2xl)}
+  h1{font-size:var(--p-h1-phone)}
+  .intro,.plans-path{font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line)}
+  .intro{margin-top:var(--illi-space-md)}
+  .plans-band{padding-block:var(--illi-space-3xl) var(--illi-space-4xl)}
+  .offer-plans{gap:var(--illi-space-lg)}
+  .feats{margin-top:var(--illi-space-xl)}
+  .panel{padding:var(--illi-space-xl)}
+  /* 16 inside a plan card on a phone, so the longest item name ("Synced across your devices") and its line each stay on one line at 390 */
+  .plan{padding:var(--illi-space-xl) var(--illi-space-lg)}
+  .sm-dialog{padding:var(--illi-space-2xl) var(--illi-space-xl)}
+  .sm-wordmark{width:var(--p-wordmark-dialog);margin-bottom:var(--illi-space-xl)}
+  .includes ul,body[data-tier="paid"] .includes ul{grid-template-columns:minmax(0,1fr)}
+  .offer-bar-inner{flex-wrap:wrap;gap:var(--illi-space-sm) var(--illi-space-md);padding-block:var(--illi-space-md)}
+  .offer-bar-text{flex-basis:calc(100% - var(--p-icon-button) - var(--illi-space-md));order:1}
+  .offer-bar .icon-button{order:2;align-self:flex-start}
+  .offer-bar .button{order:3}
+  .notice{align-items:flex-start}
+  .term-option{padding:var(--illi-space-lg)}
+  .management-actions .button,#foundingChoice > .button{white-space:normal;text-align:left}
+  .legal{text-wrap:pretty}
+  .toast{bottom:var(--illi-space-lg)}
+  .site-foot{padding-block:var(--illi-space-lg)}
+  .foot-tag{flex-basis:60%}
+  .foot-links{flex-basis:100%;gap:var(--illi-space-sm) var(--illi-space-lg)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
