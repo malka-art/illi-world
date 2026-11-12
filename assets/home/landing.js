@@ -32,7 +32,7 @@
         if (!en.isIntersecting) return;
         var card = en.target; seen.unobserve(card);
         card.classList.add('is-playing');
-        setTimeout(function () { card.classList.remove('is-playing'); }, 3600);
+        setTimeout(function () { card.classList.remove('is-playing'); }, 5000);   // one full loop of --p-anim (4.6s) plus a margin
       });
     }, { threshold: 0.6 });
     document.querySelectorAll('.card').forEach(function (card) { seen.observe(card); });
