@@ -1,0 +1,416 @@
+{
+  "testedAt": "2026-11-12T07:24:43.149Z",
+  "scope": "Real page from a local server; every authentication, checkout, billing, renewal and email request answered by fixtures; actual pricing-info and founding-renewal handlers with service doubles; one read-only GET of the public pricing-info.",
+  "passed": 102,
+  "failed": 0,
+  "results": [
+    {
+      "name": "State 01-visitor 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 03-banner-visitor 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 04-banner-trial 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 05-trial 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 06-trial-ended 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 07-premium 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 08-founding-buyer 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 09-left-checkout 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 13-founding-step 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 15-founding-step-visitor 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 30-manage-signed-out 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 31-manage-scheduled 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 32-manage-cancel-requested 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 33-manage-canceled 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 35-manage-needs-check 1440px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 01-visitor 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 03-banner-visitor 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 04-banner-trial 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 05-trial 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 06-trial-ended 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 07-premium 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 08-founding-buyer 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 09-left-checkout 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 13-founding-step 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 15-founding-step-visitor 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 30-manage-signed-out 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 31-manage-scheduled 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 32-manage-cancel-requested 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 33-manage-canceled 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "State 35-manage-needs-check 390px: heading, no sideways scroll, no errors, copy rules",
+      "pass": true
+    },
+    {
+      "name": "Laptop 1280px 01-visitor: three cards in a row, names and buttons on one line",
+      "pass": true
+    },
+    {
+      "name": "Laptop 1280px 05-trial: three cards in a row, names and buttons on one line",
+      "pass": true
+    },
+    {
+      "name": "Visitor: one red action (install), both plan buttons outlined, no account status",
+      "pass": true
+    },
+    {
+      "name": "Visitor: plan button opens sign-in, never checkout",
+      "pass": true
+    },
+    {
+      "name": "Phone visitor: install buttons open the send form in place; send posts email and honeypot to send-to-desktop (stubbed)",
+      "pass": true
+    },
+    {
+      "name": "Trial: monthly button sends the standard checkout contract with the session",
+      "pass": true
+    },
+    {
+      "name": "Trial: annual button sends the standard checkout contract with the session",
+      "pass": true
+    },
+    {
+      "name": "Trial: status beside the claim from trial_ends_at; annual is the one red button; profile select reads trial_ends_at",
+      "pass": true
+    },
+    {
+      "name": "Choose illi Premium is always available: last day of the trial still opens checkout",
+      "pass": true
+    },
+    {
+      "name": "Removed: a 409 trial_active_wait (old server) shows no 'wait until it ends' message",
+      "pass": true
+    },
+    {
+      "name": "Trial ended: Free card says 'Your plan now' and 'You are on Free. Nothing to do.'",
+      "pass": true
+    },
+    {
+      "name": "Checkout busy state 1440px: pressed button pulses, others are not greyed, the bottom note says so",
+      "pass": true
+    },
+    {
+      "name": "Checkout busy state 390px: pressed button pulses, others are not greyed, the bottom note says so",
+      "pass": true
+    },
+    {
+      "name": "Checkout state checkout_plan_changed",
+      "pass": true
+    },
+    {
+      "name": "Checkout state payment_processing",
+      "pass": true
+    },
+    {
+      "name": "Checkout state checkout_in_progress",
+      "pass": true
+    },
+    {
+      "name": "Checkout state checkout_requires_review",
+      "pass": true
+    },
+    {
+      "name": "Checkout state existing_access",
+      "pass": true
+    },
+    {
+      "name": "Checkout redirect protection https://example.com/not-stripe / portal flag false",
+      "pass": true
+    },
+    {
+      "name": "Checkout redirect protection https://billing.stripe.com/p/session/test / portal flag false",
+      "pass": true
+    },
+    {
+      "name": "Checkout redirect protection https://billing.stripe.com/p/session/test / portal flag true",
+      "pass": true
+    },
+    {
+      "name": "Checkout redirect protection http://checkout.stripe.com/c/pay/test / portal flag false",
+      "pass": true
+    },
+    {
+      "name": "Previous non-renewing pricing contract cannot start checkout",
+      "pass": true
+    },
+    {
+      "name": "illi Premium customer: no plan cards, no founding, one billing button to stripe-portal (stubbed), Stripe-only redirect",
+      "pass": true
+    },
+    {
+      "name": "Founding buyer: header with the paid-through date, founding plan panel, no banner or founding form, no plan cards",
+      "pass": true
+    },
+    {
+      "name": "Existing founding purchase never offers another: 1 / 2027-12-01T12:00:00Z",
+      "pass": true
+    },
+    {
+      "name": "Existing founding purchase never offers another: 1 / 2020-01-01T00:00:00Z",
+      "pass": true
+    },
+    {
+      "name": "Existing founding purchase never offers another: 2 / 2027-12-01T12:00:00Z",
+      "pass": true
+    },
+    {
+      "name": "Actual pricing source -> page, campaign not_started: banner and ?offer=founding follow the service",
+      "pass": true
+    },
+    {
+      "name": "Actual pricing source -> page, campaign scheduled: banner and ?offer=founding follow the service",
+      "pass": true
+    },
+    {
+      "name": "Actual pricing source -> page, campaign active: banner and ?offer=founding follow the service",
+      "pass": true
+    },
+    {
+      "name": "Actual pricing source -> page, campaign closing: banner and ?offer=founding follow the service",
+      "pass": true
+    },
+    {
+      "name": "Actual pricing source -> page, campaign ended: banner and ?offer=founding follow the service",
+      "pass": true
+    },
+    {
+      "name": "Actual pricing source -> page, campaign sold_out: banner and ?offer=founding follow the service",
+      "pass": true
+    },
+    {
+      "name": "Banner: 'Choose your term' leads to the founding step; close hides it for the visit",
+      "pass": true
+    },
+    {
+      "name": "Founding step: explicit 1-year choice and consent send the founding contract",
+      "pass": true
+    },
+    {
+      "name": "Founding step: explicit 2-year choice and consent send the founding contract",
+      "pass": true
+    },
+    {
+      "name": "Founding step: nothing preselected; removing consent or changing the term disables the button",
+      "pass": true
+    },
+    {
+      "name": "Founding step 390px: chosen and agreed (capture)",
+      "pass": true
+    },
+    {
+      "name": "Founding step, visitor: buying asks to sign in, no checkout",
+      "pass": true
+    },
+    {
+      "name": "Signed extension link: token redeemed and stripped, management route kept, server date shown",
+      "pass": true
+    },
+    {
+      "name": "Signed link that fails: visitor header comes back, error in the bottom note",
+      "pass": true
+    },
+    {
+      "name": "Email management link prompts sign-in",
+      "pass": true
+    },
+    {
+      "name": "Verified cancellation keeps paid access 1440px",
+      "pass": true
+    },
+    {
+      "name": "Verified cancellation keeps paid access 390px",
+      "pass": true
+    },
+    {
+      "name": "Unconfirmed cancellation stays unconfirmed: cancellation_pending",
+      "pass": true
+    },
+    {
+      "name": "Unconfirmed cancellation stays unconfirmed: renewal_requires_review",
+      "pass": true
+    },
+    {
+      "name": "Authoritative renewal state pending",
+      "pass": true
+    },
+    {
+      "name": "Authoritative renewal state scheduled",
+      "pass": true
+    },
+    {
+      "name": "Authoritative renewal state active",
+      "pass": true
+    },
+    {
+      "name": "Authoritative renewal state cancel_requested",
+      "pass": true
+    },
+    {
+      "name": "Authoritative renewal state canceled",
+      "pass": true
+    },
+    {
+      "name": "Authoritative renewal state review",
+      "pass": true
+    },
+    {
+      "name": "Wrong account does not expose cancellation",
+      "pass": true
+    },
+    {
+      "name": "Payment method: only the Stripe billing host; capture while opening",
+      "pass": true
+    },
+    {
+      "name": "Dialog 1440px: check passes, Continue enabled, real code flow signs in and repaints",
+      "pass": true
+    },
+    {
+      "name": "Dialog 1440px: invalid email shows an error tied to the field",
+      "pass": true
+    },
+    {
+      "name": "Dialog 1440px: human check needs a click: frame keeps its full 300 px width (74fe57f) even when 0 is reported",
+      "pass": true
+    },
+    {
+      "name": "Dialog 1440px: check pending is said in words; the frame is laid out, never display:none",
+      "pass": true
+    },
+    {
+      "name": "Dialog 1440px: check fails, then fails again: Try again, then a way forward",
+      "pass": true
+    },
+    {
+      "name": "Dialog 390px: check passes, Continue enabled, real code flow signs in and repaints",
+      "pass": true
+    },
+    {
+      "name": "Dialog 390px: invalid email shows an error tied to the field",
+      "pass": true
+    },
+    {
+      "name": "Dialog 390px: human check needs a click: frame keeps its full 300 px width (74fe57f) even when 0 is reported",
+      "pass": true
+    },
+    {
+      "name": "Dialog 390px: check pending is said in words; the frame is laid out, never display:none",
+      "pass": true
+    },
+    {
+      "name": "Dialog 390px: check fails, then fails again: Try again, then a way forward",
+      "pass": true
+    },
+    {
+      "name": "Keyboard 1440, signed in: focus order header, then monthly before annual; every stop shows a 2 px outline",
+      "pass": true
+    },
+    {
+      "name": "Keyboard 390, signed in: focus meets annual before monthly, as the cards are seen",
+      "pass": true
+    },
+    {
+      "name": "Keyboard 390, visitor: Free first, then annual, then monthly (markup order matches the stack)",
+      "pass": true
+    },
+    {
+      "name": "Names: every button and link has a name; plan cards are labelled; the dialog is a labelled modal",
+      "pass": true
+    },
+    {
+      "name": "Dialog: focus moves in, stays in (Tab wraps), returns to the opener on Escape; page behind is inert",
+      "pass": true
+    },
+    {
+      "name": "Live pricing-info (public GET, read only): valid contract, page renders its campaign state, no errors",
+      "pass": true
+    },
+    {
+      "name": "Safety: no request reached production other than GET pricing-info",
+      "pass": true
+    }
+  ]
+}
