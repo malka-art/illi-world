@@ -279,12 +279,14 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
 .feats-label{margin:0 0 var(--illi-space-lg);font-size:var(--illi-type-label-size);line-height:var(--illi-type-label-line);font-weight:var(--illi-weight-semibold);color:var(--heading)}
 .feats ul{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--illi-space-lg)}
 .feats li,.includes li{display:flex;align-items:center;gap:var(--illi-space-md)}
-.chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);background:var(--band);color:var(--heading);flex-shrink:0}
+/* Owner ruling 2026-11-12, "bone monochrome": every drawing is one bone tone, --pick (bone-950), the colour of the "2 months free"
+   pill and the outlined buttons' border. 4.49:1 on the paid cards' circle (bone-100), 4.29:1 on the Free card's (bone-200) */
+.chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);background:var(--band);color:var(--pick);flex-shrink:0}
 /* The drawings are the live home page's feature-strip drawings (index.html, redrawn 2026-11-11), copied exactly; these are the
    home sheet's own stroke and fill rules for them (assets/home/style.css). The home page's raised gradient chip is NOT carried:
    here they sit in this page's flat circle, at the home size (28 in 48).
-   Owner ruling 2026-11-12: on this page the drawings are ONE colour (the ink), so the home page's red and yellow parts
-   (.rd, .fr, .fy) take currentColor here. The shapes stay identical to the home page's. */
+   Owner ruling 2026-11-12: on this page the drawings are ONE colour (bone, set on .chip below), so the home page's red and
+   yellow parts (.rd, .fr, .fy) take currentColor here. The shapes stay identical to the home page's. */
 .chip .g{width:var(--p-strip-glyph);height:var(--p-strip-glyph);overflow:visible}
 .chip .g .ln{fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
 .chip .g .wide{stroke-width:3}
