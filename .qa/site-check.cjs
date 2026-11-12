@@ -205,7 +205,7 @@ const SIZES = [
   canceledOffer = await renewalFixture("scheduled", "cancel");
   assert.equal(offer.offer_version, "broad-2026-10-renewing", "Tests must consume the revised backend implementation");
   await serve();
-  browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--no-first-run", "--disable-background-networking", "--hide-scrollbars"] });
+  browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--no-first-run", "--disable-background-networking", "--hide-scrollbars", "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND, MAP *.stripe.com ~NOTFOUND, MAP checkout.stripe.com ~NOTFOUND, MAP billing.stripe.com ~NOTFOUND"] });
 
   /* ---------------- every page state, both sizes: layout, copy rules, captures ---------------- */
   const STATES = [
@@ -268,6 +268,51 @@ const SIZES = [
     assert.equal(await visible(r.page, "#foundingBanner"), false, "banner shown while closed");
     assert.doesNotMatch(await bodyText(r.page), /[Ff]ounding/, "founding mentioned while closed");
     await r.page.close();
+  });
+  for (const size of [{ width: 1440, height: 900 }, { width: 1280, height: 800 }, { width: 390, height: 844, phone: true }]) {
+    await check("Visitor " + size.width + "px: Free card has 'Get illi free' (outlined, named for page events) lined up with the paid buttons", async () => {
+      for (const data of [closedOffer, offer]) {
+        const r = await visit(Object.assign({ data }, size));
+        assert.equal(await visible(r.page, "#freeInstall"), true);
+        assert.equal(await text(r.page, "#freeInstall"), "Get illi free");
+        assert.equal(await r.page.$eval("#freeInstall", (a) => a.classList.contains("secondary") && a.dataset.cta), "free_card");
+        assert.equal(await visible(r.page, "#stayLine"), false);
+        assert.equal(await text(r.page, "#freeNote"), "Do nothing and you move to Free.");
+        const reds = await r.page.$$eval(".button", (els) => els.filter((e) => e.offsetWidth && !e.closest("#foundingBanner") && getComputedStyle(e).backgroundColor !== "rgba(0, 0, 0, 0)").map((e) => e.textContent.trim()));
+        assert.deepEqual(reds, size.phone ? ["Try illi free", "Send it to my computer"] : ["Try illi free", "Try illi free"], "red buttons: " + reds);
+        if (!size.phone) {
+          const tops = await r.page.$$eval("#freeInstall, #plans [data-buy]", (els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+          if (size.width >= 1280) assert.equal(new Set(tops).size, 1, "buttons do not line up: " + tops);
+          // desktop: the same store link as the main button (the store host does not resolve in tests)
+          assert.equal(await r.page.$eval("#freeInstall", (a) => a.href + "|" + a.target), await r.page.$eval("#heroInstall", (a) => a.href + "|" + a.target));
+          const opened = new Promise((res) => browser.once("targetcreated", (t) => res(t)));
+          await r.page.click("#freeInstall");
+          const t = await opened;
+          assert.equal(t.url(), "https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg");
+          const p2 = await t.page();
+          if (p2) await p2.close();
+        } else {
+          await r.page.click("#freeInstall");
+          await r.page.waitForSelector("#sendForm:not([hidden])");
+          assert.equal(r.page.url(), base + "/upgrade/");
+          assert.equal(await r.page.evaluate(() => document.activeElement.id), "sendEmail");
+        }
+        assert.ok(!r.aborted.some((u) => u.includes("chromewebstore")) && r.stripeNav.length === 0);
+        await r.page.close();
+      }
+    });
+  }
+  await check("Signed in: no 'Get illi free'; trial keeps the tick row and 'Nothing to cancel.', ended keeps 'Your plan now'", async () => {
+    for (const [profile, line] of [[PROFILES.trial, "Do nothing and you move to Free."], [PROFILES.ended, "You are on Free. Nothing to do."]]) {
+      for (const size of SIZES) {
+        const r = await visit(Object.assign({ data: closedOffer, signed: true, profile }, size));
+        assert.equal(await visible(r.page, "#freeInstall"), false);
+        assert.equal(await visible(r.page, "#stayLine"), true);
+        assert.equal(await text(r.page, "#stayLine"), line);
+        assert.equal(await text(r.page, "#freeNote"), "Nothing to cancel.");
+        await r.page.close();
+      }
+    }
   });
   await check("Visitor: plan button opens sign-in, never checkout", async () => {
     const r = await visit({ data: closedOffer });
@@ -720,9 +765,20 @@ const SIZES = [
     assert.deepEqual(stops.filter((s) => s.interval).map((s) => s.interval), ["annual", "monthly"]);
     await r.page.close();
   });
+  await check("Keyboard 1440, visitor: Get illi free, then monthly, then annual, each with a visible outline", async () => {
+    const r = await visit({ data: closedOffer });
+    const stops = await tabStops(r.page, 14);
+    const cards = stops.filter((s) => s.id === "freeInstall" || s.interval).map((s) => s.id || s.interval);
+    assert.deepEqual(cards, ["freeInstall", "monthly", "annual"]);
+    assert.ok(stops.every((s) => s.outline));
+    await r.page.close();
+  });
   await check("Keyboard 390, visitor: Free first, then annual, then monthly (markup order matches the stack)", async () => {
     const r = await visit({ data: closedOffer, width: 390, height: 844, phone: true });
     assert.deepEqual(await r.page.$$eval("#plans > .plan", (els) => els.map((e) => e.id)), ["planFree", "planAnnual", "planMonthly"]);
+    const stops = await tabStops(r.page, 12);
+    assert.deepEqual(stops.filter((s) => s.id === "freeInstall" || s.interval).map((s) => s.id || s.interval), ["freeInstall", "annual", "monthly"]);
+    assert.equal(stops.find((s) => s.id === "freeInstall").name, "Get illi free");
     await r.page.close();
   });
   await check("Names: every button and link has a name; plan cards are labelled; the dialog is a labelled modal", async () => {

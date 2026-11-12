@@ -106,8 +106,10 @@
             <p class="price"><span class="amount">$0</span><span class="unit">USD</span></p>
             <p class="plan-desc">No card needed.</p>
             <div class="plan-act">
-              <p class="stay" id="stayLine">Do nothing and you move to Free.</p>
-              <p class="purchase-note">Nothing to cancel.</p>
+              <!-- visitors (no account yet) get the page's install action here too; signed in, the tick row takes its place -->
+              <a class="button secondary for-anon-inline" id="freeInstall" data-install data-cta="free_card" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Get illi free</a>
+              <p class="stay" id="stayLine" hidden>Do nothing and you move to Free.</p>
+              <p class="purchase-note" id="freeNote">Do nothing and you move to Free.</p>
             </div>
             <div class="feats">
               <h3 class="feats-label">Basic speed control</h3>

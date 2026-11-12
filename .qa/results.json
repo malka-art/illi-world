@@ -1,7 +1,7 @@
 {
-  "testedAt": "2026-11-12T07:24:43.149Z",
+  "testedAt": "2026-11-12T16:31:11.507Z",
   "scope": "Real page from a local server; every authentication, checkout, billing, renewal and email request answered by fixtures; actual pricing-info and founding-renewal handlers with service doubles; one read-only GET of the public pricing-info.",
-  "passed": 102,
+  "passed": 107,
   "failed": 0,
   "results": [
     {
@@ -134,6 +134,22 @@
     },
     {
       "name": "Visitor: one red action (install), both plan buttons outlined, no account status",
+      "pass": true
+    },
+    {
+      "name": "Visitor 1440px: Free card has 'Get illi free' (outlined, named for page events) lined up with the paid buttons",
+      "pass": true
+    },
+    {
+      "name": "Visitor 1280px: Free card has 'Get illi free' (outlined, named for page events) lined up with the paid buttons",
+      "pass": true
+    },
+    {
+      "name": "Visitor 390px: Free card has 'Get illi free' (outlined, named for page events) lined up with the paid buttons",
+      "pass": true
+    },
+    {
+      "name": "Signed in: no 'Get illi free'; trial keeps the tick row and 'Nothing to cancel.', ended keeps 'Your plan now'",
       "pass": true
     },
     {
@@ -390,6 +406,10 @@
     },
     {
       "name": "Keyboard 390, signed in: focus meets annual before monthly, as the cards are seen",
+      "pass": true
+    },
+    {
+      "name": "Keyboard 1440, visitor: Get illi free, then monthly, then annual, each with a visible outline",
       "pass": true
     },
     {

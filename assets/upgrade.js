@@ -417,7 +417,10 @@
     }
     $("accountBlock").hidden = !lines;
     $("hereFree").hidden = tier !== "ended";
+    // the Free card: a visitor gets "Get illi free" with "Do nothing..." under it; signed in, the tick row and "Nothing to cancel."
+    $("stayLine").hidden = !signedIn;
     setText($("stayLine"), tier === "ended" ? "You are on Free. Nothing to do." : "Do nothing and you move to Free.");
+    setText($("freeNote"), signedIn ? "Nothing to cancel." : "Do nothing and you move to Free.");
 
     // one red action: a visitor's is "Try illi free" (both plan buttons step back); signed in, annual is the one red button
     var monthlyBuy = document.querySelector('[data-buy="standard"][data-interval="monthly"]');
