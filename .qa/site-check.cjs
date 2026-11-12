@@ -270,6 +270,19 @@ const SIZES = [
     const r = await visit({ data: closedOffer });
     const flat = await r.page.$$eval(".chip", (els) => els.every((e) => getComputedStyle(e).boxShadow === "none" && getComputedStyle(e).backgroundImage === "none"));
     assert.equal(flat, true, "a chip is raised or has a gradient");
+    // bone monochrome: every painted part is bone-950; only the "2x" letters (white) and the badge's light outline (bone-50) differ
+    const paints = await r.page.$$eval(".chip .g *", (els) => {
+      const out = new Set();
+      for (const e of els) {
+        if (!e.getClientRects().length) continue;
+        const c = getComputedStyle(e);
+        for (const v of [c.fill, c.stroke]) if (v && v !== "none") out.add(e.tagName + (e.classList.contains("tag") ? ".tag" : "") + ":" + v);
+      }
+      return [...out];
+    });
+    const allowed = /^(path|circle|rect|rect\.tag):rgb\(123, 109, 93\)$|^rect\.tag:rgb\(250, 248, 245\)$|^text:rgb\(255, 255, 255\)$/;
+    const odd = paints.filter((x) => !allowed.test(x));
+    assert.deepEqual(odd, [], "icon colours outside bone: " + odd.join(", "));
     await r.page.close();
   });
 
