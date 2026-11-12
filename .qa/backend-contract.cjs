@@ -99,9 +99,7 @@ if (require.main === module)
       "sold_out",
     ])
       output[state] = await fixture(state);
-    fs.writeFileSync(
-      path.join(__dirname, "backend-fixtures.json"),
-      JSON.stringify(output, null, 2),
-    );
-    console.log("Actual pricing handler: all six campaign states generated.");
+    // printed, not written: the browser checks build their fixtures in memory, so nothing is left in the repo
+    console.log(JSON.stringify(output, null, 2));
+    console.error("Actual pricing handler: all six campaign states generated.");
   })();
