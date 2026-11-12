@@ -1,5 +1,6 @@
-/* illi.world: the corner question (home page) and the Privacy choices panel (every page that loads it).
-   Built from Amanda's direction 1, the corner note (design/consent-prompt-2026-11-11, revision 2).
+/* illi.world: the privacy question (home page) and the Privacy choices panel (every page that loads it).
+   The question is a bar across the bottom of the window, after Superhuman's banner (owner request 2026-11-11); the panel
+   and the shared anatomy come from Amanda's design (design/consent-prompt-2026-11-11, revision 2).
    On the home page it sits on top of assets/home/style.css and uses its role aliases and board tokens; on the plain
    pages (privacy, terms) load assets/consent/plain-page.css first, which supplies the same names.
    Hard rule: the two answers share ONE class (.ask-btn) and no selector anywhere styles one answer differently from the
@@ -7,7 +8,9 @@
 
 :root{
   /* PROVISIONAL tokens from the design (to lock in the token pass) */
-  --p-consent-w:440px;
+  --p-consent-actions-w:280px;
+  --p-consent-blur:18px;
+  --p-consent-shadow-up:0 calc(var(--illi-space-md) * -1) var(--illi-space-3xl) color-mix(in srgb,var(--illi-bone-950) 12%,transparent);
   --p-consent-inset:var(--illi-space-xl);
   --p-consent-btn-h:40px;
   --p-consent-btn-line:1.5px;
@@ -42,19 +45,29 @@
 .ask[data-state="yes"] .ask-done,.ask[data-state="no"] .ask-done{display:block}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
-/* ================= the corner note ================= */
-.ask--corner{position:fixed;left:var(--p-consent-inset);bottom:var(--p-consent-inset);z-index:15;width:var(--p-consent-w);max-width:calc(100vw - var(--p-consent-inset) * 2);max-height:calc(100vh - var(--p-header-h) - var(--p-consent-inset) * 2);overflow:hidden;padding:var(--illi-space-xl);background:var(--card);border:var(--p-hairline) solid var(--line);border-radius:var(--illi-shape-xl);box-shadow:var(--p-consent-shadow);transition:opacity var(--t-settle) var(--ease-out),transform var(--t-settle) var(--ease-out);display:flex;flex-direction:column;box-sizing:border-box}
-.ask--corner.is-out{opacity:0;transform:translateY(var(--p-consent-rise));pointer-events:none}
-.ask--corner.is-hop{animation:ask-hop var(--t-settle) var(--ease-out)}
-@keyframes ask-hop{from{opacity:0}to{opacity:1}}
-/* stepping aside: it fades where it stands and cannot be clicked or focused; it never slides across what it avoids */
-.ask--corner.is-aside{opacity:0;visibility:hidden;pointer-events:none;transition:opacity var(--t-fast) var(--ease-out),visibility 0s var(--t-fast)}
-/* however long the text, the two answers stay in view: only the note's own text scrolls */
-.ask--corner .ask-body{display:flex;flex-direction:column;min-height:0}
-.ask--corner .ask-text{display:flex;flex-direction:column;align-items:flex-start;min-height:0}
-.ask--corner .ask-note{overflow:auto;min-height:0;align-self:stretch}
-.ask--corner .ask-actions{flex-shrink:0}
-.ask--corner[data-state="yes"],.ask--corner[data-state="no"]{width:auto;max-width:var(--p-consent-w);padding:var(--illi-space-lg) var(--illi-space-xl)}
+/* ================= the bottom bar ================= */
+/* Placed and laid out after Superhuman's cookie banner (owner request 2026-11-11): a frosted bar across the bottom of the
+   window, the question and its one-line reason on the left, the two answers stacked on the right at equal weight, and the
+   two small links (what gets saved, privacy policy) under the text. illi's own tokens and wording; only the structure is theirs. */
+.ask--bar{position:fixed;left:0;right:0;bottom:0;z-index:15;max-height:calc(100vh - var(--p-header-h));overflow:auto;padding-block:var(--illi-space-xl);background:color-mix(in srgb,var(--card) 86%,transparent);-webkit-backdrop-filter:blur(var(--p-consent-blur));backdrop-filter:blur(var(--p-consent-blur));border-top:var(--p-hairline) solid var(--line);box-shadow:var(--p-consent-shadow-up);transition:opacity var(--t-settle) var(--ease-out),transform var(--t-settle) var(--ease-out);box-sizing:border-box}
+.ask--bar.is-out{opacity:0;transform:translateY(var(--p-consent-rise));pointer-events:none}
+/* stepping aside (only while the film is playing under it): it fades where it stands and cannot be clicked or focused */
+.ask--bar.is-aside{opacity:0;visibility:hidden;pointer-events:none;transition:opacity var(--t-fast) var(--ease-out),visibility 0s var(--t-fast)}
+.ask--bar .ask-body,.ask--bar .ask-done{width:min(var(--p-content),var(--p-page-max));margin-inline:auto}
+.ask--bar .ask-body{display:grid;grid-template-columns:minmax(0,1fr) var(--p-consent-actions-w);column-gap:var(--illi-space-3xl);align-items:center}
+.ask--bar .ask-text{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.ask--bar .ask-why{max-width:68ch}
+.ask-links{display:flex;flex-wrap:wrap;align-items:center;gap:var(--illi-space-xs) var(--illi-space-xl);margin-top:var(--illi-space-md)}
+.ask-links .ask-more{margin-top:0}
+.ask-policy{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);font-weight:var(--illi-weight-medium);color:var(--heading);text-decoration:underline;text-underline-offset:var(--p-underline-offset);text-decoration-thickness:var(--p-underline-width)}
+.ask--bar .ask-note{align-self:stretch;max-width:92ch;max-height:38vh;overflow:auto}
+.ask--bar .ask-actions{grid-template-columns:minmax(0,1fr);gap:var(--illi-space-sm);margin-top:0}
+/* while the bar is up, the footer grows by the bar's height, so nothing at the bottom of the page is unreachable under it */
+[data-choices-foot]::after{content:"";display:block;height:var(--ask-h,0px)}
+@media(max-width:960px){
+  .ask--bar .ask-body{grid-template-columns:minmax(0,1fr);row-gap:var(--illi-space-lg)}
+  .ask--bar .ask-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--illi-space-md)}
+}
 
 /* ================= Privacy choices: footer control and panel (every device) ================= */
 .foot-choice{appearance:none;background:none;border:0;padding:0;font:inherit;font-weight:inherit;color:inherit;cursor:pointer;text-underline-offset:var(--p-underline-offset);text-decoration-thickness:var(--p-underline-width)}
@@ -81,7 +94,6 @@
 
 /* ================= reduced motion: nothing travels, states simply change ================= */
 @media(prefers-reduced-motion:reduce){
-  .ask--corner,.ask--corner.is-aside,.ask-btn,.ask-more .chev,.choices-close{transition:none}
-  .ask--corner.is-out{transform:none}
-  .ask--corner.is-hop{animation:none}
+  .ask--bar,.ask--bar.is-aside,.ask-btn,.ask-more .chev,.choices-close{transition:none}
+  .ask--bar.is-out{transform:none}
 }

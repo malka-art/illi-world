@@ -1,5 +1,6 @@
-/* illi.world privacy choices (2026-11-11): the corner question on the home page and the Privacy choices panel.
-   Design: Amanda's direction 1, the corner note (design/consent-prompt-2026-11-11). Wording: Malka's locked ask and body line,
+/* illi.world privacy choices (2026-11-11): the privacy question on the home page and the Privacy choices panel.
+   Design: a bar across the bottom of the window, placed and laid out after Superhuman's banner (owner request 2026-11-11);
+   the panel is Amanda's (design/consent-prompt-2026-11-11). Wording: Malka's locked ask and body line,
    Melody's anti-slop pass for the rest (marketing/consent-prompt-2026-11-11/RESEARCH-AND-WORDING.md).
 
    What this file may write to the browser, and ONLY after the visitor clicks something:
@@ -15,13 +16,12 @@
 (function () {
   'use strict';
 
-  /* ---------- the two switches the owner has not ruled on yet (2026-11-11). Each is one line. ---------- */
-  var STEP_ASIDE_AT_FINAL_BUTTON = true;   // (a) the note steps aside while the final install button is on screen (Amanda's recommendation)
-  var STOP_COUNTING_ALSO_FORGETS = true;   // (b) "Stop counting my visits" also deletes the remembered note
+  /* ---------- the one switch the owner has not ruled on yet (2026-11-11). ---------- */
+  var STOP_COUNTING_ALSO_FORGETS = true;   // "Stop counting my visits" also deletes the remembered note
 
   var W = window, D = document, N = navigator, root = D.documentElement;
   var VERSION = 'm1';                       // wording version, sent with every answer (Malka's locked ask, 2026-11-11)
-  var MONTHS = 13, HOLD = 6000, LEAVE = 260, ARRIVE = 600, GAP = 12, STRIP = 1003 / 1080;
+  var MONTHS = 13, HOLD = 6000, LEAVE = 260, ARRIVE = 600, GAP = 12;
   var K = { note: 'illi.note', answer: 'illi.answer', nocount: 'illi.nocount' };
   var FR = /^fr/i.test(root.lang || '');
   var signal = !!(N.globalPrivacyControl || N.doNotTrack == '1');   // the same test as track.js
@@ -109,7 +109,8 @@
   function seatPanel() {   // desktop: just above the footer when it is on screen, so it never hides the link that opened it
     if (!panel || panel.hidden) return;
     var foot = D.querySelector('[data-choices-foot]'), gap = foot ? W.innerHeight - foot.getBoundingClientRect().top : 0;
-    panel.style.bottom = (W.matchMedia('(max-width:680px)').matches || gap <= 0) ? '' : Math.min(gap + GAP, W.innerHeight * 0.5) + 'px';
+    // never lifted so far that its top (title and close button) leaves the window: the footer is taller while the bar is up
+    panel.style.bottom = (W.matchMedia('(max-width:680px)').matches || gap <= 0) ? '' : Math.max(0, Math.min(gap + GAP, W.innerHeight * 0.5, W.innerHeight - panel.offsetHeight - GAP)) + 'px';
   }
   function openPanel(from) {
     if (!panel) return;
@@ -147,65 +148,43 @@
     D.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !panel.hidden) closePanel(); });
   }
 
-  /* ---------- the corner question (home page only) ---------- */
-  var ask = D.getElementById('ask'), answered = false, shown = false, sentShown = false, holdTimer = 0;
+  /* ---------- the question: a bar across the bottom of the window (home page only) ---------- */
+  var ask = D.getElementById('ask'), answered = false, shown = false, sentShown = false, gone = false, holdTimer = 0;
   W.illiPrivacy = { version: VERSION, signal: signal, counting: counting, note: liveNote, open: openPanel };
   if (!ask) return;
 
   var ua = N.userAgent, uad = N.userAgentData;
   var desktop = !(/iPad/.test(ua) || (/Mac/.test(ua) && N.maxTouchPoints > 1) || (/Android/.test(ua) && !/Mobile/.test(ua)) || (uad && uad.mobile) || /Mobi|iPhone|Android/.test(ua));
-  var head = D.querySelector('.site-head'), heroCta = D.querySelector('.hero-action .button'), closeCta = D.querySelector('.close .cta-stack .button');
   var stage = D.getElementById('stage'), film = D.getElementById('demo-player'), video = film && film.querySelector('video');
   var reduced = W.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function inView(el) { var r = el.getBoundingClientRect(); return r.bottom > head.getBoundingClientRect().bottom && r.top < W.innerHeight; }
-  function hit(a, b, m) { return a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m; }
-  function played() { return film.classList.contains('played') || (video && !video.paused); }
-  function keepClear() {   // every box the note must never cover
-    var list = [], add = function (n, el) { if (el) { var r = el.getBoundingClientRect(); if (r.width && r.height) list.push({ n: n, r: r }); } };
-    add('header', D.querySelector('.site-head .cta'));
-    add('hero', heroCta);
-    if (!played()) add('play', film.querySelector('.fp-big'));
-    var st = stage.getBoundingClientRect();   // the control strip: the bottom of the picture from film pixel 1003 of 1080
-    if (st.width) list.push({ n: 'strip', r: { left: st.left, right: st.right, top: st.top + st.height * STRIP, bottom: st.bottom } });
-    add('film_end', film.querySelector('.fp-cta.on a'));
-    add('final', closeCta);
-    add('store_note', D.querySelector('#cta-note:not([hidden])'));
-    return list;
-  }
-  function topLimit(r) {
-    var top = head.getBoundingClientRect().bottom + GAP, hc = heroCta.getBoundingClientRect();
-    if (hc.bottom > 0 && hc.bottom < r.bottom && hc.left < r.right + GAP && hc.right > r.left - GAP) top = Math.max(top, hc.bottom + GAP);
-    return top;
-  }
-  function fit() { var r = ask.getBoundingClientRect(); ask.style.maxHeight = Math.max(140, r.bottom - topLimit(r)) + 'px'; return ask.getBoundingClientRect(); }
-  // Where the note sits, decided again on every scroll, resize and film event (Amanda's three seats):
-  //   home    the bottom-left corner of the window;
-  //   lifted  only the film's control strip is in the way and the film is still an unplayed poster: just above the strip;
-  //   aside   anything else in the way: it fades out where it stands, cannot be clicked or focused, and comes back when clear.
+  function hit(a, b) { return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }
+  function footRoom(h) { root.style.setProperty('--ask-h', h + 'px'); }   // the footer grows by the bar's height (consent.css)
+  // The bar sits at the bottom of the window, like the banner it is modelled on. Two exceptions, both about the film, and
+  // in both the bar steps aside (fades, cannot be clicked or focused) and returns when it is clear:
+  //   1. the film is playing and the bar would lie over it;
+  //   2. the film has not been played and the bar would cover its play button (narrow windows, where the film sits low).
+  //      Not while "What gets saved?" is open or the keyboard focus is inside the bar: the visitor is using the bar, so
+  //      it must not vanish under them (it is re-checked when focus leaves).
+  // The bar's box is taken from its layout (pinned to the bottom, full width), not from where the arrival animation has
+  // drawn it at this instant, so the answer is the same during the rise as after it.
   function seat() {
-    if (ask.hidden) return;
-    var was = ask.getAttribute('data-seat'), now = 'aside';
-    ask.style.bottom = ''; ask.style.maxHeight = '';
-    var r = fit(), st = stage.getBoundingClientRect();
-    var offFilm = played() && hit(r, st, 0);
-    var yielding = STEP_ASIDE_AT_FINAL_BUTTON && closeCta && inView(closeCta);
-    var blockers = keepClear().filter(function (k) { return hit(r, k.r, GAP); });
-    if (!yielding && !offFilm && !blockers.length) now = 'home';
-    else if (!yielding && !played() && blockers.length && blockers.every(function (k) { return k.n === 'strip'; })) {
-      ask.style.bottom = (W.innerHeight - (blockers[0].r.top - GAP)) + 'px';
-      r = fit();
-      if (r.top >= topLimit(r) - 0.5 && r.height >= ask.scrollHeight - 1 && !keepClear().some(function (k) { return hit(r, k.r, GAP - 0.5); })) now = 'lifted';
-      else { ask.style.bottom = ''; fit(); }
-    }
-    var aside = now === 'aside';
-    ask.classList.toggle('is-aside', aside); ask.inert = aside; ask.setAttribute('data-seat', now);
-    if (was === 'lifted' && now === 'home' && !reduced) { ask.classList.remove('is-hop'); void ask.offsetWidth; ask.classList.add('is-hop'); }
+    if (ask.hidden || gone) return;   // once it is leaving, nothing re-seats it or gives the footer its room back
+    var h = ask.offsetHeight, r = { left: 0, right: root.clientWidth, top: W.innerHeight - h, bottom: W.innerHeight, height: h };
+    var playing = !!(video && !video.paused && !video.ended);
+    var big = film && !film.classList.contains('played') && !playing ? film.querySelector('.fp-big') : null, b = big && big.getBoundingClientRect();
+    var bigR = b && b.width ? { left: b.left - GAP, right: b.right + GAP, top: b.top - GAP, bottom: b.bottom + GAP } : null;   // a little air around the play button
+    var more = ask.querySelector('.ask-more'), using = !!((more && more.getAttribute('aria-expanded') === 'true') || ask.contains(D.activeElement));
+    var aside = !!((playing && stage && hit(r, stage.getBoundingClientRect())) || (bigR && !using && !answered && hit(r, bigR)));
+    ask.classList.toggle('is-aside', aside); ask.inert = aside; ask.setAttribute('data-seat', aside ? 'aside' : 'home');
+    footRoom(aside ? 0 : Math.round(r.height));
     if (!aside && !sentShown && !answered) { sentShown = true; ev('consent_shown', { v: VERSION }); }   // once per page load, when really visible
   }
   function leave() {   // gone for this page load; an unanswered leave saves nothing and sends nothing
     clearTimeout(holdTimer);
     if (ask.hidden) return;
+    gone = true;
+    footRoom(0);
     if (reduced) { ask.hidden = true; return; }
     ask.classList.add('is-out');
     setTimeout(function () { ask.hidden = true; ask.classList.remove('is-out'); }, LEAVE);
@@ -243,6 +222,7 @@
   ask.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !answered) leave(); });
   ['pointerenter', 'focusin'].forEach(function (t) { ask.addEventListener(t, function () { clearTimeout(holdTimer); }); });
   ['pointerleave', 'focusout'].forEach(function (t) { ask.addEventListener(t, function () { if (answered && !ask.hidden) { clearTimeout(holdTimer); holdTimer = setTimeout(leave, HOLD); } }); });
+  ask.addEventListener('focusout', function () { setTimeout(function () { if (shown && !ask.hidden) seat(); }, 0); });   // focus has left: the play-button rule applies again
   D.addEventListener('click', function (e) {     // an install click ends the question for this page load, unanswered
     if (e.target.closest('[data-cta]') && !answered) { if (shown) leave(); else answered = true; }
   }, true);
