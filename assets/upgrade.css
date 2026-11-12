@@ -297,9 +297,10 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
 .chip .g .fr{fill:currentColor}
 .chip .g .fi{fill:currentColor}
 .chip .g .fy{fill:currentColor}
-/* the "2x" badge on "Set your speed once": in one bone tone it merged with the figure, so on this page it is the one dark part
-   (the ink, owner's word), its "2x" stays white, and a ring in the circle's own colour cuts it free of the figure */
-.chip .g .tag{fill:var(--ink);stroke:var(--chip-bg);stroke-width:2}
+/* the "2x" badge on "Set your speed once": bone like the rest of the drawing (owner: "everything should be monochrome with the
+   red around 2x too"); its "2x" stays white (5.0:1 on bone-950), and the drawing's own light outline, a little stronger than
+   the home page's 1.4, cuts it free of the figure */
+.chip .g .tag{fill:var(--pick);stroke:var(--illi-bone-50);stroke-width:2}   /* explicit fill: the page's own .tag pill rule sets color to white */
 .chip .g text{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:7.6px;fill:var(--illi-white)}
 .txt{display:flex;flex-direction:column;min-width:0}
 .txt .do{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);letter-spacing:var(--p-track-title);font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);color:var(--ink)}
