@@ -348,6 +348,9 @@ const SIZES = [
     assert.equal(await r.page.evaluate(() => document.activeElement.id), "sendEmail");
     await r.page.type("#sendEmail", "sam@example.com");
     await r.page.evaluate(() => window.scrollTo(0, 0));
+    assert.equal(await r.page.$eval("#sendEmail", (e) => Math.round(e.getBoundingClientRect().height)), 48, "send field squashed");
+    assert.equal(await r.page.$eval("#sendEmail", (e) => e.scrollWidth <= e.clientWidth), true, "address does not fit the field");
+    assert.equal(await text(r.page, ".site-head [data-install]"), "Get illi now");
     await shot(r.page, "02-visitor-phone-send", "view");
     await r.page.click('#sendForm button[type="submit"]');
     await wait(200);

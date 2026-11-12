@@ -208,9 +208,10 @@ body[data-view="founding"] .back-link{display:inline-flex;align-items:center;gap
 
 /* phone visitor: send the install link to a computer (the home form, on paper) */
 .send{display:flex;flex-direction:column;gap:var(--illi-space-sm);width:100%;max-width:var(--p-send-w)}
-.send-row{display:flex;gap:var(--illi-space-sm)}
-.send-row .field{flex:1;min-width:0}
-.send-row .button{flex-shrink:0;min-height:var(--p-field-h)}
+/* BUILD: field above button, as in the home page's send popup; side by side, "Send me the link" left the field too narrow to show an address at 390 */
+.send-row{display:flex;flex-direction:column;gap:var(--illi-space-md)}
+.send-row .field{flex:none;min-width:0}
+.send-row .button{min-height:var(--p-field-h);justify-content:center}
 /* BUILD: the live send-to-desktop function answers; its sentence shows under the form (the home page's messages) */
 .send-status{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--heading)}
 .send-status:empty{display:none}
