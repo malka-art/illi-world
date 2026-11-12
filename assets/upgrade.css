@@ -215,7 +215,9 @@ body[data-view="founding"] .back-link{display:inline-flex;align-items:center;gap
 .send-status{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--heading)}
 .send-status:empty{display:none}
 .send-status.is-error{color:var(--error);font-weight:var(--illi-weight-medium)}
-.send.is-sent .send-row{display:none}
+.send-title{font-weight:var(--illi-weight-medium);color:var(--ink)}
+.send .field-label{margin-top:var(--illi-space-sm)}
+.send.is-sent .send-row,.send.is-sent .send-why,.send.is-sent .field-label{display:none}
 .trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 
 /* ---------- fields: one field style everywhere ---------- */

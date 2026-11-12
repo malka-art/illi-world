@@ -295,7 +295,7 @@ const SIZES = [
         assert.equal(await visible(r.page, "#stayLine"), false);
         assert.equal(await text(r.page, "#freeNote"), "Do nothing and you move to Free.");
         const reds = await r.page.$$eval(".button", (els) => els.filter((e) => e.offsetWidth && !e.closest("#foundingBanner") && getComputedStyle(e).backgroundColor !== "rgba(0, 0, 0, 0)").map((e) => e.textContent.trim()));
-        assert.deepEqual(reds, size.phone ? ["Try illi free", "Send it to my computer"] : ["Try illi free", "Try illi free"], "red buttons: " + reds);
+        assert.deepEqual(reds, size.phone ? ["Get illi now", "Remind me on my computer"] : ["Try illi free", "Try illi free"], "red buttons: " + reds);
         if (!size.phone) {
           const tops = await r.page.$$eval("#freeInstall, #plans [data-buy]", (els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
           if (size.width >= 1280) assert.equal(new Set(tops).size, 1, "buttons do not line up: " + tops);
@@ -341,7 +341,7 @@ const SIZES = [
   });
   await check("Phone visitor: install buttons open the send form in place; send posts email and honeypot to send-to-desktop (stubbed)", async () => {
     const r = await visit({ data: closedOffer, width: 390, height: 844, phone: true });
-    assert.equal(await text(r.page, "#heroInstall"), "Send it to my computer");
+    assert.equal(await text(r.page, "#heroInstall"), "Remind me on my computer");
     await r.page.click("#heroInstall");
     await r.page.waitForSelector("#sendForm:not([hidden])");
     assert.equal(await visible(r.page, "#heroInstall"), false);

@@ -40,7 +40,7 @@
     <a href="/#answers">Answers</a>
     <button type="button" class="head-signin" id="signInButton">Sign in</button>
     <span class="head-state" id="signedInState" hidden>Account signed in</span>
-    <a class="button small for-anon-inline" data-install href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
+    <a class="button small for-anon-inline" data-install data-install-label-phone="Get illi now" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
   </nav>
 </header>
 
@@ -64,17 +64,19 @@
 
       <div class="hero-action">
         <div class="visitor-act for-anon">
-          <a class="button" id="heroInstall" data-install data-install-label-phone="Send it to my computer" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
-          <!-- phones and tablets cannot install a Chrome extension: the button opens this in place. Posts to the live send-to-desktop
+          <a class="button" id="heroInstall" data-install data-install-label-phone="Remind me on my computer" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
+          <!-- phones and tablets cannot install a Chrome extension: the button opens this in place, in the home page's words
+               (its send popup since e773b52). Posts to the live send-to-desktop
                function (one email per address per day). "website" is the home page's honeypot: off screen, a filled value means a bot. -->
           <form class="send" id="sendForm" novalidate hidden>
-            <label class="field-label" for="sendEmail">Send the install link to your computer</label>
+            <p class="send-title">illi works on your desktop or laptop.</p>
+            <p class="field-help send-why" id="sendWhy">We’ll email you a link to open when you’re there.</p>
+            <label class="field-label" for="sendEmail">Your email</label>
             <div class="send-row">
-              <input class="field" id="sendEmail" type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required aria-describedby="sendHelp sendStatus">
-              <button class="button small" type="submit">Send</button>
+              <input class="field" id="sendEmail" type="email" name="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required aria-describedby="sendWhy sendStatus">
+              <button class="button small" type="submit">Send me the link</button>
             </div>
             <div class="trap" aria-hidden="true"><label for="sendWebsite">Website</label><input id="sendWebsite" type="text" name="website" tabindex="-1" autocomplete="off"></div>
-            <p class="field-help" id="sendHelp">One email with the link, nothing else.</p>
             <p class="send-status" id="sendStatus" role="status" aria-live="polite"></p>
           </form>
           <p class="have">Already have illi? <button type="button" class="linklike" id="haveSignIn">Sign in</button></p>
