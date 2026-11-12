@@ -74,7 +74,7 @@
   --p-field-h:48px;
   --p-code-h:64px;
   --p-chip:48px;                               /* home strip */
-  --p-strip-glyph:28px;                        /* home strip */
+  --p-strip-glyph:32px;                        /* home strip draws 28 in a raised 48 chip; in this page's flat 48 circle 32 reads at the same weight (owner request) */
   --p-control:20px;
   --p-icon:16px;
   --p-icon-button:40px;
