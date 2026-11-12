@@ -254,7 +254,7 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
    Free is a calm card of paper, flat on the band; illi Premium is white and lifted; annual adds the outline and the deeper shadow.
    Free keeps the same shape, the same type and full ink: it is quieter, not fainter */
 .plan-free{background:var(--paper);box-shadow:inset 0 0 0 var(--p-hairline) var(--line-flat)}
-.plan-free .chip{background:var(--chip)}
+.plan-free .chip{--chip-bg:var(--chip)}
 /* R6 the plan's name leads every card at 21: "Free", "illi Premium", "illi Premium". The paid plan is never nameless */
 .plan-head{display:flex;align-items:center;justify-content:space-between;gap:var(--illi-space-md);min-height:var(--illi-space-2xl)}
 .plan h2{font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line)}
@@ -281,7 +281,7 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
 .feats li,.includes li{display:flex;align-items:center;gap:var(--illi-space-md)}
 /* Owner ruling 2026-11-12, "bone monochrome": every drawing is one bone tone, --pick (bone-950), the colour of the "2 months free"
    pill and the outlined buttons' border. 4.49:1 on the paid cards' circle (bone-100), 4.29:1 on the Free card's (bone-200) */
-.chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);background:var(--band);color:var(--pick);flex-shrink:0}
+.chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);--chip-bg:var(--band);background:var(--chip-bg);color:var(--pick);flex-shrink:0}
 /* The drawings are the live home page's feature-strip drawings (index.html, redrawn 2026-11-11), copied exactly; these are the
    home sheet's own stroke and fill rules for them (assets/home/style.css). The home page's raised gradient chip is NOT carried:
    here they sit in this page's flat circle, at the home size (28 in 48).
@@ -295,7 +295,9 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
 .chip .g .fr{fill:currentColor}
 .chip .g .fi{fill:currentColor}
 .chip .g .fy{fill:currentColor}
-.chip .g .tag{stroke:var(--illi-bone-50);stroke-width:1.4}
+/* the "2x" badge on "Set your speed once": in one bone tone it merged with the figure, so on this page it is the one dark part
+   (the ink, owner's word), its "2x" stays white, and a ring in the circle's own colour cuts it free of the figure */
+.chip .g .tag{fill:var(--ink);stroke:var(--chip-bg);stroke-width:2}
 .chip .g text{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:7.6px;fill:var(--illi-white)}
 .txt{display:flex;flex-direction:column;min-width:0}
 .txt .do{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);letter-spacing:var(--p-track-title);font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);color:var(--ink)}
@@ -312,13 +314,13 @@ body[data-paying]:not([data-view]) .includes{display:block;grid-column:span 4;pa
 body[data-paying] .plans-main,body[data-view] .plans-main{grid-column:span 8}
 .includes h2{font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);margin-bottom:var(--illi-space-xl)}
 .includes ul{display:flex;flex-direction:column;gap:var(--illi-space-lg)}
-.includes .chip{background:var(--card)}
+.includes .chip{--chip-bg:var(--card)}
 body[data-paying] #plans,body[data-tier="paid"] .legal{display:none}
 body[data-tier="paid"] .plans-main{display:none}
 body[data-tier="paid"]:not([data-view]) .includes{grid-column:1 / -1;padding-top:0}
 body[data-tier="paid"] .includes ul{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--p-gutter)}
 body[data-tier="paid"] .includes li{flex-direction:column;align-items:flex-start;gap:var(--illi-space-lg);padding:var(--illi-space-xl);border-radius:var(--illi-shape-lg);background:var(--card);box-shadow:inset 0 0 0 var(--p-hairline) var(--line),var(--p-shadow-card)}
-body[data-tier="paid"] .includes .chip{background:var(--band)}
+body[data-tier="paid"] .includes .chip{--chip-bg:var(--band)}
 body[data-tier="paid"] .includes .txt{gap:var(--illi-space-xs)}
 body[data-paying]:not([data-view]) .to-plans{display:none}
 
