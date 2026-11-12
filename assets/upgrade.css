@@ -282,15 +282,17 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
 .chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);background:var(--band);color:var(--heading);flex-shrink:0}
 /* The drawings are the live home page's feature-strip drawings (index.html, redrawn 2026-11-11), copied exactly; these are the
    home sheet's own stroke and fill rules for them (assets/home/style.css). The home page's raised gradient chip is NOT carried:
-   here they sit in this page's flat circle, at the home size (28 in 48). */
+   here they sit in this page's flat circle, at the home size (28 in 48).
+   Owner ruling 2026-11-12: on this page the drawings are ONE colour (the ink), so the home page's red and yellow parts
+   (.rd, .fr, .fy) take currentColor here. The shapes stay identical to the home page's. */
 .chip .g{width:var(--p-strip-glyph);height:var(--p-strip-glyph);overflow:visible}
 .chip .g .ln{fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
 .chip .g .wide{stroke-width:3}
 .chip .g .sf{fill:none;stroke:var(--illi-bone-600);stroke-width:3;stroke-linecap:round}
-.chip .g .rd{fill:none;stroke:var(--red);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.chip .g .fr{fill:var(--red)}
+.chip .g .rd{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.chip .g .fr{fill:currentColor}
 .chip .g .fi{fill:currentColor}
-.chip .g .fy{fill:var(--pause)}
+.chip .g .fy{fill:currentColor}
 .chip .g .tag{stroke:var(--illi-bone-50);stroke-width:1.4}
 .chip .g text{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:7.6px;fill:var(--illi-white)}
 .txt{display:flex;flex-direction:column;min-width:0}
