@@ -280,12 +280,19 @@ body[data-auth="in"] .plans-main,body[data-view] .plans-main{margin-top:0}
 .feats ul{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--illi-space-lg)}
 .feats li,.includes li{display:flex;align-items:center;gap:var(--illi-space-md)}
 .chip{display:grid;place-items:center;width:var(--p-chip);height:var(--p-chip);border-radius:var(--illi-shape-circle);background:var(--band);color:var(--heading);flex-shrink:0}
-.chip .g{width:var(--p-strip-glyph);height:var(--p-strip-glyph)}
-.chip .g .ink{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.chip .g .fill{fill:currentColor}
-.chip .g .acc{fill:none;stroke:var(--accent-2);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.chip .g .fill-acc{fill:var(--accent-2)}
-.chip .g .pause{fill:var(--pause)}
+/* The drawings are the live home page's feature-strip drawings (index.html, redrawn 2026-11-11), copied exactly; these are the
+   home sheet's own stroke and fill rules for them (assets/home/style.css). The home page's raised gradient chip is NOT carried:
+   here they sit in this page's flat circle, at the home size (28 in 48). */
+.chip .g{width:var(--p-strip-glyph);height:var(--p-strip-glyph);overflow:visible}
+.chip .g .ln{fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.chip .g .wide{stroke-width:3}
+.chip .g .sf{fill:none;stroke:var(--illi-bone-600);stroke-width:3;stroke-linecap:round}
+.chip .g .rd{fill:none;stroke:var(--red);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.chip .g .fr{fill:var(--red)}
+.chip .g .fi{fill:currentColor}
+.chip .g .fy{fill:var(--pause)}
+.chip .g .tag{stroke:var(--illi-bone-50);stroke-width:1.4}
+.chip .g text{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);font-size:7.6px;fill:var(--illi-white)}
 .txt{display:flex;flex-direction:column;min-width:0}
 .txt .do{font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);letter-spacing:var(--p-track-title);font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);color:var(--ink)}
 .txt .how{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--muted);text-wrap:pretty}

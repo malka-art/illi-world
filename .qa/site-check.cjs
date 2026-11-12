@@ -257,6 +257,22 @@ const SIZES = [
     });
   }
 
+  await check("Feature drawings are the home page's current strip drawings, feature for feature, in every card", async () => {
+    const home = fs.readFileSync(path.join(root, "index.html"), "utf8");
+    const strip = home.slice(home.indexOf('<ul class="strip-track">'), home.indexOf("</ul>", home.indexOf('<ul class="strip-track">')));
+    const re = /<span class="chip">(<svg class="g"[\s\S]*?<\/svg>)<\/span><span class="txt"><span class="do">([^<]*)<\/span>/g;
+    const homeDraw = {};
+    for (const m of strip.matchAll(re)) if (!(m[2] in homeDraw)) homeDraw[m[2]] = m[1];
+    const page = fs.readFileSync(path.join(root, "upgrade/index.html"), "utf8");
+    const rows = [...page.matchAll(re)];
+    assert.equal(rows.length, 17, "feature rows: " + rows.length);
+    for (const [, svg, name] of rows) assert.equal(svg.replace(' aria-hidden="true" focusable="false"', ""), homeDraw[name], "drawing differs: " + name);
+    const r = await visit({ data: closedOffer });
+    const flat = await r.page.$$eval(".chip", (els) => els.every((e) => getComputedStyle(e).boxShadow === "none" && getComputedStyle(e).backgroundImage === "none"));
+    assert.equal(flat, true, "a chip is raised or has a gradient");
+    await r.page.close();
+  });
+
   /* ---------------- visitor ---------------- */
   await check("Visitor: one red action (install), both plan buttons outlined, no account status", async () => {
     const r = await visit({ data: closedOffer });

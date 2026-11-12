@@ -1,7 +1,7 @@
 {
-  "testedAt": "2026-11-12T16:31:11.507Z",
+  "testedAt": "2026-11-12T17:15:44.178Z",
   "scope": "Real page from a local server; every authentication, checkout, billing, renewal and email request answered by fixtures; actual pricing-info and founding-renewal handlers with service doubles; one read-only GET of the public pricing-info.",
-  "passed": 107,
+  "passed": 108,
   "failed": 0,
   "results": [
     {
@@ -130,6 +130,10 @@
     },
     {
       "name": "Laptop 1280px 05-trial: three cards in a row, names and buttons on one line",
+      "pass": true
+    },
+    {
+      "name": "Feature drawings are the home page's current strip drawings, feature for feature, in every card",
       "pass": true
     },
     {
