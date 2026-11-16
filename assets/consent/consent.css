@@ -39,10 +39,12 @@
 .ask-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:var(--p-consent-btn-h);padding:var(--illi-space-sm) var(--illi-space-md);font:inherit;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-small-line);font-weight:var(--illi-weight-medium);text-align:center;color:var(--ink);background:var(--card);border:var(--p-consent-btn-line) solid var(--accent-2);border-radius:var(--illi-shape-full);cursor:pointer;transition:background var(--t-fast) var(--ease-out),transform var(--t-fast) var(--ease-out)}
 .ask-btn:hover{background:var(--band)}
 .ask-btn:active{transform:translateY(var(--p-press-shift))}
-/* On the bar both answers are filled in bone (owner request 2026-11-16), still through the ONE shared class: bone-400 fill,
-   gray-800 text (13.0:1 contrast), one step darker on hover. Equal prominence: nothing here can tell yes from no. */
-.ask--bar .ask-btn{background:var(--illi-bone-400);color:var(--illi-gray-800)}
-.ask--bar .ask-btn:hover{background:var(--illi-bone-500)}
+/* On the bar both answers are filled in dark bone with white text (owner request 2026-11-16), still through the ONE shared
+   class: bone-950 fill, white text (5.01:1 contrast; bone-950 is the only bone token where white text reaches 4.5:1, bone-900
+   gives 4.30:1). Bone has no darker token, so hover darkens bone-950 a step with gray-800 (85/15, 6.0:1 with white).
+   Equal prominence: nothing here can tell yes from no. */
+.ask--bar .ask-btn{background:var(--illi-bone-950);color:var(--illi-white);border-color:var(--illi-bone-950)}
+.ask--bar .ask-btn:hover{background:color-mix(in srgb,var(--illi-bone-950) 85%,var(--illi-gray-800));border-color:color-mix(in srgb,var(--illi-bone-950) 85%,var(--illi-gray-800))}
 .ask-done{display:none;margin:0;font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-line);font-weight:var(--illi-weight-medium);color:var(--ink)}
 .ask-done a{font-weight:var(--illi-weight-medium);color:var(--heading);text-decoration:underline}
 .ask[data-state="yes"] .ask-body,.ask[data-state="no"] .ask-body{display:none}

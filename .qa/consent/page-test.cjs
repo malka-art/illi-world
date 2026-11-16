@@ -117,7 +117,10 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       check('the two answers are the same size', words.sz.length === 2 && words.sz[0] === words.sz[1], words.sz);
       const paint = await page.evaluate(() => [...document.querySelectorAll('#ask [data-answer]')].map((x) => { const c = getComputedStyle(x); return { bg: c.backgroundColor, fg: c.color, weight: c.fontWeight, size: c.fontSize }; }));
       check('the two answers have the same computed background and text colour (and weight and size)', paint.length === 2 && JSON.stringify(paint[0]) === JSON.stringify(paint[1]), paint);
-      check('the fill is bone-400 (#E4DED6) with gray-800 (#1A1A1A) text', paint[0].bg === 'rgb(228, 222, 214)' && paint[0].fg === 'rgb(26, 26, 26)', paint[0]);
+      check('the fill is bone-950 (#7B6D5D) with white (#FFFFFF) text', paint[0].bg === 'rgb(123, 109, 93)' && paint[0].fg === 'rgb(255, 255, 255)', paint[0]);
+      const lum = (rgb) => { const c = rgb.match(/\d+/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+      const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+      check('text contrast on the answers is at least 4.5:1', ratio(paint[0].bg, paint[0].fg) >= 4.5, ratio(paint[0].bg, paint[0].fg).toFixed(2));
       // FAQ: hover each row long enough to open
       for (const id of ['learn', 'setup', 'after45']) {
         await page.$eval(`[data-faq="${id}"]`, (el) => el.scrollIntoView({ block: 'center' }));
