@@ -1,53 +1,35 @@
 # illi
 
-> illi is a Chrome browser extension that gives you mouse gesture control over YouTube video playback. Instead of keyboard shortcuts or tiny player buttons, you drag anywhere on the screen to change speed, navigate, bookmark moments, and auto-pause. Built for people who watch YouTube to learn.
+> illi adds mouse gesture controls to YouTube for people who watch to learn or understand. Hold the scroll-wheel button over the player, move to change speed or navigate, and release. Optional right-click activation replaces the native context menu inside the player.
 
-## What illi does
+## Supported setup
+YouTube in Chrome on a desktop or laptop with a mouse. Do not infer phone, Safari, full keyboard or verified trackpad support from this page.
 
-illi replaces YouTube's built-in speed controls with intuitive mouse gestures. Drag up to speed up (0.25x to 5x), drag down to slow down. Scrub forward and back with horizontal gestures. Pin bookmarks on the video timeline. Auto-pause when you leave the tab. Channel memory saves your preferred speed per YouTube channel automatically.
+## Features
+- Speed gestures, including up/down adjustment and release-to-set.
+- Precise navigation and a mark of the furthest point reached.
+- Channel-speed memory and a default for new channels.
+- Bookmarks, position adjustment and cross-device sync.
+- Optional auto-pause/resume when switching away, with an A hotkey toggle.
+- Optional walkthrough and gesture guide.
+Bookmark-hover frame previews, transcript export, looping and picture-in-picture are not advertised features here.
 
-Everything works from anywhere on the screen. No aiming at small buttons, no memorizing keyboard shortcuts.
-
-## Who illi is for
-
-- Online learners watching tutorials, courses, and lectures on YouTube
-- Developers following code walkthroughs while working in another window
-- Students reviewing recorded lectures at their own pace
-- Anyone who uses YouTube as a learning tool and wants precise playback control
-
-## Key features
-
-- Mouse gesture speed control (0.25x to 5x)
-- Forward and back navigation without the progress bar
-- Timeline bookmarks that persist across sessions
-- Per-channel speed memory (automatic)
-- Auto-pause when mouse leaves the video tab
-- Works on YouTube.com and YouTube embeds
-- Neumorphic floating hub UI that adapts to each platform's brand colors
-
-## Technical details
-
-- Chrome extension (Manifest V3)
-- Built with WXT framework and Preact
-- Local-first: settings and bookmarks stored on device via chrome.storage.local
-- Cloud sync for active accounts — free trial and paid (Supabase backend)
-- Email OTP authentication (no passwords)
-- Stripe for payments, Sentry for error monitoring, Postmark for transactional email
-
-## Pricing
-
-- 7-day free trial, no credit card required
-- illi Premium: US$10/month or US$100/year. Tax is calculated at checkout.
-- The founding campaign has not started. Existing subscriptions retain their agreed pricing.
+## Offer
+All prices are USD.
+- New accounts created after this offer launches receive full illi Premium for 45 days from signup; account required, no card. Existing unpaid accounts keep their original trial deadlines; they do not receive a restarted or extended trial.
+- Basic speed control remains free afterwards. illi Premium features require paid access after the trial.
+- Standard illi Premium: $10/month or $100/year.
+- Founding offer: choose $40 for one year or $80 for two years at the initial purchase, paid upfront plus applicable tax. Afterwards automatically renews at $100 USD annually plus applicable tax unless cancelled. No separate discounted year can be added later.
+- Founding payment is collected at purchase. The selected prepaid term starts after any remaining trial. Checkout shows the first annual renewal date; advance email reminders include a direct cancellation route. Cancellation preserves purchased access, then basic speed stays free.
+- One published campaign deadline or 1,000 initial purchasers, whichever comes first. Never infer that the campaign is open: consult the pricing page's current status.
+- Starting a trial reserves no founding place.
 
 ## Links
-
-- [Landing page](https://illi.world): Product homepage
-- [Chrome Web Store](https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg): Install illi
-- [Privacy Policy](https://illi.world/privacy): What data illi collects and how it is used
-- [Terms of Service](https://illi.world/terms): Subscription terms, trial, legal
+- [Product](https://illi.world/)
+- [illi Premium and current founding availability](https://illi.world/upgrade/)
+- [Chrome Web Store](https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg)
+- [Terms](https://illi.world/terms.html)
+- [Privacy](https://illi.world/privacy.html)
 
 ## Contact
-
-- Email: support@illi.world
-- Made by Wallflower Studio (Quebec, Canada)
+support@illi.world. Made by Wallflower Studio Inc.
