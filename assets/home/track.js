@@ -1,7 +1,7 @@
 /* illi.world first-party page events (2026-11-11). No cookies, no fingerprinting, and this file writes nothing to the browser.
    One random visit id per page load, kept in memory only. Sends nothing when Global Privacy Control or Do Not Track is on,
    or when the visitor chose "Stop counting my visits" under Privacy choices (illi.nocount, written by assets/consent/consent.js).
-   If the visitor said yes to the corner question, each batch also carries the remembered random code and the campaign tags
+   If the visitor said yes to the privacy question (the bar at the bottom of the home page), each batch also carries the remembered random code and the campaign tags
    of the visit on which they said yes (illi.note), so a return visit can be told from a new one. Nobody else's batch does.
    Events go to illi's own database through the site-event Edge Function (sendBeacon, text/plain JSON, batches of 20).
    Local testing only: on localhost, ?track_endpoint=<url> points it at a mock server. */
@@ -47,11 +47,18 @@
   W.illiTrackStop = function () { off = true; queue.length = 0; clearTimeout(timer); };   // "Stop counting my visits"
   track('page_view', 0, 'pv');
 
-  // campaign tags ride along to the Chrome Web Store, which reads utm_source / utm_medium / utm_campaign
+  // campaign tags ride along to the Chrome Web Store (partner links, 2026-11-16): every utm_ tag on the visit's address is
+  // copied onto each store link, as is (at most 10 tags, 80 characters each). The store reads utm_source / utm_medium /
+  // utm_campaign; the others are carried so a partner's own tags are never dropped. Nothing is stored, and like the rest of
+  // this file it does not run under a privacy signal or after "Stop counting my visits".
+  var pass = [];
+  q.forEach(function (val, name) {
+    if (pass.length < 10 && val && /^utm_[a-z0-9_]{1,30}$/i.test(name)) pass.push([name.toLowerCase(), val.slice(0, 80)]);
+  });
   function tag(a) {
-    if (a.hostname != 'chromewebstore.google.com') return;
+    if (a.hostname != 'chromewebstore.google.com' || !pass.length) return;
     var u = new URL(a.href);
-    'smc'.split('').forEach(function (k) { if (utm[k]) u.searchParams.set(keys[k], utm[k]); });
+    pass.forEach(function (t) { u.searchParams.set(t[0], t[1]); });
     a.href = u;
   }
   D.querySelectorAll('a[href*="chromewebstore"]').forEach(tag);

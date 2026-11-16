@@ -1,12 +1,13 @@
 /* illi.world privacy choices (2026-11-11): the privacy question on the home page and the Privacy choices panel.
+   Wording A (owner's choice): "Can illi remember you if you come back?" / "Yes, remember me" / "No, thanks".
    Design: a bar across the bottom of the window, placed and laid out after Superhuman's banner (owner request 2026-11-11);
-   the panel is Amanda's (design/consent-prompt-2026-11-11). Wording: Malka's locked ask and body line,
+   the panel is Amanda's (design/consent-prompt-2026-11-11). Wording: Malka's locked body line (2026-11-11),
    Melody's anti-slop pass for the rest (marketing/consent-prompt-2026-11-11/RESEARCH-AND-WORDING.md).
 
    What this file may write to the browser, and ONLY after the visitor clicks something:
-     illi.note     after "Remember it" (or "Remember this browser"): { id: random code, f: the campaign tags of that visit, at: time of the yes }
+     illi.note     after "Yes, remember me" (or "Remember this browser"): { id: random code, f: the campaign tags of that visit, at: time of the yes }
                    It expires 13 months after the yes; later visits do not extend it; then the question comes back.
-     illi.answer   after "Don't remember it" (or "Forget this browser"): { a: 'no', at, v }. Never asked again.
+     illi.answer   after "No, thanks" (or "Forget this browser"): { a: 'no', at, v }. Never asked again.
      illi.nocount  after "Stop counting my visits": { at }. assets/home/track.js sends nothing while it is there.
    An ignored question writes nothing and is asked again on the next load. Phones, tablets, narrow windows and browsers that
    send Global Privacy Control or Do Not Track are never asked; under a privacy signal nothing is counted either.
@@ -20,7 +21,7 @@
   var STOP_COUNTING_ALSO_FORGETS = true;   // "Stop counting my visits" also deletes the remembered note
 
   var W = window, D = document, N = navigator, root = D.documentElement;
-  var VERSION = 'm1';                       // wording version, sent with every answer (Malka's locked ask, 2026-11-11)
+  var VERSION = 'a1';                       // wording version, sent with every answer: a1 = wording A ask and answers, locked body line
   var MONTHS = 13, HOLD = 6000, LEAVE = 260, ARRIVE = 600, GAP = 12;
   var K = { note: 'illi.note', answer: 'illi.answer', nocount: 'illi.nocount' };
   var FR = /^fr/i.test(root.lang || '');
