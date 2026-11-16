@@ -1,4 +1,4 @@
-// illi.world page test (2026-11-11; moved into the site repo and extended 2026-11-16: wording A, every utm_ tag carried to
+// illi.world page test (2026-11-11; moved into the site repo and extended 2026-11-16: the owner-locked wording (version m2), every utm_ tag carried to
 // the store, and a run-wide guard that no request reached production or left this machine): page events fire once each, the privacy question behaves in every consent state,
 // nothing is written to the browser before a yes, phone width works. The question is a bar across the bottom of the window
 // (ask--bar, updated 2026-11-11 from the earlier corner note). Headless Chrome with a throwaway profile, against
@@ -112,8 +112,8 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       const href = await page.$eval('[data-cta="hero"]', (a) => a.href);
       check('install links carry the campaign tags to the store', /utm_source=test/.test(href) && /utm_campaign=t1/.test(href), href);
       check('every utm_ tag rides along (utm_content, utm_term too), and nothing else from the address', /utm_medium=email/.test(href) && /utm_content=lesson3/.test(href) && /utm_term=gestures/.test(href) && !/other=x/.test(href) && !/track_endpoint/.test(href), href);
-      const words = await page.evaluate(() => ({ q: document.getElementById('ask-q').textContent, b: [...document.querySelectorAll('#ask [data-answer]')].map((x) => x.textContent), sz: [...document.querySelectorAll('#ask [data-answer]')].map((x) => { const r = x.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); }) }));
-      check('wording A on the bar: the ask and the two answers', words.q === 'Can illi remember you if you come back?' && words.b[0] === 'Yes, remember me' && words.b[1] === 'No, thanks', words);
+      const words = await page.evaluate(() => ({ q: document.getElementById('ask-q').textContent, why: document.querySelector('#ask .ask-why').textContent, b: [...document.querySelectorAll('#ask [data-answer]')].map((x) => x.textContent), sz: [...document.querySelectorAll('#ask [data-answer]')].map((x) => { const r = x.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); }) }));
+      check('locked wording on the bar: the ask, the body line and the two answers', words.q === 'Mind if illi remembers this browser?' && words.why === 'It’s how a small site like ours learns which links work. The note is a random code, with no name or email in it.' && words.b[0] === 'Remember it' && words.b[1] === 'Don’t remember it', words);
       check('the two answers are the same size', words.sz.length === 2 && words.sz[0] === words.sz[1], words.sz);
       // FAQ: hover each row long enough to open
       for (const id of ['learn', 'setup', 'after45']) {
@@ -437,7 +437,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await flush(page);
       let ev = events(await log());
       const yes = ev.filter((e) => e.n === 'consent_yes');
-      check('yes: one consent_yes with the wording version, carrying the code', yes.length === 1 && yes[0].p.v === 'a1' && yes[0].p.from === 'note' && yes[0].b === note.id && yes[0].f.s === 'partner', yes);
+      check('yes: one consent_yes with the wording version, carrying the code', yes.length === 1 && yes[0].p.v === 'm2' && yes[0].p.from === 'note' && yes[0].b === note.id && yes[0].f.s === 'partner', yes);
       await clearLog();
       await page.goto(url(), { waitUntil: 'load' }); await sleep(1600);
       check('yes: not asked again', !(await askVisible(page)));

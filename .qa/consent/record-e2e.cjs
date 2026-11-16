@@ -5,7 +5,7 @@
 //   -> a local stand-in for the Supabase REST endpoint -> record_site_events() from the REAL migration 044, on PostgreSQL
 //   (PGlite, in this process), called as service_role exactly as production would.
 // It proves three things:
-//   1. a visit is recorded: rows land in public.site_events, with the campaign tags and, after "Yes, remember me", the code;
+//   1. a visit is recorded: rows land in public.site_events, with the campaign tags and, after "Remember it", the code;
 //   2. after "Stop counting my visits" nothing more is recorded, on that page or on the next load;
 //   3. nothing reaches production: every request the browser makes to *.supabase.co, or to any host that is not this
 //      machine, is aborted and listed, and the list must stay empty. The function itself is pointed at the local stand-in.
@@ -137,7 +137,7 @@ function siteServer() {
     const names = rows.map((r) => r.event);
     check('events are recorded in site_events (page_view, consent_shown, consent_yes, cta_click)', ['page_view', 'consent_shown', 'consent_yes', 'cta_click'].every((n) => names.includes(n)), names);
     const yes = rows.find((r) => r.event === 'consent_yes');
-    check('the yes is recorded with wording version a1, from the bar', yes && yes.props.v === 'a1' && yes.props.from === 'note', yes && yes.props);
+    check('the yes is recorded with wording version m2, from the bar', yes && yes.props.v === 'm2' && yes.props.from === 'note', yes && yes.props);
     check('the visit\'s campaign tags are recorded', rows.every((r) => r.utm_source === 'rock' && r.utm_content === 'lesson3'), rows.slice(0, 1));
     const cta = rows.find((r) => r.event === 'cta_click');
     check('after the yes, rows carry the remembered code and the first visit\'s tags', !!cta && !!cta.browser_id && cta.first_utm_source === 'rock', cta);
