@@ -40,10 +40,10 @@
   <a href="/" class="back">&larr; illi.world</a>
   <a href="/fr/privacy" class="lang">Français</a>
   <h1>Privacy Policy</h1>
-  <p class="effective"><strong>Effective Date: July 28, 2026</strong></p>
+  <p class="effective"><strong>Effective Date: November 16, 2026</strong></p>
 
   <div class="summary">
-    <strong>The short version.</strong> illi signs you in with your email (no passwords) and syncs your settings, bookmarks, and progress across your devices. We collect limited usage data that you can switch off, and we never record what you watch. Our servers and providers are in the United States, so your information is stored there. We use a few trusted providers, we do not sell your data, and you can delete your account and data at any time from within illi. Privacy questions go to our privacy officer, Malka Neuman, at <a href="mailto:privacy@illi.world">privacy@illi.world</a>.
+    <strong>The short version.</strong> illi signs you in with your email (no passwords) and syncs your settings, bookmarks, and progress across your devices. We collect limited usage data that you can switch off, and we never record what you watch. Our website counts visits without cookies, and you can turn that off under Privacy choices at the bottom of the page. Our servers and providers are in the United States, so your information is stored there. We use a few trusted providers, we do not sell your data, and you can delete your account and data at any time from within illi. Privacy questions go to our privacy officer, Malka Neuman, at <a href="mailto:privacy@illi.world">privacy@illi.world</a>.
   </div>
 
   <p class="intro">illi is a browser extension that adds mouse-gesture controls to YouTube: playback speed, navigation, bookmarks, and auto-pause. This policy explains what data illi collects, why, where it goes, and what control you have over it.</p>
@@ -114,12 +114,36 @@
     <li>Video URLs, video titles, or any information about what you watch</li>
     <li>Browsing history</li>
     <li>Advertising cookies or third-party tracking pixels</li>
-    <li>Device fingerprints or IP addresses (our infrastructure may log IPs at the network level, but we do not store or use them; the one exception is the hashed IP for feedback abuse-prevention in Section 1.6)</li>
+    <li>Device fingerprints or IP addresses (our infrastructure may log IPs at the network level, but we do not store them; the exceptions are the hashed IP for feedback abuse-prevention in Section 1.6, the hashed IP our send-to-desktop form keeps for up to two days to limit abuse, and our website's visit counter, which uses your IP address briefly in memory to block abuse and never stores it, in Section 1.9)</li>
     <li>Camera, video, or biometric data</li>
     <li>Data from any site other than YouTube</li>
   </ul>
   <p>illi does not keep any record of what you watch. In one case, when illi cannot read a video's channel from the page, it sends only that video's ID to noembed.com to look up the channel name. illi stores the channel name and your speed for it, never a history of the videos you watch.</p>
   <p>At sign-in, Cloudflare's Turnstile check uses your IP to confirm you're human. illi never receives or stores it.</p>
+
+  <h3 id="counting">1.9 Counting Visits to illi.world</h3>
+  <p>Our website counts every visit without cookies and without saving anything in your browser. For each page view, it sends our own server the facts in the table below, such as the site that sent you, how far you scrolled, how much of the demo film you watched, and which buttons you clicked. Each page view gets a random code that we throw away when you leave or reload the page, so we don't connect one visit to the next or to you, unless you say yes to the question in Section 1.10. Our server uses your IP address briefly, in memory only, to block abuse, and doesn't store it. We use no third-party analytics, advertising pixels, or fingerprinting, and we keep these records for up to 400 days. If your browser sends Global Privacy Control or Do Not Track, the page sends nothing. You can stop counting for your browser under Privacy choices at the bottom of our home page and our legal pages; that saves one setting in your browser so we remember.</p>
+  <table>
+    <tr><th>What we count</th><th>Example</th></tr>
+    <tr><td>Which page you're on</td><td>the home page</td></tr>
+    <tr><td>The site that sent you here, by name only</td><td>youtube.com</td></tr>
+    <tr><td>The campaign label in your link, if it had one</td><td>utm_source=newsletter</td></tr>
+    <tr><td>Whether you're on a phone, tablet, or computer</td><td>computer</td></tr>
+    <tr><td>Whether your browser can run illi</td><td>yes or no</td></tr>
+    <tr><td>How far you scrolled</td><td>25%, 50%, 75%, or 100%</td></tr>
+    <tr><td>Which sections you reached</td><td>"Where it works"</td></tr>
+    <tr><td>How much of the demo film you watched</td><td>played, then 25% to 100%</td></tr>
+    <tr><td>Which questions you opened</td><td>"Will it work with my setup?"</td></tr>
+    <tr><td>Which buttons you clicked</td><td>the install button in the header</td></tr>
+    <tr><td>Whether the send-to-desktop form worked</td><td>sent or not sent, never the address</td></tr>
+    <tr><td>How long the page was open</td><td>48 seconds</td></tr>
+    <tr><td>Whether we asked to remember this browser, and your answer</td><td>asked, yes, no, or no answer</td></tr>
+    <tr><td>A random code for this one page view</td><td>thrown away when you leave or reload</td></tr>
+  </table>
+  <p>When you click an install button, the campaign label from your link is passed on to the Chrome Web Store link, so the store can tell us which campaign an install came from.</p>
+
+  <h3 id="remembering">1.10 Remembering This Browser, Only If You Say Yes</h3>
+  <p>When you visit our home page on a computer, a bar at the bottom of the window asks whether illi can remember you if you come back. If you say yes, illi.world saves a small note in your browser's local storage: a random code, the campaign label from the link that brought you, if it had one, and the date of your yes. With it, our visit counts can tell a return visit from a new one and see which link first sent you. The note identifies this browser, not you: it holds no name or email. Only illi.world can read it, and we never share it or use it for advertising. It expires 13 months after your yes, later visits don't extend that, and when it expires we ask again. We keep a record of your answer, when you gave it, and which version of the question you saw. If you say no, we save only your no, so we won't ask again. If you don't answer, we save nothing and ask on your next visit. You can change your answer any time under Privacy choices, and Forget this browser deletes the note at once.</p>
 
   <hr>
 
@@ -131,6 +155,8 @@
     <tr><td>Subscription and payment IDs</td><td>Manage your plan, process upgrades and cancellations</td></tr>
     <tr><td>Referral data</td><td>Track referral rewards</td></tr>
     <tr><td>Usage data</td><td>Understand feature adoption and product milestones, identify bugs, guide product decisions</td></tr>
+    <tr><td>Website visit counts</td><td>Learn which pages, links and buttons work, and how much of the demo film people watch</td></tr>
+    <tr><td>The remembered-browser note (only after a yes)</td><td>Tell a return visit from a new one, and see which link first brought a browser</td></tr>
     <tr><td>Feedback and cancellation survey</td><td>Improve illi and understand why people leave</td></tr>
     <tr><td>Error reports</td><td>Diagnose and fix crashes</td></tr>
   </table>
@@ -142,8 +168,8 @@
   <p>This section matters only if you are in the EU or UK, where the law asks us to name the specific reason we are allowed to use your data. Ours are:</p>
   <ul>
     <li><strong>Contract</strong>: to provide illi and run your account, which is what you signed up for.</li>
-    <li><strong>Consent</strong>: optional things like product emails and usage analytics happen only because you agreed, and you can withdraw that at any time.</li>
-    <li><strong>Legitimate interests</strong>: keeping illi secure and improving it, balanced against your rights.</li>
+    <li><strong>Consent</strong>: optional things like product emails, usage analytics, and our website remembering your browser happen only because you agreed, and you can withdraw that at any time.</li>
+    <li><strong>Legitimate interests</strong>: keeping illi secure and improving it, including counting visits to our website without cookies, balanced against your rights. You can object to the visit count at any time under Privacy choices on illi.world.</li>
   </ul>
 
   <hr>
@@ -152,7 +178,7 @@
   <p>We use the following third-party services to operate illi. Each receives only the data it needs:</p>
   <table>
     <tr><th>Service</th><th>What It Receives</th><th>Why</th></tr>
-    <tr><td><strong>Supabase</strong> (supabase.com)</td><td>Email, account data, synced preferences/bookmarks, usage events, feedback</td><td>Authentication, database, server functions</td></tr>
+    <tr><td><strong>Supabase</strong> (supabase.com)</td><td>Email, account data, synced preferences/bookmarks, usage events, feedback, website visit counts</td><td>Authentication, database, server functions</td></tr>
     <tr><td><strong>Stripe</strong> (stripe.com)</td><td>Email (to create a customer record), plan selection, payment details you enter directly with Stripe</td><td>Payment processing</td></tr>
     <tr><td><strong>Sentry</strong> (sentry.io)</td><td>Error details, extension version, user ID (not email)</td><td>Crash reporting</td></tr>
     <tr><td><strong>Postmark</strong> (postmarkapp.com)</td><td>Email address, email content</td><td>Sending account and billing emails</td></tr>
@@ -172,7 +198,7 @@
   <hr>
 
   <h2>6. Cookies, Local Storage, and Tracking</h2>
-  <p>illi stores your settings, bookmarks, and progress on your own device using your browser's local storage, so the extension works and remembers your preferences. If you are signed in, this syncs to our servers. Our usage analytics are first-party (our own servers), not a third-party tracking service, and you can turn them off. We use no advertising cookies, and our website does not use tracking or advertising cookies.</p>
+  <p>illi stores your settings, bookmarks, and progress on your own device using your browser's local storage, so the extension works and remembers your preferences. If you are signed in, this syncs to our servers. Our usage analytics are first-party (our own servers), not a third-party tracking service, and you can turn them off. We use no advertising cookies, and our website does not use tracking or advertising cookies. Our home page counts visits without saving anything in your browser (Section 1.9), and it saves a small note in your browser's local storage only if you say yes (Section 1.10). If you answer no or stop the count, it saves that one choice so it can respect it.</p>
 
   <hr>
 
@@ -185,6 +211,9 @@
     <li>In the settings panel, toggle <strong>"Share usage data"</strong> off</li>
   </ol>
   <p>When disabled, no usage events are sent to our servers. All features continue to work normally.</p>
+
+  <h3>Website Choices</h3>
+  <p>On illi.world, Privacy choices at the bottom of our home page and our legal pages lets you stop counting your visits, and remember or forget this browser. Stopping the count also deletes the remembered-browser note if there is one.</p>
 
   <h3>Access or Correct Your Data</h3>
   <p>You can request a copy of the data we hold about you, or ask us to correct it, by emailing our privacy officer at the address in Section 14.</p>
@@ -200,7 +229,7 @@
   <p>If you simply uninstall illi without deleting your account, your local data is removed with the extension. Your server-side data is retained until you delete your account or request deletion.</p>
 
   <h3>Withdraw Consent</h3>
-  <p>Optional things like product emails and usage analytics happen only with your consent, and you can withdraw it at any time: turn off analytics in settings, or unsubscribe from any product email.</p>
+  <p>Optional things like product emails, usage analytics, and our website remembering your browser happen only with your consent, and you can withdraw it at any time: turn off analytics in settings, unsubscribe from any product email, or choose Forget this browser under Privacy choices on illi.world.</p>
 
   <h3>Cancel Your Subscription</h3>
   <p>You can cancel anytime through the Stripe Customer Portal, accessible from the illi extension popup. After cancellation, your subscription remains active until the end of your current billing period, then your account transitions to an expired state.</p>
@@ -226,6 +255,9 @@
     <tr><td>Cloud-synced bookmarks, progress, preferences, and channel settings</td><td>While your account exists; removed when your account is deleted</td></tr>
     <tr><td>Items you delete in illi (such as bookmarks)</td><td>Hidden and removed from your active data right away; permanently removed when your account is deleted</td></tr>
     <tr><td>Usage event records</td><td>Retained while your account exists, deleted on account deletion; aggregate, non-identifying statistics may be kept</td></tr>
+    <tr><td>Website visit counts</td><td>Up to 400 days, then deleted automatically</td></tr>
+    <tr><td>Remembered-browser note (in your browser, only after a yes)</td><td>13 months after your yes; later visits don't extend it</td></tr>
+    <tr><td>Your answer to the website question, or your stop-counting setting (in your browser)</td><td>Until you change it in Privacy choices or clear your browser's data for illi.world</td></tr>
     <tr><td>Feedback</td><td>Kept while useful; feedback sent without an account is not linked to you; account-linked feedback is removed or anonymized on account deletion</td></tr>
     <tr><td>Cancellation survey responses</td><td>Kept to understand why people leave; anonymized or aggregated over time</td></tr>
     <tr><td>Sentry error reports</td><td>Per Sentry's retention policy (typically 90 days)</td></tr>
