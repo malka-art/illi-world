@@ -115,6 +115,9 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       const words = await page.evaluate(() => ({ q: document.getElementById('ask-q').textContent, why: document.querySelector('#ask .ask-why').textContent, b: [...document.querySelectorAll('#ask [data-answer]')].map((x) => x.textContent), sz: [...document.querySelectorAll('#ask [data-answer]')].map((x) => { const r = x.getBoundingClientRect(); return Math.round(r.width) + 'x' + Math.round(r.height); }) }));
       check('locked wording on the bar: the ask, the body line and the two answers', words.q === 'Mind if illi remembers this browser?' && words.why === 'It’s how a small site like ours learns which links work. The note is a random code, with no name or email in it.' && words.b[0] === 'Remember it' && words.b[1] === 'Don’t remember it', words);
       check('the two answers are the same size', words.sz.length === 2 && words.sz[0] === words.sz[1], words.sz);
+      const paint = await page.evaluate(() => [...document.querySelectorAll('#ask [data-answer]')].map((x) => { const c = getComputedStyle(x); return { bg: c.backgroundColor, fg: c.color, weight: c.fontWeight, size: c.fontSize }; }));
+      check('the two answers have the same computed background and text colour (and weight and size)', paint.length === 2 && JSON.stringify(paint[0]) === JSON.stringify(paint[1]), paint);
+      check('the fill is bone-400 (#E4DED6) with gray-800 (#1A1A1A) text', paint[0].bg === 'rgb(228, 222, 214)' && paint[0].fg === 'rgb(26, 26, 26)', paint[0]);
       // FAQ: hover each row long enough to open
       for (const id of ['learn', 'setup', 'after45']) {
         await page.$eval(`[data-faq="${id}"]`, (el) => el.scrollIntoView({ block: 'center' }));
