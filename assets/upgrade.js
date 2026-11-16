@@ -175,6 +175,32 @@
 
   /* plan button -> Stripe Checkout, authed with the web session.
      stripe-checkout v17 opens checkout during a trial (the remaining trial comes first), so there is no "wait until it ends" branch. */
+  /* Every 409 stripe-checkout can return: its own codes plus the ones reserve_offer_checkout raises (migration 042).
+     Each answer must stay true for every way the server reaches it. A declined card goes back to its open checkout
+     (200), and a plan switch opens the new checkout in one click; checkout_plan_changed is only the rare fallback. */
+  var CHECKOUT_409 = {
+    existing_subscription:
+      "This account already has an illi Premium subscription, or a payment for one is still going through. Refresh in a minute, or email hey@illi.world.",
+    checkout_expired: "That checkout timed out before payment, so nothing was charged. Choose your plan again.",
+    checkout_plan_changed: "Your earlier checkout has been canceled. Choose your new plan again to continue.",
+    checkout_in_progress: "Your earlier checkout is still being prepared. Please wait a moment and try again.",
+    payment_processing: "Your earlier payment is being confirmed. Please wait before buying again.",
+    checkout_requires_review: "We need to check your earlier checkout. Email hey@illi.world before trying another payment.",
+    checkout_window_closed:
+      "There is no longer enough time to open a new founding checkout before the deadline. Your existing access is unchanged.",
+    offer_unavailable: "This offer is no longer available. Refresh this page to see current plans.",
+    invalid_offer: "That plan isn’t available. Refresh this page and choose again.",
+    existing_access: "This account already has the founding offer, so no other plan is needed.",
+    account_deletion_pending:
+      "This account is set to be deleted, so it can’t start a payment. To keep it, use the link in your deletion email or email hey@illi.world.",
+    founding_unavailable: "The founding offer isn’t available on this account. You can choose a standard plan instead.",
+    founding_limit_reached: "This account has already used the founding offer. You can choose a standard plan instead.",
+    renewal_consent_required: "Choose one or two years and agree to the automatic annual renewal before continuing.",
+    campaign_closed: "The founding offer isn’t open right now. You can choose a standard plan instead.",
+    campaign_sold_out: "All founding places are taken. You can choose a standard plan instead.",
+  };
+  var CHECKOUT_409_OTHER = "We couldn’t open a new checkout. Refresh this page and try again, or email hey@illi.world.";
+
   var checkoutBusy = false;
   async function startCheckout(tier, interval, button) {
     if (checkoutBusy) return;
@@ -240,22 +266,9 @@
         safeRedirect(data.url, [data.redirected_to_portal === true ? "billing.stripe.com" : "checkout.stripe.com"]);
         return;
       }
-      if (response.status === 409 && data.error === "checkout_window_closed")
+      if (response.status === 409)
         showStub(
-          "There is no longer enough time to open a new founding checkout before the deadline. Your existing access is unchanged.",
-          "error",
-        );
-      else if (response.status === 409 && data.error === "checkout_plan_changed")
-        showStub("Your earlier checkout has been canceled. Choose your new plan again to continue.", "error");
-      else if (response.status === 409 && data.error === "checkout_in_progress")
-        showStub("Your earlier checkout is still being prepared. Please wait a moment and try again.", "error");
-      else if (response.status === 409 && data.error === "payment_processing")
-        showStub("Your earlier payment is being confirmed. Please wait before buying again.", "error");
-      else if (response.status === 409 && data.error === "checkout_requires_review")
-        showStub("We need to check your earlier checkout. Email hey@illi.world before trying another payment.", "error");
-      else if (response.status === 409)
-        showStub(
-          "Your plan or founding availability has changed. Refresh this page to see your current options. No new checkout was opened.",
+          Object.prototype.hasOwnProperty.call(CHECKOUT_409, data.error) ? CHECKOUT_409[data.error] : CHECKOUT_409_OTHER,
           "error",
         );
       else showStub("We couldn’t open checkout. Please try again or email hey@illi.world.", "error");

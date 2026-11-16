@@ -447,18 +447,34 @@ const SIZES = [
     await shot(r.page, "12-checkout-error", "view");
     await r.page.close();
   });
+  // Every 409 code stripe-checkout can return (its own + reserve_offer_checkout's). None may fall to the generic line,
+  // and none may say "Your plan or founding availability has changed" (untrue for a declined card; E2E 2026-11-16 check 11).
   for (const [error, expected] of [
+    ["existing_subscription", /already has an illi Premium subscription, or a payment for one is still going through/],
+    ["checkout_expired", /timed out before payment, so nothing was charged/],
     ["checkout_plan_changed", /earlier checkout has been canceled/],
     ["payment_processing", /payment is being confirmed/],
     ["checkout_in_progress", /still being prepared/],
     ["checkout_requires_review", /check your earlier checkout/],
-    ["existing_access", /Refresh this page/],
+    ["checkout_window_closed", /no longer enough time/],
+    ["offer_unavailable", /no longer available/],
+    ["invalid_offer", /plan isn’t available/],
+    ["existing_access", /already has the founding offer/],
+    ["account_deletion_pending", /set to be deleted/],
+    ["founding_unavailable", /isn’t available on this account/],
+    ["founding_limit_reached", /already used the founding offer/],
+    ["renewal_consent_required", /agree to the automatic annual renewal/],
+    ["campaign_closed", /isn’t open right now/],
+    ["campaign_sold_out", /All founding places are taken/],
+    ["some_future_code", /couldn’t open a new checkout\. Refresh this page/],
   ]) {
     await check("Checkout state " + error, async () => {
       const r = await visit({ data: closedOffer, signed: true, checkoutStatus: 409, checkoutData: { error } });
       await r.page.click('[data-buy="standard"][data-interval="monthly"]');
       await wait(300);
-      assert.match(await text(r.page, "#checkoutStub"), expected);
+      const said = await text(r.page, "#checkoutStub");
+      assert.match(said, expected);
+      assert.doesNotMatch(said, /founding availability has changed|—/);
       assert.equal(r.checkout.length, 1);
       await r.page.close();
     });

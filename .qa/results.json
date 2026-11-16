@@ -1,7 +1,7 @@
 {
-  "testedAt": "2026-11-12T17:39:50.380Z",
+  "testedAt": "2026-11-16T19:08:10.060Z",
   "scope": "Real page from a local server; every authentication, checkout, billing, renewal and email request answered by fixtures; actual pricing-info and founding-renewal handlers with service doubles; one read-only GET of the public pricing-info.",
-  "passed": 108,
+  "passed": 120,
   "failed": 0,
   "results": [
     {
@@ -197,6 +197,14 @@
       "pass": true
     },
     {
+      "name": "Checkout state existing_subscription",
+      "pass": true
+    },
+    {
+      "name": "Checkout state checkout_expired",
+      "pass": true
+    },
+    {
       "name": "Checkout state checkout_plan_changed",
       "pass": true
     },
@@ -213,7 +221,47 @@
       "pass": true
     },
     {
+      "name": "Checkout state checkout_window_closed",
+      "pass": true
+    },
+    {
+      "name": "Checkout state offer_unavailable",
+      "pass": true
+    },
+    {
+      "name": "Checkout state invalid_offer",
+      "pass": true
+    },
+    {
       "name": "Checkout state existing_access",
+      "pass": true
+    },
+    {
+      "name": "Checkout state account_deletion_pending",
+      "pass": true
+    },
+    {
+      "name": "Checkout state founding_unavailable",
+      "pass": true
+    },
+    {
+      "name": "Checkout state founding_limit_reached",
+      "pass": true
+    },
+    {
+      "name": "Checkout state renewal_consent_required",
+      "pass": true
+    },
+    {
+      "name": "Checkout state campaign_closed",
+      "pass": true
+    },
+    {
+      "name": "Checkout state campaign_sold_out",
+      "pass": true
+    },
+    {
+      "name": "Checkout state some_future_code",
       "pass": true
     },
     {
