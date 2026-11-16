@@ -1,0 +1,50 @@
+{
+  "testedAt": "2026-11-16T18:16:32.853Z",
+  "scope": "Real feedback page from a local server; speech API and microphone permission replaced by a test stand-in, plus one check on Chrome's real speech API with the microphone blocked. No request leaves 127.0.0.1.",
+  "passed": 9,
+  "failed": 0,
+  "captures": {
+    "waiting": "C:\\Users\\35263\\OneDrive\\Documents\\Vibe Coding\\Malka's Software Dev\\Dev Workflow\\CompNy workflow\\Projects\\Illi\\design\\feedback-mic-hint-2026-11-16\\feedback-mic-1-waiting.png",
+    "allowed": "C:\\Users\\35263\\OneDrive\\Documents\\Vibe Coding\\Malka's Software Dev\\Dev Workflow\\CompNy workflow\\Projects\\Illi\\design\\feedback-mic-hint-2026-11-16\\feedback-mic-2-allowed-listening.png",
+    "refused": "C:\\Users\\35263\\OneDrive\\Documents\\Vibe Coding\\Malka's Software Dev\\Dev Workflow\\CompNy workflow\\Projects\\Illi\\design\\feedback-mic-hint-2026-11-16\\feedback-mic-3-refused.png",
+    "dismissed": "C:\\Users\\35263\\OneDrive\\Documents\\Vibe Coding\\Malka's Software Dev\\Dev Workflow\\CompNy workflow\\Projects\\Illi\\design\\feedback-mic-hint-2026-11-16\\feedback-mic-4-dismissed.png"
+  },
+  "results": [
+    {
+      "name": "Before permission: tapping Talk it out shows the Allow-the-microphone hint, not Listening",
+      "pass": true
+    },
+    {
+      "name": "Allow seen only through the permission change (no audio event yet) also clears the hint",
+      "pass": true
+    },
+    {
+      "name": "Mic already allowed: goes straight to Listening, the hint never flashes",
+      "pass": true
+    },
+    {
+      "name": "Refused (Block): back to idle, the blocked message explains how to fix it and stays put",
+      "pass": true
+    },
+    {
+      "name": "Prompt closed without answering: says so and invites another tap",
+      "pass": true
+    },
+    {
+      "name": "Mic already blocked: tapping explains at once, no hint and no Listening",
+      "pass": true
+    },
+    {
+      "name": "Dictated words still land in the message field",
+      "pass": true
+    },
+    {
+      "name": "REAL Chrome speech API with the microphone blocked: same blocked message",
+      "pass": true
+    },
+    {
+      "name": "REAL Chrome speech API refusal error (page's early check bypassed): same blocked message",
+      "pass": true
+    }
+  ]
+}

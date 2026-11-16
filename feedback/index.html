@@ -83,6 +83,10 @@
   }
   .voice-row.idle { cursor:pointer; }
   .voice-row.listening { border-color:var(--illi-accent-default); }
+  /* waiting: the browser's microphone permission prompt is open (E2E 2026-11-15 check 8) */
+  .voice-row.waiting { border-color:var(--illi-warning-border); background:var(--illi-warning-tint); }
+  .voice-row.waiting .mic-btn { animation:blink 1.1s ease-in-out infinite; }
+  .voice-row.waiting .voice-sub { color:var(--illi-text-secondary); } /* muted gray is too faint on the amber tint */
   .round-btn { display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:9999px; cursor:pointer; }
   .mic-btn { width:44px; height:44px; background:#FEF2F2; border:1px solid #FECACA; }
   .stop-btn { width:44px; height:44px; background:var(--illi-accent-default); }
@@ -177,6 +181,15 @@
             <div class="voice-text"><div class="voice-title" id="micTitle">Talk it out</div><div class="voice-sub" id="micSub">Sometimes it's easier to just talk.</div></div>
           </div>
         </div>
+        <!-- waiting: the browser is asking for the microphone; nothing is heard until it is allowed -->
+        <div class="voice-pane" id="v-waiting">
+          <div class="voice-row waiting" role="status" aria-live="polite">
+            <div class="round-btn mic-btn" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+            </div>
+            <div class="voice-text"><div class="voice-title">Allow the microphone</div><div class="voice-sub">Your browser is asking. Look near the address bar.</div></div>
+          </div>
+        </div>
         <!-- listening: live dictation into the field -->
         <div class="voice-pane" id="v-listening">
           <div class="voice-row listening">
@@ -237,12 +250,13 @@
 
     // ── Toast ─────────────────────────────────────────────────────────────────
     var toastEl = document.getElementById('toast'), toastTimer = null;
-    function showToast(text) {
+    function showToast(text, sticky) {
       document.getElementById('toastMsg').textContent = text;
       toastEl.classList.add('show');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 5200);
+      if (!sticky) toastTimer = setTimeout(hideToast, 5200);
     }
+    function hideToast() { clearTimeout(toastTimer); toastEl.classList.remove('show'); }
 
     // ── Chips (single-select, optional) ───────────────────────────────────────
     document.querySelectorAll('.chip').forEach(function (c) {
@@ -269,12 +283,48 @@
     // Live speech-to-text straight into the message field. On (re)start we capture the caret and
     // insert the recognized words THERE, so "record again" adds at the cursor. Text-only, no audio.
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    var panes = { idle: document.getElementById('v-idle'), listening: document.getElementById('v-listening') };
+    var panes = { idle: document.getElementById('v-idle'), waiting: document.getElementById('v-waiting'), listening: document.getElementById('v-listening') };
     function showPane(name) { for (var k in panes) panes[k].classList.toggle('active', k === name); }
-    var recog = null, listening = false, before = '', after = '', finalSeg = '';
+    var recog = null, listening = false, waiting = false, before = '', after = '', finalSeg = '';
+
+    // Microphone permission (E2E 2026-11-15 check 8). Until the browser's permission prompt is
+    // answered, recognition hears nothing, so "Listening…" would be a lie: show the "Allow the
+    // microphone" hint instead, and switch to listening when audio actually starts. The state is
+    // read ahead of time so an already-allowed mic never flashes the hint. null = the browser
+    // doesn't say (treated like "not yet allowed": hint until audio starts).
+    var micState = null;
+    function readMicState() {
+      try {
+        if (!navigator.permissions || !navigator.permissions.query) return Promise.resolve(null);
+        return navigator.permissions.query({ name: 'microphone' }).then(function (status) {
+          micState = status.state;
+          status.onchange = function () { micState = status.state; if (micState === 'granted') markListening(); };
+          return micState;
+        }, function () { return null; });
+      } catch (e) { return Promise.resolve(null); }
+    }
+    readMicState();
+
+    function markListening() {
+      if (!listening || !waiting) return;
+      waiting = false;
+      fillWave(document.getElementById('liveWave'), 22);
+      showPane('listening');
+    }
+
+    var MIC_BLOCKED = "The microphone is blocked for this page. Allow it in your browser's site settings to talk, or just type your note.";
+    var MIC_DISMISSED = "The microphone prompt was closed. Tap to try again, or just type your note.";
+    function explainRefusal() {
+      // Refused (Block) and dismissed (closed the prompt) both arrive as 'not-allowed'; the
+      // permission state tells them apart. Sticky: this needs the user to act, so it stays put.
+      readMicState().then(function (state) { showToast(state === 'prompt' ? MIC_DISMISSED : MIC_BLOCKED, true); });
+    }
 
     function startDictation() {
       if (!SR) { showToast("This browser can't transcribe speech. You can still type your note."); return; }
+      hideToast();
+      // Already blocked for this page: recognition would fail at once, so say why straight away.
+      if (micState === 'denied') { showToast(MIC_BLOCKED, true); return; }
       try { recog = new SR(); } catch (e) { showToast("Couldn't start dictation. You can still type your note."); return; }
       recog.lang = navigator.language || 'en-US';
       recog.interimResults = true;
@@ -287,7 +337,9 @@
       if (before && !/\s$/.test(before)) before += ' ';
       finalSeg = '';
 
+      recog.onaudiostart = markListening;
       recog.onresult = function (e) {
+        markListening();
         var interim = '';
         for (var i = e.resultIndex; i < e.results.length; i++) {
           if (e.results[i].isFinal) finalSeg += e.results[i][0].transcript;
@@ -299,8 +351,8 @@
         try { msgEl.setSelectionRange(caret, caret); } catch (e) {}
       };
       recog.onerror = function (e) {
+        if (e.error === 'not-allowed') { endDictation(); explainRefusal(); return; }
         var msg = {
-          'not-allowed': "We couldn't reach your mic. Allow mic access in your browser, or just type it.",
           'service-not-allowed': "We couldn't reach your mic. Allow mic access in your browser, or just type it.",
           'audio-capture': "No microphone found. Plug one in, or just type your note.",
           'network': "Lost the connection for transcription. Type it, or try again in a moment.",
@@ -313,13 +365,19 @@
       };
       recog.onend = function () { if (listening) endDictation(); };
 
-      try { recog.start(); listening = true; fillWave(document.getElementById('liveWave'), 22); showPane('listening'); }
+      try {
+        recog.start();
+        listening = true;
+        if (micState === 'granted') { waiting = false; fillWave(document.getElementById('liveWave'), 22); showPane('listening'); }
+        else { waiting = true; showPane('waiting'); }
+      }
       catch (e) { showToast("Couldn't start dictation. You can still type your note."); }
     }
 
     function stopDictation() { if (recog) { try { recog.stop(); } catch (e) {} } }
     function endDictation() {
       listening = false;
+      waiting = false;
       var caret = (before + finalSeg).length;
       showPane('idle');
       try { msgEl.focus(); msgEl.setSelectionRange(caret, caret); } catch (e) {}
