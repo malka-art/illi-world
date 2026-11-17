@@ -38,7 +38,7 @@ let browser, server, closedOffer;
 /* ---------- a local stand-in for GitHub Pages: files, folder index.html, and 404.html (status 404) for anything else ---------- */
 const realList = fs.readFileSync(path.join(root, "assets/partners.js"), "utf8");
 // adding a creator = one more line in the list; nothing else changes
-const listWithTest = realList.replace(/window\.ILLI_PARTNERS = \[\n/, "window.ILLI_PARTNERS = [\n  '" + TEST_PARTNER + "',\n");
+const listWithTest = realList.replace(/window\.ILLI_PARTNERS = \[\r?\n/, "window.ILLI_PARTNERS = [\n  '" + TEST_PARTNER + "',\n");
 assert.notEqual(listWithTest, realList, "could not add a name to assets/partners.js the documented way");
 const types = { ".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".ico": "image/x-icon", ".mp4": "video/mp4", ".json": "application/json" };
 const statuses = {};
