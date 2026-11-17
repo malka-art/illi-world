@@ -525,7 +525,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       check('GPC: nothing written', empty(await storage(page)));
       await ctx.close();
     }
-    // 3f stop counting (after a yes, so switch (b) is exercised)
+    // 3f stop counting (after a yes, so switch (b) is exercised: off since the owner's ruling 2026-11-16, so the note must survive)
     {
       await clearLog();
       const { ctx, page } = await newPage(browser);
@@ -536,9 +536,9 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await flush(page); await clearLog();
       await page.click('[data-choice="stop"]'); await sleep(150);
       const s = await storage(page);
-      check('stop counting: one setting saved; switch (b) on, so the note is deleted too', !!s.local['illi.nocount'] && !s.local['illi.note'], Object.keys(s.local));
+      check('stop counting: one setting saved; the note the visitor agreed to is kept (switch off, owner 2026-11-16)', !!s.local['illi.nocount'] && !!s.local['illi.note'], Object.keys(s.local));
       const txt = await page.$eval('#choices', (e) => e.innerText);
-      check('stop counting: the panel says so, including the deleted code', /won’t send visit counts anymore/.test(txt) && /deleted the random code too/.test(txt));
+      check('stop counting: the panel says so, says nothing about deleting the code, and still shows the browser remembered', /won’t send visit counts anymore/.test(txt) && !/deleted the random code too/.test(txt) && /remembers this browser until/.test(txt));
       await page.screenshot({ path: path.join(OUT, 'panel-stopped-1440.png') });
       await page.evaluate(() => window.scrollTo(0, 0)); await page.mouse.move(400, 400); await sleep(100);
       await flush(page); await sleep(3200);

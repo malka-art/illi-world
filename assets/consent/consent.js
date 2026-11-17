@@ -17,8 +17,8 @@
 (function () {
   'use strict';
 
-  /* ---------- the one switch the owner has not ruled on yet (2026-11-11). ---------- */
-  var STOP_COUNTING_ALSO_FORGETS = true;   // "Stop counting my visits" also deletes the remembered note
+  /* ---------- the stop-counting switch, ruled by the owner 2026-11-16. ---------- */
+  var STOP_COUNTING_ALSO_FORGETS = false;  // Malka, 2026-11-16: "Stop counting my visits" never deletes what the visitor agreed to
 
   var W = window, D = document, N = navigator, root = D.documentElement;
   var VERSION = 'm2';                       // wording version, sent with every answer: m2 = the owner-locked ask, body line and answers (2026-11-11)
