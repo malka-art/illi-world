@@ -434,7 +434,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await page.click('#ask [data-answer="yes"]'); await sleep(200);
       const s = await storage(page);
       const note = s.local['illi.note'] && JSON.parse(s.local['illi.note']);
-      check('yes: the note holds only a random code, the first tags and the time of the yes', note && /^[0-9a-f-]{36}$/.test(note.id) && note.f.s === 'partner' && note.f.c === 'nov' && Object.keys(note).sort().join() === 'at,f,id' && s.localCount === 1, note);
+      check('yes: the note holds only a random code, the first tags, the time of the yes and the wording version (task 304)', note && /^[0-9a-f-]{36}$/.test(note.id) && note.f.s === 'partner' && note.f.c === 'nov' && note.v === 'm2' && Object.keys(note).sort().join() === 'at,f,id,v' && s.localCount === 1, note);
       check('yes: confirmation shown', await page.$eval('#ask [data-when="yes"]', (e) => !e.hidden && e.offsetParent !== null));
       await page.screenshot({ path: path.join(OUT, 'd-yes.png') });
       await page.mouse.move(5, 5); await sleep(6600);

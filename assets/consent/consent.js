@@ -5,7 +5,8 @@
    Melody's anti-slop pass for the rest (marketing/consent-prompt-2026-11-11/RESEARCH-AND-WORDING.md).
 
    What this file may write to the browser, and ONLY after the visitor clicks something:
-     illi.note     after "Remember it" (or "Remember this browser"): { id: random code, f: the campaign tags of that visit, at: time of the yes }
+     illi.note     after "Remember it" (or "Remember this browser"): { id: random code, f: the campaign tags of that visit, at: time of the yes,
+                   v: the wording version the visitor said yes to (task 304, 2026-11-16; a note written before then has no v) }
                    It expires 13 months after the yes; later visits do not extend it; then the question comes back.
      illi.answer   after "Don't remember it" (or "Forget this browser"): { a: 'no', at, v }. Never asked again.
      illi.nocount  after "Stop counting my visits": { at }. assets/home/track.js sends nothing while it is there.
@@ -21,6 +22,9 @@
 
   var W = window, D = document, N = navigator, root = D.documentElement;
   var VERSION = 'm2';                       // wording version, sent with every answer: m2 = the owner-locked ask, body line and answers (2026-11-11)
+  // Partner links (task 304): only a yes given on a wording that says the partner is attached to a payment lets /upgrade carry
+  // the partner into checkout (assets/upgrade.js, PAYMENT_WORDING). m2 does not say so. When the approved payment wording is
+  // published (home page "What gets saved?" note and privacy policy 1.10), change this to 'm3' in the same commit.
   var MONTHS = 13, HOLD = 6000, LEAVE = 260, ARRIVE = 600, GAP = 12;
   var K = { note: 'illi.note', answer: 'illi.answer', nocount: 'illi.nocount' };
   var FR = /^fr/i.test(root.lang || '');
@@ -67,7 +71,7 @@
   }
 
   function sayYes(from) {
-    put(K.note, { id: crypto.randomUUID(), f: tags(), at: new Date().toISOString() });
+    put(K.note, { id: crypto.randomUUID(), f: tags(), at: new Date().toISOString(), v: VERSION });
     del(K.answer);
     ev('consent_yes', { v: VERSION, from: from });   // after the write, so this event already carries the code
   }

@@ -1,12 +1,16 @@
 // Partner links, end to end (task 304, 2026-11-16).
 // The chain under test, with nothing from production:
-//   illi.world/<name> (no page, so 404.html answers, exactly as GitHub Pages does) -> the home page with the partner's tags
+//   illi.world/<name> (answered with status 200 by <name>.html, made by the real `node .tools/partner-pages.cjs`, the way GitHub
+//   Pages serves privacy.html at /privacy) -> the home page with the partner's tags
 //   -> track.js counts the visit (beacons to a local stand-in) and tags the Chrome Web Store links -> "Remember it" keeps the
 //   tags in illi.note -> /upgrade -> the stripe-checkout request body (intercepted) -> the REAL stripe-checkout handler from
 //   CODE_DIR, run with doubles of the offer ledger and of Stripe -> the Checkout Session metadata.
-// And every way it must NOT carry the partner: no answer, "Don't remember it", Global Privacy Control, Do Not Track,
-// "Stop counting my visits", a yes older than 13 months, a non-partner link, a name no longer on the list.
-// "Adding a creator" is tested the way it will be done: the real assets/partners.js with one more name added to its list.
+// And every way it must NOT carry the partner: a yes on the current wording (m2) or with no wording version, no answer,
+// "Don't remember it", Global Privacy Control, Do Not Track, "Stop counting my visits", a yes older than 13 months, a non-partner
+// link, a name no longer on the list. The payment wording (m3) is not published yet, so the checks that need it serve
+// consent.js with VERSION 'm3' (the one-line change that goes with the approved wording); every other check uses the real file.
+// "Adding a creator" is tested the way it will be done: one more line in the real assets/partners.js, then the real command,
+// in a scratch folder (SITE_ROOT), so this repo is never changed by the test. Removing the line and re-running deletes the page.
 // SAFETY: every request to *.supabase.co is aborted and listed (the list must stay empty); every request to any host that is
 // not this machine is aborted and listed (must stay empty). The supabase-js module is a fixture, so no real sign-in happens.
 //
@@ -36,10 +40,21 @@ let beacons = [];
 let browser, server, closedOffer;
 
 /* ---------- a local stand-in for GitHub Pages: files, folder index.html, and 404.html (status 404) for anything else ---------- */
+const os = require("node:os");
+const { spawnSync } = require("node:child_process");
 const realList = fs.readFileSync(path.join(root, "assets/partners.js"), "utf8");
 // adding a creator = one more line in the list; nothing else changes
 const listWithTest = realList.replace(/window\.ILLI_PARTNERS = \[\r?\n/, "window.ILLI_PARTNERS = [\n  '" + TEST_PARTNER + "',\n");
 assert.notEqual(listWithTest, realList, "could not add a name to assets/partners.js the documented way");
+// the scratch site for the generator: index.html (its tags feed the preview card) and the list with the test name
+const GEN = fs.mkdtempSync(path.join(os.tmpdir(), "illi-partner-pages-"));
+fs.mkdirSync(path.join(GEN, "assets"));
+fs.copyFileSync(path.join(root, "index.html"), path.join(GEN, "index.html"));
+fs.writeFileSync(path.join(GEN, "assets/partners.js"), listWithTest);
+const generate = (args = [], env = {}) => spawnSync(process.execPath, [path.join(root, ".tools/partner-pages.cjs"), ...args], { env: Object.assign({}, process.env, { SITE_ROOT: GEN }, env), encoding: "utf8" });
+const realConsent = fs.readFileSync(path.join(root, "assets/consent/consent.js"), "utf8");
+const consentM3 = realConsent.replace("var VERSION = 'm2';", "var VERSION = 'm3';");
+assert.notEqual(consentM3, realConsent, "could not switch consent.js to m3");
 const types = { ".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".ico": "image/x-icon", ".mp4": "video/mp4", ".json": "application/json" };
 const statuses = {};
 function serve() {
@@ -55,6 +70,10 @@ function serve() {
     let p = path.resolve(root, "." + decodeURIComponent(u.pathname));
     if (!p.startsWith(root)) return res.writeHead(403), res.end();
     if (fs.existsSync(p) && fs.statSync(p).isDirectory()) p = path.join(p, "index.html");
+    // GitHub Pages answers /<x> from <x>.html when there is one (checked live: /privacy is 200); generated pages live in GEN
+    const gen = path.join(GEN, decodeURIComponent(u.pathname).replace(/^\/+/, "") + ".html");
+    if (!fs.existsSync(p) && /^\/[^/]+$/.test(u.pathname) && fs.existsSync(gen)) p = gen;
+    else if (!fs.existsSync(p) && fs.existsSync(p + ".html")) p = p + ".html";
     let status = 200;
     if (!fs.existsSync(p)) { p = path.join(root, "404.html"); status = 404; }
     statuses[u.pathname] = status;
@@ -79,7 +98,7 @@ const SUPABASE_FIXTURE = `export const createClient = () => ({
 });`;
 const TRIAL = { tier: "trial", trial_ends_at: "2026-12-20T15:00:00Z", founding_paid_until: null, founding_years_purchased: 0, founding_billing_review: false, deletion_scheduled_at: null };
 
-async function newContext({ gpc = false, dnt = false, seed = null, phone = false } = {}) {
+async function newContext({ gpc = false, dnt = false, seed = null, phone = false, wording = "m2" } = {}) {
   const ctx = await browser.createBrowserContext();
   const page = await ctx.newPage();
   const rec = { checkout: [], stripeNav: [], errors: [] };
@@ -98,6 +117,7 @@ async function newContext({ gpc = false, dnt = false, seed = null, phone = false
   const json = (req, status, body) => req.respond({ status, contentType: "application/json", headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET,POST,OPTIONS" }, body: req.method() === "OPTIONS" ? "" : JSON.stringify(body) });
   page.on("request", (req) => {
     const u = req.url();
+    if (wording === "m3" && u.startsWith(base + "/assets/consent/consent.js")) return req.respond({ status: 200, contentType: "application/javascript", body: consentM3 });
     if (u.startsWith(base + "/assets/vendor/supabase-js-2.103.0.esm.js")) return req.respond({ status: 200, contentType: "application/javascript", body: SUPABASE_FIXTURE });
     if (u.startsWith(base + "/")) return req.continue();
     if (/^(data:|blob:)/.test(u)) return req.continue();
@@ -176,7 +196,7 @@ async function check(name, fn) {
     failures.push({ name, error: msg }); results.push({ name, pass: false, error: msg }); console.log("FAIL " + name + "\n     " + msg);
   }
 }
-const note = (f, at = new Date().toISOString()) => JSON.stringify({ id: "11111111-2222-4333-8444-555555555555", f, at });
+const note = (f, at = new Date().toISOString(), v = "m3") => JSON.stringify(Object.assign({ id: "11111111-2222-4333-8444-555555555555", f, at }, v ? { v } : {}));
 const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
 
 (async () => {
@@ -184,16 +204,17 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
   await serve();
   browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--no-first-run", "--disable-background-networking", "--host-resolver-rules=MAP chromewebstore.google.com ~NOTFOUND, MAP *.stripe.com ~NOTFOUND"] });
 
-  /* ---------------- the list itself ---------------- */
+  /* ---------------- the list and the one command ---------------- */
   await check("The shipped list parses, and every name follows the rules and is not an existing page or folder", async () => {
     const box = { window: {} };
     vm.runInNewContext(realList, box);
     const list = box.window.ILLI_PARTNERS;
     assert.ok(Array.isArray(list), "window.ILLI_PARTNERS is not a list");
-    const taken = new Set(fs.readdirSync(root).map((f) => f.replace(/\.html$/, "").toLowerCase()));
+    const mark = "generated by .tools/partner-pages.cjs";
+    const taken = new Set(fs.readdirSync(root).filter((f) => !(f.endsWith(".html") && fs.readFileSync(path.join(root, f), "utf8").includes(mark))).map((f) => f.replace(/\.html$/, "").toLowerCase()));
     for (const name of list) {
       assert.match(name, /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])$/, "bad name " + name);
-      assert.ok(!taken.has(name), name + " is already a page or folder, so its link would never reach 404.html");
+      assert.ok(!taken.has(name), name + " is already a page or folder");
     }
     assert.equal(new Set(list).size, list.length, "a name is listed twice");
     console.log("     names on the shipped list: " + list.length);
@@ -202,13 +223,58 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     const fn = fs.readFileSync(path.join(CODE, "supabase/functions/stripe-checkout/index.ts"), "utf8");
     assert.ok(fn.includes("const PARTNER_NAME = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;"), "the function's name pattern changed");
   });
+  await check("This repo's partner pages match its list (node .tools/partner-pages.cjs --check)", async () => {
+    const env = Object.assign({}, process.env);
+    delete env.SITE_ROOT;
+    const r = spawnSync(process.execPath, [path.join(root, ".tools/partner-pages.cjs"), "--check"], { encoding: "utf8", env });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+  });
+  await check("Adding a creator: one line in the list, then one command, makes <name>.html; --check then agrees", async () => {
+    const before = generate(["--check"]);
+    assert.equal(before.status, 1, "--check must notice the missing page: " + before.stdout);
+    const r = generate();
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /wrote \["testpartner\.html"\]/);
+    assert.ok(fs.existsSync(path.join(GEN, TEST_PARTNER + ".html")));
+    assert.equal(generate(["--check"]).status, 0);
+    assert.match(generate().stdout, /wrote \[\]; deleted \[\]/, "running it twice changes nothing");
+  });
+  await check("The command refuses a bad name and a name that is already a page, and writes nothing", async () => {
+    for (const bad of ["Bad Name", "upgrade", "privacy", "x"]) {
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "illi-partner-bad-"));
+      fs.mkdirSync(path.join(tmp, "assets"));
+      fs.mkdirSync(path.join(tmp, "upgrade"));
+      fs.writeFileSync(path.join(tmp, "privacy.html"), "<p>policy</p>");
+      fs.copyFileSync(path.join(root, "index.html"), path.join(tmp, "index.html"));
+      fs.writeFileSync(path.join(tmp, "assets/partners.js"), realList.replace(/window\.ILLI_PARTNERS = \[\r?\n/, "window.ILLI_PARTNERS = [\n  '" + bad + "',\n"));
+      const r = generate([], { SITE_ROOT: tmp });
+      assert.notEqual(r.status, 0, bad + " was accepted");
+      assert.deepEqual(fs.readdirSync(tmp).sort(), ["assets", "index.html", "privacy.html", "upgrade"], bad + ": something was written");
+      assert.equal(fs.readFileSync(path.join(tmp, "privacy.html"), "utf8"), "<p>policy</p>");
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+  await check("Link preview: /testpartner answers 200 with illi's title, description and card, as a crawler sees it (no JavaScript)", async () => {
+    const res = await fetch(base + "/" + TEST_PARTNER, { redirect: "manual", headers: { "user-agent": "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)" } });
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    const home = fs.readFileSync(path.join(root, "index.html"), "utf8");
+    const tag = (h, re) => (h.match(re) || [])[1];
+    for (const re of [/<title>([^<]+)<\/title>/, /<meta name="description" content="([^"]+)"/, /<meta property="og:title" content="([^"]+)"/, /<meta property="og:description" content="([^"]+)"/, /<meta property="og:image" content="([^"]+)"/, /<meta name="twitter:card" content="([^"]+)"/]) {
+      assert.ok(tag(html, re), "missing " + re);
+      assert.equal(tag(html, re), tag(home, re), "differs from the home page: " + re);
+    }
+    assert.equal(tag(html, /<meta property="og:url" content="([^"]+)"/), "https://illi.world/" + TEST_PARTNER);
+    assert.equal(tag(html, /<meta name="robots" content="([^"]+)"/), "noindex");
+    assert.match(html, /<noscript><meta http-equiv="refresh" content="0; url=\/\?utm_source=testpartner&amp;utm_medium=partner&amp;utm_campaign=partners"><\/noscript>/);
+  });
 
-  /* ---------------- 1. the full chain: partner link, count, store tag, yes, pay ---------------- */
-  await check("Chain: link -> visit counted -> store link tagged -> Remember it -> checkout -> Stripe metadata carries the partner", async () => {
+  /* ---------------- 1. the full chain on the payment wording (m3): link, count, store tag, yes, pay ---------------- */
+  await check("Chain (payment wording m3): link 200 -> visit counted -> store link tagged -> Remember it -> checkout -> Stripe metadata carries the partner", async () => {
     beacons = [];
-    const r = await newContext();
-    await arrive(r.page, "/" + TEST_PARTNER + "/film30");
-    assert.equal(statuses["/" + TEST_PARTNER + "/film30"], 404, "the partner address is answered by 404.html, as on GitHub Pages");
+    const r = await newContext({ wording: "m3" });
+    await arrive(r.page, "/" + TEST_PARTNER, "&utm_content=film30");
+    assert.equal(statuses["/" + TEST_PARTNER], 200, "the partner address is answered by its own page with status 200");
     assert.equal(await r.page.evaluate(() => location.pathname), "/", "sent on to the home page");
     const p = await params(r.page);
     assert.equal(p.utm_source, TEST_PARTNER);
@@ -239,9 +305,11 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     assert.equal(pv.page, "/");
     const yes = beacons.find((b) => (b.e || []).some((e) => e.n === "consent_yes"));
     assert.ok(yes && yes.b, "the yes was not sent with the code");
+    assert.equal(yes.e.find((e) => e.n === "consent_yes").p.v, "m3", "the yes event carries the wording version");
     assert.deepEqual(yes.f, { s: TEST_PARTNER, m: "partner", c: "partners", ct: "film30" });
     const kept = JSON.parse((await storage(r.page)).ls["illi.note"]);
     assert.deepEqual(kept.f, { s: TEST_PARTNER, m: "partner", c: "partners", ct: "film30" });
+    assert.equal(kept.v, "m3", "the note records the wording version of the yes");
     // 3. later, the same browser pays
     const before = await storage(r.page);
     const body = await buyMonthly(r);
@@ -256,6 +324,29 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     assert.equal(out.session.subscription_data.metadata.partner, TEST_PARTNER);
     await r.ctx.close();
   });
+  await check("Chain on tonight's wording (real consent.js, m2): counted, store tagged, yes kept with v m2, return code sent; checkout carries NO partner", async () => {
+    beacons = [];
+    const r = await newContext();
+    await arrive(r.page, "/" + TEST_PARTNER);
+    assert.ok(await waitAsk(r.page));
+    await r.page.click('#ask [data-answer="yes"]');
+    await wait(200);
+    await flush(r.page);
+    assert.ok(beacons.some((b) => (b.e || []).some((e) => e.n === "page_view") && b.u.s === TEST_PARTNER), "visit not counted");
+    assert.equal(new URL((await storeLinks(r.page))[0]).searchParams.get("utm_source"), TEST_PARTNER);
+    const kept = JSON.parse((await storage(r.page)).ls["illi.note"]);
+    assert.equal(kept.v, "m2");
+    assert.equal(kept.f.s, TEST_PARTNER);
+    // the yes keeps working for what it covers: the next page load sends the remembered code and first tags
+    beacons = [];
+    await r.page.goto(base + "/?track_endpoint=" + encodeURIComponent(COLLECT), { waitUntil: "load" });
+    await flush(r.page);
+    const back = beacons.find((b) => (b.e || []).some((e) => e.n === "page_view"));
+    assert.ok(back && back.b === kept.id && back.f.s === TEST_PARTNER, "the return visit lost the remembered code");
+    const body = await buyMonthly(r);
+    assert.deepEqual(body, { tier: "standard", interval: "monthly", offer_version: "broad-2026-10-renewing" });
+    await r.ctx.close();
+  });
 
   /* ---------------- the store tag: links keep what the partner already put on them ---------------- */
   await check("Link with its own tags: utm_campaign / utm_id kept, utm_source and utm_medium always the partner's", async () => {
@@ -267,15 +358,16 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     assert.deepEqual([s.get("utm_source"), s.get("utm_campaign"), s.get("utm_id")], [TEST_PARTNER, "educators-2026-11", "educator01-p1"]);
     await r.ctx.close();
   });
-  await check("Capitals and a trailing slash still work: /TestPartner/ goes to the same partner", async () => {
+  await check("Safety net: /TestPartner/ (capitals, trailing slash) still reaches the same partner through 404.html", async () => {
     const r = await newContext();
     await arrive(r.page, "/TestPartner/");
+    assert.equal(statuses["/TestPartner/"], 404);
     assert.equal((await params(r.page)).utm_source, TEST_PARTNER);
     await r.ctx.close();
   });
 
   /* ---------------- not a partner: the plain not-found page ---------------- */
-  for (const [p, why] of [["/nobody", "a name not on the list"], ["/" + TEST_PARTNER + "/a/b", "three parts"], ["/assets/nothing.js", "a missing file"]]) {
+  for (const [p, why] of [["/nobody", "a name not on the list"], ["/" + TEST_PARTNER + "/film30", "a second part after a partner name"], ["/assets/nothing.js", "a missing file"]]) {
     await check("Not found (" + why + "): 404 page shown, no redirect, nothing stored", async () => {
       const r = await newContext();
       const res = await r.page.goto(base + p, { waitUntil: "load" });
@@ -290,18 +382,9 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
       await r.ctx.close();
     });
   }
-  await check("A bad label is dropped, the partner still counts: /testpartner/<script>", async () => {
-    const r = await newContext();
-    await arrive(r.page, "/" + TEST_PARTNER + "/%3Cscript%3E");
-    const p = await params(r.page);
-    assert.equal(p.utm_source, TEST_PARTNER);
-    assert.equal(p.utm_content, undefined);
-    await r.ctx.close();
-  });
-
   /* ---------------- nothing carried without a yes ---------------- */
   await check("No answer: nothing stored, checkout carries no partner", async () => {
-    const r = await newContext();
+    const r = await newContext({ wording: "m3" });
     await arrive(r.page, "/" + TEST_PARTNER);
     assert.ok(await waitAsk(r.page));
     await wait(300);
@@ -313,7 +396,7 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     await r.ctx.close();
   });
   await check("Don't remember it: only the no is stored, checkout carries no partner", async () => {
-    const r = await newContext();
+    const r = await newContext({ wording: "m3" });
     await arrive(r.page, "/" + TEST_PARTNER);
     assert.ok(await waitAsk(r.page));
     await r.page.click('#ask [data-answer="no"]');
@@ -354,6 +437,9 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     ["a yes from a partner since removed from the list", { seed: { "illi.note": note({ s: "gonepartner", m: "partner" }) } }],
     ["a yes with no campaign tags at all", { seed: { "illi.note": note({}) } }],
     ["a damaged note", { seed: { "illi.note": "{not json" } }],
+    ["a yes with no wording version (a note written before versions were kept)", { seed: { "illi.note": note(partnerTags, undefined, null) } }],
+    ["a yes on tonight's wording m2", { seed: { "illi.note": note(partnerTags, undefined, "m2") } }],
+    ["a yes on an unknown wording version", { seed: { "illi.note": note(partnerTags, undefined, "m9") } }],
   ];
   for (const [why, opt] of SEEDED) {
     await check("No partner at checkout after " + why, async () => {
@@ -383,6 +469,15 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     await r.ctx.close();
   });
 
+  await check("Removing a creator: delete the line, run the same command, and the page is gone; --check agrees", async () => {
+    fs.writeFileSync(path.join(GEN, "assets/partners.js"), realList);
+    const r = generate();
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /deleted \["testpartner\.html"\]/);
+    assert.equal(fs.existsSync(path.join(GEN, TEST_PARTNER + ".html")), false);
+    assert.equal(generate(["--check"]).status, 0);
+    assert.deepEqual(fs.readdirSync(GEN).sort(), ["assets", "index.html"], "only its own page was removed");
+  });
   await check("Safety: no request reached production or left this machine", async () => {
     assert.deepEqual(prodHits, []);
     assert.deepEqual(outside.filter((u) => !/^https:\/\/(chromewebstore\.google\.com|checkout\.stripe\.com)\//.test(u)), []);
@@ -392,4 +487,4 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
   if (failures.length) process.exitCode = 1;
 })()
   .catch((e) => { console.error(e); process.exitCode = 1; })
-  .finally(async () => { if (browser) await browser.close(); if (server) server.close(); });
+  .finally(async () => { if (browser) await browser.close(); if (server) server.close(); fs.rmSync(GEN, { recursive: true, force: true }); });

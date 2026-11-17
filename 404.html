@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Page not found - illi</title>
-<!-- GitHub Pages serves this file for every address that has no page (task 304, 2026-11-16). It is also what makes the
-     partner links work: illi.world/<name> has no page, so this file answers, and if <name> is on the list in
-     /assets/partners.js it sends the visitor on to the home page with that partner's tags. It stores nothing and sends
-     nothing. Every path here is absolute, because this file is served at any depth. -->
+<!-- GitHub Pages serves this file for every address that has no page (task 304, 2026-11-16). Partner links normally answer
+     from their own <name>.html (status 200, made by .tools/partner-pages.cjs). This file is the safety net: if the first part
+     of the address is a name on the list in /assets/partners.js (capitals, a trailing slash, or a page not yet generated), it
+     sends the visitor on to the home page with that partner's tags, the same way, though with status 404. It stores nothing
+     and sends nothing. Every path here is absolute, because this file is served at any depth. -->
 <script src="/assets/partners.js"></script>
 <script>
 (function () {
   var parts = location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase().split('/');
-  var name = parts[0], label = parts[1], list = window.ILLI_PARTNERS || [];
-  if (!name || parts.length > 2 || list.indexOf(name) < 0) return;
+  var name = parts[0], list = window.ILLI_PARTNERS || [];
+  if (!name || parts.length > 1 || list.indexOf(name) < 0) return;
   var q = new URLSearchParams(location.search);
   q.set('utm_source', name);
   q.set('utm_medium', 'partner');
   if (!q.get('utm_campaign')) q.set('utm_campaign', 'partners');
-  if (label && /^[a-z0-9][a-z0-9_-]{0,39}$/.test(label) && !q.get('utm_content')) q.set('utm_content', label);
   document.documentElement.setAttribute('data-partner', name);
   location.replace('/?' + q.toString() + location.hash);
 })();

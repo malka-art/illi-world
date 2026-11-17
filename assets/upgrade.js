@@ -205,12 +205,16 @@
      It exists only if the visitor said yes to "Mind if illi remembers this browser?" (assets/consent/consent.js keeps the
      campaign tags of that visit in illi.note) and that visit came through a partner link (utm_medium=partner, a name still on
      the list in /assets/partners.js). Nothing under Global Privacy Control or Do Not Track, nothing after "Stop counting my
-     visits", nothing once the yes is 13 months old: the same tests as consent.js and track.js. */
+     visits", nothing once the yes is 13 months old: the same tests as consent.js and track.js.
+     And only for a yes given on a wording that tells the visitor the partner is attached to a payment (PAYMENT_WORDING; the
+     version is kept in the note as v). A yes with no version, or on the earlier wording m2, keeps working for everything
+     else (return visits, first link) but never reaches checkout. consent.js writes 'm3' only once that wording is published. */
+  var PAYMENT_WORDING = ["m3"];
   function rememberedPartner() {
     try {
       if (navigator.globalPrivacyControl || navigator.doNotTrack == "1" || localStorage.getItem("illi.nocount")) return null;
       var note = JSON.parse(localStorage.getItem("illi.note") || "null");
-      if (!note || !note.id || !note.at || !note.f) return null;
+      if (!note || !note.id || !note.at || !note.f || PAYMENT_WORDING.indexOf(note.v) === -1) return null;
       var until = new Date(note.at);
       until.setMonth(until.getMonth() + 13);
       if (!(Date.now() < until.getTime()) || note.f.m !== "partner") return null;
