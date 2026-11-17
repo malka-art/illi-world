@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-11-17T02:27:24.864Z",
+  "testedAt": "2026-11-17T02:55:02.757Z",
   "scope": "Real page from a local server; every authentication, checkout, billing, renewal and email request answered by fixtures; actual pricing-info and founding-renewal handlers with service doubles; one read-only GET of the public pricing-info.",
   "passed": 120,
   "failed": 0,
