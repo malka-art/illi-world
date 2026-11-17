@@ -201,6 +201,26 @@
   };
   var CHECKOUT_409_OTHER = "We couldn’t open a new checkout. Refresh this page and try again, or email hey@illi.world.";
 
+  /* Partner links (task 304, 2026-11-16): the partner whose link brought this browser, or null. Read only, never written.
+     It exists only if the visitor said yes to "Mind if illi remembers this browser?" (assets/consent/consent.js keeps the
+     campaign tags of that visit in illi.note) and that visit came through a partner link (utm_medium=partner, a name still on
+     the list in /assets/partners.js). Nothing under Global Privacy Control or Do Not Track, nothing after "Stop counting my
+     visits", nothing once the yes is 13 months old: the same tests as consent.js and track.js. */
+  function rememberedPartner() {
+    try {
+      if (navigator.globalPrivacyControl || navigator.doNotTrack == "1" || localStorage.getItem("illi.nocount")) return null;
+      var note = JSON.parse(localStorage.getItem("illi.note") || "null");
+      if (!note || !note.id || !note.at || !note.f) return null;
+      var until = new Date(note.at);
+      until.setMonth(until.getMonth() + 13);
+      if (!(Date.now() < until.getTime()) || note.f.m !== "partner") return null;
+      var name = String(note.f.s || "").toLowerCase();
+      return (window.ILLI_PARTNERS || []).indexOf(name) !== -1 ? name : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   var checkoutBusy = false;
   async function startCheckout(tier, interval, button) {
     if (checkoutBusy) return;
@@ -244,6 +264,7 @@
         return;
       }
       showStub("Opening secure checkout…", "busy");
+      var partner = rememberedPartner();
       var response = await fetch(SUPABASE_URL + "/functions/v1/stripe-checkout", {
         method: "POST",
         headers: {
@@ -256,6 +277,7 @@
           interval: interval,
           offer_version: "broad-2026-10-renewing",
           ...(tier === "founding" ? { founding_years: foundingYears, renewal_consent: true } : {}),
+          ...(partner ? { partner: partner } : {}),
         }),
       });
       var data = await response.json().catch(function () {

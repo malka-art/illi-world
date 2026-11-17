@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Page not found - illi</title>
+<!-- GitHub Pages serves this file for every address that has no page (task 304, 2026-11-16). It is also what makes the
+     partner links work: illi.world/<name> has no page, so this file answers, and if <name> is on the list in
+     /assets/partners.js it sends the visitor on to the home page with that partner's tags. It stores nothing and sends
+     nothing. Every path here is absolute, because this file is served at any depth. -->
+<script src="/assets/partners.js"></script>
+<script>
+(function () {
+  var parts = location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase().split('/');
+  var name = parts[0], label = parts[1], list = window.ILLI_PARTNERS || [];
+  if (!name || parts.length > 2 || list.indexOf(name) < 0) return;
+  var q = new URLSearchParams(location.search);
+  q.set('utm_source', name);
+  q.set('utm_medium', 'partner');
+  if (!q.get('utm_campaign')) q.set('utm_campaign', 'partners');
+  if (label && /^[a-z0-9][a-z0-9_-]{0,39}$/.test(label) && !q.get('utm_content')) q.set('utm_content', label);
+  document.documentElement.setAttribute('data-partner', name);
+  location.replace('/?' + q.toString() + location.hash);
+})();
+</script>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/home/illi-tokens.css">
+<style>
+  @font-face{font-family:Inter;src:url('/assets/home/inter-latin-400.woff2') format('woff2');font-weight:400;font-display:swap}
+  @font-face{font-family:Sora;src:url('/assets/home/sora-latin-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  *{box-sizing:border-box}
+  html[data-partner] body{visibility:hidden}   /* a partner link is on its way to the home page: no flash of this page */
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 16px;background:var(--illi-surface-sunken);color:var(--illi-text-primary);font-family:var(--illi-font-primary),-apple-system,'Segoe UI',sans-serif}
+  main{max-width:460px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
+  img{display:block}
+  h1{margin:8px 0 0;font-family:var(--illi-font-display),-apple-system,sans-serif;font-weight:700;font-size:28px;line-height:36px;color:var(--illi-text-heading)}
+  p{margin:0;font-size:16px;line-height:24px;color:var(--illi-text-secondary)}
+  a.home{display:inline-block;margin-top:8px;padding:12px 24px;border-radius:var(--illi-shape-lg);background:var(--illi-accent-default);color:var(--illi-on-accent);font-weight:500;text-decoration:none}
+  a.home:focus-visible{outline:2px solid var(--illi-text-heading);outline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+  <img src="/assets/home/illi-wordmark-color-light.svg" alt="illi" width="81" height="56">
+  <h1>This page isn’t here.</h1>
+  <p>The link may be mistyped or out of date.</p>
+  <p lang="fr">Cette page n’existe pas. Le lien est peut-être mal saisi ou périmé.</p>
+  <a class="home" href="/">Go to illi.world</a>
+</main>
+</body>
+</html>
