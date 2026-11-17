@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-11-17T02:52:47.851Z",
+  "testedAt": "2026-11-17T03:02:11.516Z",
   "scope": "Real feedback page from a local server; speech API and microphone permission replaced by a test stand-in, plus one check on Chrome's real speech API with the microphone blocked. No request leaves 127.0.0.1.",
   "passed": 9,
   "failed": 0,
