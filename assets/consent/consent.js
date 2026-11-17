@@ -17,8 +17,7 @@
 (function () {
   'use strict';
 
-  /* ---------- the stop-counting switch, ruled by the owner 2026-11-16. ---------- */
-  var STOP_COUNTING_ALSO_FORGETS = false;  // Malka, 2026-11-16: "Stop counting my visits" never deletes what the visitor agreed to
+  /* Owner ruling 2026-11-16 (Malka): "Stop counting my visits" never deletes what the visitor agreed to (the note stays). */
 
   var W = window, D = document, N = navigator, root = D.documentElement;
   var VERSION = 'm2';                       // wording version, sent with every answer: m2 = the owner-locked ask, body line and answers (2026-11-11)
@@ -32,23 +31,21 @@
     forget: 'Oublier ce navigateur',
     noteOff: 'illi ne se souvient pas de ce navigateur. Si vous le souhaitez, nous y enregistrerons un code aléatoire et l’étiquette de campagne du lien que vous avez suivi pour arriver ici, afin de savoir quand vous revenez et quel lien vous a amené la première fois. Ces données expirent après 13 mois.',
     remember: 'Se souvenir de ce navigateur',
-    count: 'Nous comptons aussi chaque visite sans rien enregistrer dans votre navigateur, par exemple jusqu’où vous avez fait défiler la page, quelle part du film vous avez regardée et sur quels boutons vous avez cliqué. Ces données ne nous disent pas qui vous êtes, et la politique de confidentialité en donne la liste complète.',
+    count: 'Nous comptons aussi chaque visite sans rien enregistrer dans votre navigateur, par exemple jusqu’où vous avez fait défiler la page, quelle part du film vous avez regardée et sur quels boutons vous avez cliqué. Ces données ne nous permettent pas de savoir qui vous êtes, et la politique de confidentialité en donne la liste complète.',
     stop: 'Ne plus compter mes visites',
-    stopped: 'Ce navigateur n’enverra plus de données de visite. Nous y avons enregistré un réglage pour nous souvenir de votre choix.',
-    stoppedForgot: 'Ce navigateur n’enverra plus de données de visite. Nous y avons enregistré un réglage pour nous souvenir de votre choix, et nous avons aussi supprimé le code aléatoire.',
-    off: 'Ce navigateur n’envoie pas de données de visite, parce que vous les avez désactivées.',
+    stopped: 'Ce navigateur n’enverra plus de données de visite. Nous y avons enregistré un seul réglage pour nous souvenir de votre choix.',
+    off: 'Ce navigateur n’envoie pas de données de visite, parce que vous avez désactivé le comptage.',
     again: 'Compter de nouveau mes visites',
     signal: 'Votre navigateur demande aux sites de ne pas vous suivre : illi ne compte donc pas cette visite et ne se souvient pas de ce navigateur.',
     locale: 'fr-CA'
   } : {
     noteOn: 'illi remembers this browser until {date}. We’ve saved a random code and the campaign label from the link that brought you.',
     forget: 'Forget this browser',
-    noteOff: 'illi doesn’t remember this browser. If you’d like it to, we’ll save a random code and the campaign label from the link that brought you, so we can tell when you come back and which link sent you. It expires after 13 months.',
+    noteOff: 'illi doesn’t remember this browser. If you’d like it to, we’ll save a random code and the campaign label from the link that brought you, so we can tell when you come back and which link first sent you. It expires after 13 months.',
     remember: 'Remember this browser',
     count: 'We also count each visit without saving anything in your browser, for example how far you scrolled, how much of the film you watched, and which buttons you clicked. These counts don’t tell us who you are, and the privacy policy lists everything they include.',
     stop: 'Stop counting my visits',
     stopped: 'This browser won’t send visit counts anymore. We saved one setting in it so we remember your choice.',
-    stoppedForgot: 'This browser won’t send visit counts anymore. We saved one setting in it so we remember your choice, and we deleted the random code too.',
     off: 'This browser doesn’t send visit counts, because you turned them off.',
     again: 'Count my visits again',
     signal: 'Your browser asks sites not to track you, so illi isn’t counting this visit or remembering this browser.',
@@ -79,15 +76,12 @@
     put(K.answer, { a: 'no', at: new Date().toISOString(), v: VERSION });
     ev('consent_no', { v: VERSION, from: from });
   }
-  var forgotOnStop = false;
   function stopCounting() {
     if (W.illiTrackStop) W.illiTrackStop();          // drop anything queued in this page, send nothing more
     put(K.nocount, { at: new Date().toISOString() });
-    forgotOnStop = false;
-    if (STOP_COUNTING_ALSO_FORGETS && get(K.note)) { del(K.note); forgotOnStop = true; }
     if (ask && !ask.hidden && !answered) leave();     // the question is about counting; with counting off it has no purpose
   }
-  function countAgain() { del(K.nocount); forgotOnStop = false; }
+  function countAgain() { del(K.nocount); }
 
   /* ---------- the Privacy choices panel ---------- */
   var panel = D.getElementById('choices'), bodyEl = panel && panel.querySelector('.choices-body'), opener = null, justStopped = false;
@@ -97,15 +91,19 @@
     if (label) { var b = D.createElement('button'); b.className = 'ask-btn'; b.type = 'button'; b.setAttribute('data-choice', act); b.textContent = label; r.appendChild(b); }
     return r;
   }
+  function day(d) {   // French typography: the first of a month is « 1er » (fr-CA prints « 1 décembre 2027 »)
+    var s = d.toLocaleDateString(T.locale, { year: 'numeric', month: 'long', day: 'numeric' });
+    return FR && d.getDate() === 1 ? s.replace(/^1(?=\s)/, '1er') : s;
+  }
   function render() {
     if (!bodyEl) return;
     bodyEl.textContent = '';
     if (signal) { bodyEl.appendChild(row(T.signal)); return; }
     var n = liveNote();
-    bodyEl.appendChild(n ? row(T.noteOn.replace('{date}', expiry(n).toLocaleDateString(T.locale, { year: 'numeric', month: 'long', day: 'numeric' })), T.forget, 'forget')
+    bodyEl.appendChild(n ? row(T.noteOn.replace('{date}', day(expiry(n))), T.forget, 'forget')
                          : row(T.noteOff, T.remember, 'remember'));
     bodyEl.appendChild(counting() ? row(T.count, T.stop, 'stop')
-                                  : row(justStopped ? (forgotOnStop ? T.stoppedForgot : T.stopped) : T.off, T.again, 'count'));
+                                  : row(justStopped ? T.stopped : T.off, T.again, 'count'));
   }
   function seatPanel() {   // desktop: just above the footer when it is on screen, so it never hides the link that opened it
     if (!panel || panel.hidden) return;
