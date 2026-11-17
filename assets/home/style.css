@@ -238,7 +238,7 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 .diagram .cursor{fill:currentColor;stroke:var(--illi-bone-50);stroke-width:.9;stroke-linejoin:round}
 /* the hub: three stacked discs, the reading and the rim arrow. Ratios are the extension's (144 box: middle inset 29, inner inset 35, arrow 22 x 9 at top 9, reading 21);
    body in bone, reading and arrow in red */
-.d-speed{display:grid;place-items:center;--hub:calc(var(--p-diagram) * .74)}
+.d-speed{display:grid;place-items:center;--hub:calc(var(--p-diagram) * .74);--p-anim:3.2s}   /* owner direction 2026-11-16: this card sweeps the whole range and runs quicker than the others (was the shared 4.6s) */
 .hub{position:relative;display:block;width:var(--hub);height:var(--hub)}
 .hub i{position:absolute;border-radius:var(--illi-shape-circle);background:linear-gradient(145deg,var(--illi-bone-50),var(--illi-bone-400))}
 .hub .o{inset:0;box-shadow:calc(var(--hub) * -.021) calc(var(--hub) * -.021) calc(var(--hub) * .042) var(--illi-white),calc(var(--hub) * .021) calc(var(--hub) * .021) calc(var(--hub) * .042) var(--illi-bone-700)}
@@ -261,8 +261,9 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 /* owner ruling 2026-11-09: a diagram rests as a complete still drawing and plays only while its card is hovered
    (or once, on touch screens, when the card scrolls into view: .is-playing). Every loop starts and ends on the resting picture.
    Owner direction 2026-11-11: the movement has to show the feature happening, step by step:
-   speed    the reading ticks down in tenths from 2.0x to 1.0x with the arrow pointing down, then picks back up to 2.0x with the arrow pointing up
-            (the hub shows one decimal: ui-manager.ts, currentSpeed.toFixed(1))
+   speed    owner direction 2026-11-16: the full range. The reading runs down from 5.0x (illi's top speed, gestures.ts MAX_SPEED) to its floor with the arrow
+            pointing down, then back up to 5.0x with the arrow pointing up. The floor is 0.25x, which the hub shows as 0.3x (one decimal:
+            ui-manager.ts, currentSpeed.toFixed(1)). The readings in between are a steady drag on illi's doubling scale (every 100 px doubles or halves).
    replay   the video plays forward, then the knob jumps back along the red arc to the earlier spot
    mark     the video plays, a double-click pulses, the bookmark drops where the knob is, the video carries on
    pause    the pointer is on the video and it plays; the pointer leaves for the other window, the video pauses and waits while a line is typed */
@@ -284,8 +285,8 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
 :is(.card:hover,.card.is-playing) .d-pause .vprog{animation-name:d-pause-vprog}
 :is(.card:hover,.card.is-playing) .d-pause .typ{animation-name:d-pause-typ}
 .card.is-playing .diagram *{animation-iteration-count:1}
-@keyframes d-speed-arrow{0%,7%{transform:rotate(0);animation-timing-function:var(--ease-out)}12%,49%{transform:rotate(180deg);animation-timing-function:var(--ease-out)}55%,100%{transform:rotate(360deg)}}
-@keyframes d-speed-roll{0%,12%{transform:translateY(0);animation-timing-function:steps(10,end)}46%,56%{transform:translateY(-10em);animation-timing-function:steps(10,end)}92%,100%{transform:translateY(0)}}
+@keyframes d-speed-arrow{0%,6%{transform:rotate(0);animation-timing-function:var(--ease-out)}12%,47%{transform:rotate(180deg);animation-timing-function:var(--ease-out)}53%,100%{transform:rotate(360deg)}}
+@keyframes d-speed-roll{0%,12%{transform:translateY(0);animation-timing-function:steps(12,end)}44%,54%{transform:translateY(-12em);animation-timing-function:steps(12,end)}86%,100%{transform:translateY(0)}}
 @keyframes d-replay-knob{0%,12%{transform:translateX(0)}44%,52%{transform:translateX(24px);animation-timing-function:var(--ease-out)}66%,100%{transform:translateX(0)}}
 @keyframes d-replay-prog{0%,12%{stroke-dashoffset:64.4}44%,52%{stroke-dashoffset:0;animation-timing-function:var(--ease-out)}66%,100%{stroke-dashoffset:64.4}}
 @keyframes d-replay-was{0%,5%{opacity:1}11%,52%{opacity:0}56%,100%{opacity:1}}
