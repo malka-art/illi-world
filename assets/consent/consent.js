@@ -21,10 +21,11 @@
   /* Owner ruling 2026-11-16 (Malka): "Stop counting my visits" never deletes what the visitor agreed to (the note stays). */
 
   var W = window, D = document, N = navigator, root = D.documentElement;
-  var VERSION = 'm2';                       // wording version, sent with every answer: m2 = the owner-locked ask, body line and answers (2026-11-11)
+  var VERSION = 'm3';                       // wording version, sent with every answer: m2 = the owner-locked ask, body line and answers (2026-11-11);
+                                            // m3 = m2 plus the partner payment wording (published 2026-11-17)
   // Partner links (task 304): only a yes given on a wording that says the partner is attached to a payment lets /upgrade carry
-  // the partner into checkout (assets/upgrade.js, PAYMENT_WORDING). m2 does not say so. When the approved payment wording is
-  // published (home page "What gets saved?" note and privacy policy 1.10), change this to 'm3' in the same commit.
+  // the partner into checkout (assets/upgrade.js, PAYMENT_WORDING). m2 does not say so; m3 does, published
+  // in the same commit as this change (home page "What gets saved?" note and privacy policy 1.3, 1.10 and section 4).
   var MONTHS = 13, HOLD = 6000, LEAVE = 260, ARRIVE = 600, GAP = 12;
   var K = { note: 'illi.note', answer: 'illi.answer', nocount: 'illi.nocount' };
   var FR = /^fr/i.test(root.lang || '');

@@ -434,7 +434,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await page.click('#ask [data-answer="yes"]'); await sleep(200);
       const s = await storage(page);
       const note = s.local['illi.note'] && JSON.parse(s.local['illi.note']);
-      check('yes: the note holds only a random code, the first tags, the time of the yes and the wording version (task 304)', note && /^[0-9a-f-]{36}$/.test(note.id) && note.f.s === 'partner' && note.f.c === 'nov' && note.v === 'm2' && Object.keys(note).sort().join() === 'at,f,id,v' && s.localCount === 1, note);
+      check('yes: the note holds only a random code, the first tags, the time of the yes and the wording version (task 304)', note && /^[0-9a-f-]{36}$/.test(note.id) && note.f.s === 'partner' && note.f.c === 'nov' && note.v === 'm3' && Object.keys(note).sort().join() === 'at,f,id,v' && s.localCount === 1, note);
       check('yes: confirmation shown', await page.$eval('#ask [data-when="yes"]', (e) => !e.hidden && e.offsetParent !== null));
       await page.screenshot({ path: path.join(OUT, 'd-yes.png') });
       await page.mouse.move(5, 5); await sleep(6600);
@@ -443,7 +443,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await flush(page);
       let ev = events(await log());
       const yes = ev.filter((e) => e.n === 'consent_yes');
-      check('yes: one consent_yes with the wording version, carrying the code', yes.length === 1 && yes[0].p.v === 'm2' && yes[0].p.from === 'note' && yes[0].b === note.id && yes[0].f.s === 'partner', yes);
+      check('yes: one consent_yes with the wording version, carrying the code', yes.length === 1 && yes[0].p.v === 'm3' && yes[0].p.from === 'note' && yes[0].b === note.id && yes[0].f.s === 'partner', yes);
       await clearLog();
       await page.goto(url(), { waitUntil: 'load' }); await sleep(1600);
       check('yes: not asked again', !(await askVisible(page)));

@@ -5,10 +5,10 @@
 //   -> track.js counts the visit (beacons to a local stand-in) and tags the Chrome Web Store links -> "Remember it" keeps the
 //   tags in illi.note -> /upgrade -> the stripe-checkout request body (intercepted) -> the REAL stripe-checkout handler from
 //   CODE_DIR, run with doubles of the offer ledger and of Stripe -> the Checkout Session metadata.
-// And every way it must NOT carry the partner: a yes on the current wording (m2) or with no wording version, no answer,
+// And every way it must NOT carry the partner: a yes on the earlier wording (m2) or with no wording version, no answer,
 // "Don't remember it", Global Privacy Control, Do Not Track, "Stop counting my visits", a yes older than 13 months, a non-partner
-// link, a name no longer on the list. The payment wording (m3) is not published yet, so the checks that need it serve
-// consent.js with VERSION 'm3' (the one-line change that goes with the approved wording); every other check uses the real file.
+// link, a name no longer on the list. The payment wording (m3) is published (2026-11-17), so the real consent.js is m3; the
+// checks for a yes given before then (m2) serve consent.js with VERSION 'm2', the one line that differs; every other check uses the real file.
 // "Adding a creator" is tested the way it will be done: one more line in the real assets/partners.js, then the real command,
 // in a scratch folder (SITE_ROOT), so this repo is never changed by the test. Removing the line and re-running deletes the page.
 // SAFETY: every request to *.supabase.co is aborted and listed (the list must stay empty); every request to any host that is
@@ -53,8 +53,9 @@ fs.copyFileSync(path.join(root, "index.html"), path.join(GEN, "index.html"));
 fs.writeFileSync(path.join(GEN, "assets/partners.js"), listWithTest);
 const generate = (args = [], env = {}) => spawnSync(process.execPath, [path.join(root, ".tools/partner-pages.cjs"), ...args], { env: Object.assign({}, process.env, { SITE_ROOT: GEN }, env), encoding: "utf8" });
 const realConsent = fs.readFileSync(path.join(root, "assets/consent/consent.js"), "utf8");
-const consentM3 = realConsent.replace("var VERSION = 'm2';", "var VERSION = 'm3';");
-assert.notEqual(consentM3, realConsent, "could not switch consent.js to m3");
+assert.ok(realConsent.includes("var VERSION = 'm3';"), "the real consent.js is not on m3");
+const consentM2 = realConsent.replace("var VERSION = 'm3';", "var VERSION = 'm2';");
+assert.notEqual(consentM2, realConsent, "could not switch consent.js to m2");
 const types = { ".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".ico": "image/x-icon", ".mp4": "video/mp4", ".json": "application/json" };
 const statuses = {};
 function serve() {
@@ -98,7 +99,7 @@ const SUPABASE_FIXTURE = `export const createClient = () => ({
 });`;
 const TRIAL = { tier: "trial", trial_ends_at: "2026-12-20T15:00:00Z", founding_paid_until: null, founding_years_purchased: 0, founding_billing_review: false, deletion_scheduled_at: null };
 
-async function newContext({ gpc = false, dnt = false, seed = null, phone = false, wording = "m2" } = {}) {
+async function newContext({ gpc = false, dnt = false, seed = null, phone = false, wording = "m3" } = {}) {
   const ctx = await browser.createBrowserContext();
   const page = await ctx.newPage();
   const rec = { checkout: [], stripeNav: [], errors: [] };
@@ -117,7 +118,7 @@ async function newContext({ gpc = false, dnt = false, seed = null, phone = false
   const json = (req, status, body) => req.respond({ status, contentType: "application/json", headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET,POST,OPTIONS" }, body: req.method() === "OPTIONS" ? "" : JSON.stringify(body) });
   page.on("request", (req) => {
     const u = req.url();
-    if (wording === "m3" && u.startsWith(base + "/assets/consent/consent.js")) return req.respond({ status: 200, contentType: "application/javascript", body: consentM3 });
+    if (wording === "m2" && u.startsWith(base + "/assets/consent/consent.js")) return req.respond({ status: 200, contentType: "application/javascript", body: consentM2 });
     if (u.startsWith(base + "/assets/vendor/supabase-js-2.103.0.esm.js")) return req.respond({ status: 200, contentType: "application/javascript", body: SUPABASE_FIXTURE });
     if (u.startsWith(base + "/")) return req.continue();
     if (/^(data:|blob:)/.test(u)) return req.continue();
@@ -324,9 +325,9 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     assert.equal(out.session.subscription_data.metadata.partner, TEST_PARTNER);
     await r.ctx.close();
   });
-  await check("Chain on tonight's wording (real consent.js, m2): counted, store tagged, yes kept with v m2, return code sent; checkout carries NO partner", async () => {
+  await check("Chain on the earlier wording (consent.js on m2): counted, store tagged, yes kept with v m2, return code sent; checkout carries NO partner", async () => {
     beacons = [];
-    const r = await newContext();
+    const r = await newContext({ wording: "m2" });
     await arrive(r.page, "/" + TEST_PARTNER);
     assert.ok(await waitAsk(r.page));
     await r.page.click('#ask [data-answer="yes"]');
@@ -438,7 +439,7 @@ const partnerTags = { s: TEST_PARTNER, m: "partner", c: "partners" };
     ["a yes with no campaign tags at all", { seed: { "illi.note": note({}) } }],
     ["a damaged note", { seed: { "illi.note": "{not json" } }],
     ["a yes with no wording version (a note written before versions were kept)", { seed: { "illi.note": note(partnerTags, undefined, null) } }],
-    ["a yes on tonight's wording m2", { seed: { "illi.note": note(partnerTags, undefined, "m2") } }],
+    ["a yes on the earlier wording m2", { seed: { "illi.note": note(partnerTags, undefined, "m2") } }],
     ["a yes on an unknown wording version", { seed: { "illi.note": note(partnerTags, undefined, "m9") } }],
   ];
   for (const [why, opt] of SEEDED) {
