@@ -16,7 +16,7 @@ Bookmark-hover frame previews, transcript export, looping and picture-in-picture
 
 ## Offer
 All prices are USD.
-- New accounts created after this offer launches receive full illi Premium for 45 days from signup; account required, no card. Existing unpaid accounts keep their original trial deadlines; they do not receive a restarted or extended trial.
+- New accounts created after this offer launches receive illi Premium for 45 days from signup; account required, no card. Existing unpaid accounts keep their original trial deadlines; they do not receive a restarted or extended trial.
 - Basic speed control remains free afterwards. illi Premium features require paid access after the trial.
 - Standard illi Premium: $10/month or $100/year.
 - Founding offer: choose $40 for one year or $80 for two years at the initial purchase, paid upfront plus applicable tax. Afterwards automatically renews at $100 USD annually plus applicable tax unless cancelled. No separate discounted year can be added later.
