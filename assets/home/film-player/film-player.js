@@ -162,7 +162,7 @@
     // ---- the install button, in step with the film ----
     var C = opt.cta, wrap = q('.fp-cta'), link = wrap.firstChild, ctaOn = false;
     if (C) {
-      link.textContent = C.label; link.href = C.href;
+      link.textContent = C.label; link.href = C.href; link.setAttribute('data-cta', C.id || 'film_end');
       if (C.target) { link.target = C.target; link.rel = 'noopener'; }
       link.addEventListener('click', function () { if (document.fullscreenElement) document.exitFullscreen(); });
     } else wrap.remove();

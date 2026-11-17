@@ -29,6 +29,9 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- Privacy choices panel (2026-11-11): the same panel as the home page footer. -->
+  <link rel="stylesheet" href="/assets/consent/plain-page.css?v=1">
+  <link rel="stylesheet" href="/assets/consent/consent.css?v=1">
 </head>
 <body>
   <a href="/" class="back">&larr; illi.world</a>
@@ -183,5 +186,23 @@
   <p>Wallflower Studio inc., Québec, Canada.</p>
 
   <p class="attrib"><strong>Attribution.</strong> Certaines parties des présentes conditions sont adaptées, avec des modifications, à partir de modèles ouverts sous licence Creative Commons Attribution 4.0 (CC BY 4.0)&#160;: les <a href="https://bonterms.com/standard/online-cloud-terms">Bonterms Standard Online Cloud Terms</a>, le <a href="https://commonpaper.com/standards/cloud-service-agreement/">Common Paper Cloud Service Agreement</a>, et les <a href="https://github.com/basecamp/policies">politiques de 37signals / Basecamp</a>. Licence&#160;: <a href="https://creativecommons.org/licenses/by/4.0/">creativecommons.org/licenses/by/4.0</a>.</p>
+  <footer class="pc-foot" data-choices-foot>
+    <nav aria-label="Pied de page">
+      <a href="https://chromewebstore.google.com/detail/illi-mouse-gesture-video/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Chrome Web Store</a>
+      <a href="/fr/privacy.html">Confidentialité</a>
+      <button class="foot-choice" type="button" aria-expanded="false" aria-controls="choices">Choix de confidentialité</button>
+      <a href="/fr/terms.html">Conditions</a>
+      <a href="/privacy.html" lang="en" hreflang="en">Privacy</a>
+      <a href="/terms.html" lang="en" hreflang="en">Terms</a>
+    </nav>
+    <p>© 2026 illi</p>
+    <div class="choices" id="choices" role="dialog" aria-modal="false" aria-labelledby="choices-title" hidden>
+      <h2 class="choices-title" id="choices-title" tabindex="-1">Choix de confidentialité</h2>
+      <button class="choices-close" type="button" aria-label="Fermer"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></button>
+      <div class="choices-body" aria-live="polite"></div>
+      <a class="choices-policy" href="/fr/privacy.html#comptage">Lire la politique de confidentialité</a>
+    </div>
+  </footer>
+  <script defer src="/assets/consent/consent.js?v=1"></script>
 </body>
 </html>

@@ -31,6 +31,7 @@
      hub slides aside (on phones it leads to the send-to-desktop form instead). -->
 <link rel="stylesheet" href="assets/home/style.css?v=24">
 <link rel="stylesheet" href="assets/home/film-player/film-player.css">
+<link rel="stylesheet" href="assets/consent/consent.css?v=4">
 </head>
 <body>
 <header class="site-head">
@@ -39,14 +40,20 @@
     <a href="#how">How it works</a>
     <a href="#where">Where it works</a>
     <a href="#answers">Answers</a>
-    <a class="button small cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
+    <a class="button small cta" data-cta="header" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
   </nav>
 </header>
+<!-- PRIVACY QUESTION (2026-11-11): a bar across the bottom of the window, placed and laid out after Superhuman's banner
+     (owner request). Desktop only, on arrival, never blocks the page, never takes focus.
+     assets/consent/consent.js shows it; nothing is saved unless one of the two answers is clicked. The two answers share one
+     class on purpose: they must look and weigh the same. Wording version m2: the owner's locked wording of 2026-11-11 (AUDIT-LOG): the ask, the body line and the two answers. -->
+<section class="ask ask--bar" id="ask" role="region" aria-labelledby="ask-q" data-state="ask" hidden><div class="ask-body"><div class="ask-text"><p class="ask-q" id="ask-q">Mind if illi remembers this browser?</p><p class="ask-why">It’s how a small site like ours learns which links work. The note is a random code, with no name or email in it.</p><div class="ask-links"><button class="ask-more" type="button" aria-expanded="false" aria-controls="ask-note">What gets saved? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></button><a class="ask-policy" href="/privacy.html">Privacy policy</a></div><div class="ask-note" id="ask-note" hidden><p>If you say yes, this browser keeps a random code and the campaign label on the link that brought you, if it had one, plus the date of your yes so the note can expire.</p><p>Only illi.world can read them. We never share them, use them for ads, or connect them to what you watch on YouTube. They expire 13 months after you say yes, and then we’ll ask again.</p><p>If you say no, the page works the same, and we save only your no so we don’t ask again. If you don’t answer, we save nothing and ask on your next visit. Either way, we count visits without saving anything in your browser, and those counts don’t tell us who you are.</p><p>You can change your answer any time under <a href="#choices" data-open-choices>Privacy choices</a>, at the bottom of the page.</p></div></div><div class="ask-actions"><button class="ask-btn" type="button" data-answer="yes">Remember it</button><button class="ask-btn" type="button" data-answer="no">Don’t remember it</button></div></div><p class="ask-done" role="status"><span data-when="yes" hidden>Thanks. illi will recognize this browser when you come back.</span><span data-when="no" hidden>Okay. We saved your no, and that’s all, so this won’t come up again.</span><br><span>You can change your answer any time under <a href="#choices" data-open-choices>Privacy choices</a>.</span></p></section>
+<p class="sr-only" id="ask-live" aria-live="polite" data-text="illi is asking whether it can remember this browser. The question and its two buttons are right after the main menu."></p>
 
 <main>
 <!-- HERO, side by side (owner request 2026-11-10): claim, CTA and supporting lines left, the film right, the moving strip under both.
      On a desktop screen the header and this whole section fit the first screen; the film is never cut. Tablet and phone stack. -->
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero" data-section="hero" aria-labelledby="hero-title">
   <div class="hero-main container">
   <div class="hero-grid">
     <div class="hero-copy">
@@ -56,7 +63,7 @@
     <div class="hero-action">
       <!-- phones and tablets only (landing.js shows it): says why the button offers a reminder instead of installing -->
       <p class="device-note" id="device-note" hidden>illi works on your desktop or laptop.</p>
-      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
+      <a class="button cta" data-cta="hero" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free</a>
       <p class="trial">45 days of Premium free · No card required</p>
       <p class="audience">For people who watch to learn, understand, or follow their curiosity.</p>
     </div>
@@ -147,15 +154,15 @@
   <div class="container">
     <div class="section-head"><h2 id="faq-title">What people ask</h2></div>
     <dl class="faq-stack">
-      <div class="faq-item" tabindex="0">
+      <div class="faq-item" data-faq="learn" tabindex="0">
         <dt>Do I have to learn all the gestures? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></dt>
         <dd><div>Start with one: hold your mouse’s scroll-wheel button and move up or down to change speed. Try the others when you need them.</div></dd>
       </div>
-      <div class="faq-item" tabindex="0">
+      <div class="faq-item" data-faq="setup" tabindex="0">
         <dt>Will it work with my setup? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></dt>
         <dd><div>Use illi on YouTube in Chrome, Edge, or another Chromium browser on your desktop or laptop. Use a mouse with a scroll-wheel button, choose right-click activation in settings, or use your trackpad.</div></dd>
       </div>
-      <div class="faq-item" tabindex="0">
+      <div class="faq-item" data-faq="after45" tabindex="0">
         <dt>What happens after the 45 days? <svg class="chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="m3 6 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></dt>
         <dd><div>Keep basic speed control free, or choose Premium for the full experience at US$10/month or US$100/year. No card is required for the trial, and it won’t automatically turn into a paid subscription.</div></dd>
       </div>
@@ -163,12 +170,12 @@
   </div>
 </section>
 
-<section class="close band-dark" aria-labelledby="final-cta-title">
+<section class="close band-dark" data-section="close" aria-labelledby="final-cta-title">
   <div class="container close-inner">
     <img class="close-mark" src="assets/home/illi-wordmark-color-dark.svg" width="162" height="111" alt="" aria-hidden="true">
     <h2 id="final-cta-title">Get more out of your next video.</h2>
     <div class="cta-stack">
-      <a class="button cta" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days</a>
+      <a class="button cta" data-cta="close" href="https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Try illi free for 45 days</a>
       <p class="trial">All Premium features. No card required. Basic speed control stays free afterwards.</p>
     </div>
     <p class="signoff"><img src="assets/home/illi-mark-color.svg" width="62" height="36" alt="" aria-hidden="true"><span>Go learn something.</span></p>
@@ -176,21 +183,29 @@
 </section>
 </main>
 
-<footer class="site-foot">
+<footer class="site-foot" data-choices-foot>
   <div class="container foot-row">
     <a class="brand" href="#" aria-label="illi home"><img src="assets/home/illi-wordmark-color-light.svg" width="162" height="111" alt="illi"></a>
     <p class="foot-tag">Your curiosity. Your pace.</p>
     <nav class="foot-links" aria-label="Footer">
-      <a href="https://chromewebstore.google.com/detail/illi-mouse-gesture-video/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Chrome Web Store</a>
+      <a data-cta="footer_store" href="https://chromewebstore.google.com/detail/illi-mouse-gesture-video/hocdlcekmbokkepblkopcefmenhnincg" target="_blank" rel="noopener">Chrome Web Store</a>
       <a href="/pricing/">Pricing</a>
       <a href="/feedback/">Feedback</a>
       <a href="mailto:support@illi.world">Contact</a>
       <a href="/privacy.html">Privacy</a>
+      <button class="foot-choice" type="button" aria-expanded="false" aria-controls="choices">Privacy choices</button>
       <a href="/terms.html">Terms</a>
       <a href="/fr/privacy.html" lang="fr" hreflang="fr">Confidentialité</a>
       <a href="/fr/terms.html" lang="fr" hreflang="fr">Conditions</a>
     </nav>
     <p class="foot-legal">© 2026 illi</p>
+  </div>
+  <!-- PRIVACY CHOICES: a non-modal panel opened only by the visitor (assets/consent/consent.js fills it). -->
+  <div class="choices" id="choices" role="dialog" aria-modal="false" aria-labelledby="choices-title" hidden>
+    <h2 class="choices-title" id="choices-title" tabindex="-1">Privacy choices</h2>
+    <button class="choices-close" type="button" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="m3.5 3.5 9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></button>
+    <div class="choices-body" aria-live="polite"></div>
+    <a class="choices-policy" href="/privacy.html#counting">Read the privacy policy</a>
   </div>
 </footer>
 
@@ -216,5 +231,7 @@
 
 
 <script src="assets/home/film-player/film-player.js?v=2"></script>
-<script src="assets/home/landing.js?v=10"></script>
+<script src="assets/home/landing.js?v=11"></script>
+<script defer src="assets/consent/consent.js?v=3"></script>
+<script defer src="assets/home/track.js?v=3"></script>
 </body></html>
