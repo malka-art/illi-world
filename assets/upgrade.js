@@ -377,14 +377,20 @@
     if (p.tier === "trial" && (!Number.isFinite(trialEnd) || trialEnd > Date.now())) return "trial";
     return "ended";
   }
-  function dateOnly(value, utc) {
+  // a missing date is no date: new Date(null) is the Unix epoch (I-256: "December 31, 1969"), so null, undefined and "" never parse
+  function toDate(value) {
+    if (value === null || value === undefined || value === "") return null;
     var date = new Date(value);
-    if (!Number.isFinite(date.getTime())) return null;
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
+  function dateOnly(value, utc) {
+    var date = toDate(value);
+    if (!date) return null;
     return new Intl.DateTimeFormat("en-US", utc ? { dateStyle: "long", timeZone: "UTC" } : { dateStyle: "long" }).format(date);
   }
   function displayDate(value) {
-    var date = new Date(value);
-    return Number.isFinite(date.getTime())
+    var date = toDate(value);
+    return date
       ? new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" }).format(date) + " UTC"
       : "a date we’re confirming";
   }
@@ -435,11 +441,9 @@
     var status = $("customerStatus");
     var lines = null;
     if (tier === "trial") {
+      // no trial date means the trial has not started (it starts on first use of the extension): say nothing rather than a false date
       var end = dateOnly(customerProfile.trial_ends_at);
-      lines = [
-        end ? "Your free trial runs until " + end + "." : "Your free trial is running.",
-        "You won’t be charged until your free trial ends.",
-      ];
+      if (end) lines = ["Your free trial runs until " + end + ".", "You won’t be charged until your free trial ends."];
     } else if (tier === "ended")
       lines = ["Your free trial has ended.", "Basic speed control stays free. illi Premium brings the rest back."];
     var key = lines ? lines.join("|") : "";

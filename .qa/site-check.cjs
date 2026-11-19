@@ -403,6 +403,31 @@ const SIZES = [
     assert.ok((await r.page.evaluate(() => window.QA_CALLS)).some((c) => c.select && c.select.includes("trial_ends_at")));
     await r.page.close();
   });
+  // regr_I-256: a website signup has tier trial and trial_ends_at NULL until first extension use (backend migration 027);
+  // new Date(null) is the Unix epoch, which read December 31, 1969 west of UTC. Run in Toronto time, where the bug showed.
+  await check("regr_I-256: trial not started (trial_ends_at null) shows no trial sentence and no 1969; a real trial date still shows", async () => {
+    for (const trial_ends_at of [null, undefined, ""]) {
+      const profile = Object.assign({}, PROFILES.trial, { trial_ends_at });
+      const r = await makePage({ data: closedOffer, signed: true, profile });
+      await r.page.emulateTimezone("America/Toronto");
+      await r.page.goto(base + "/upgrade/", { waitUntil: "load" });
+      await settle(r.page);
+      const t = await bodyText(r.page);
+      assert.ok(!/19(69|70)/.test(t), "epoch date shown for trial_ends_at=" + JSON.stringify(trial_ends_at));
+      assert.ok(!/free trial runs until/i.test(t), "trial end sentence shown without a trial date (" + JSON.stringify(trial_ends_at) + ")");
+      assert.equal(await r.page.$eval("#accountBlock", (e) => e.hidden), true, "trial status block shown without a trial date");
+      assert.equal(await r.page.evaluate(() => document.body.getAttribute("data-tier")), "trial");
+      assert.deepEqual(r.errors, []);
+      await r.page.close();
+    }
+    const r = await makePage({ data: closedOffer, signed: true });
+    await r.page.emulateTimezone("America/Toronto");
+    await r.page.goto(base + "/upgrade/", { waitUntil: "load" });
+    await settle(r.page);
+    assert.equal(await text(r.page, "#customerStatus strong"), "Your free trial runs until December 20, 2026.");
+    assert.equal(await r.page.$eval("#accountBlock", (e) => e.hidden), false);
+    await r.page.close();
+  });
   await check("Choose illi Premium is always available: last day of the trial still opens checkout", async () => {
     const lastDay = Object.assign({}, PROFILES.trial, { trial_ends_at: new Date(Date.now() + 20 * 3600e3).toISOString() });
     const r = await visit({ data: closedOffer, signed: true, profile: lastDay });
