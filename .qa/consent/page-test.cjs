@@ -138,8 +138,6 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await page.waitForFunction(() => { const v = document.querySelector('#demo-player video'); return v && v.duration > 0 && !v.paused && v.currentTime > 0.2; }, { timeout: 20000 });
       check('while the film plays, the question is never over the film', await offFilm(page));
       const dur = await page.evaluate(() => document.querySelector('#demo-player video').duration);
-      const film = await page.evaluate(() => { const v = document.querySelector('#demo-player video'); return { src: v.currentSrc.replace(/^.*\/assets\//, 'assets/'), w: v.videoWidth, h: v.videoHeight }; });
-      check('desktop: the film is the 1920x1080 copy (task 928)', /^assets\/home\/illi-demo\.mp4\?/.test(film.src) && film.w === 1920 && film.h === 1080, film);
       for (const f of [0.3, 0.55, 0.8]) { await page.evaluate((t) => { document.querySelector('#demo-player video').currentTime = t; }, dur * f); await sleep(900); }
       await page.evaluate((t) => { document.querySelector('#demo-player video').currentTime = t; }, dur - 1.2);
       await page.waitForFunction(() => document.querySelector('#demo-player video').ended, { timeout: 15000 });
@@ -568,14 +566,6 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       check('phone: no question', !(await askVisible(page)));
       const wide = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       check('phone: no sideways scroll', wide <= 0, wide);
-      // task 928: a phone screen gets the lighter 1280x720 copy of the film, and it plays (counted like the computer copy)
-      await page.$eval('#demo-player', (el) => el.scrollIntoView({ block: 'center' })); await sleep(200);
-      await page.click('#demo-player .fp-big');
-      await page.waitForFunction(() => { const v = document.querySelector('#demo-player video'); return v && !v.paused && v.currentTime > 0.5; }, { timeout: 20000 });
-      const film = await page.evaluate(() => { const v = document.querySelector('#demo-player video'); return { src: v.currentSrc.replace(/^.*\/assets\//, 'assets/'), w: v.videoWidth, h: v.videoHeight, dur: Math.round(v.duration * 1000) / 1000 }; });
-      check('phone: the film is the 1280x720 copy, full length, and it plays', /^assets\/home\/illi-demo-720\.mp4\?/.test(film.src) && film.w === 1280 && film.h === 720 && film.dur === 124.625, film);
-      await page.evaluate(() => document.querySelector('#demo-player video').pause()); await sleep(150);
-      await page.evaluate(() => window.scrollTo(0, 0)); await sleep(150);
       // since 2026-11-11 (site main) the phone's install buttons say "Remind me on my computer" and open the send form in a popup
       await page.click('.hero-action a[href="#send-form"]'); await sleep(300);
       check('phone: the hero button opens the send popup', await page.evaluate(() => document.getElementById('send-dialog').open));
@@ -592,7 +582,6 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await flush(page);
       const ev = events(await log());
       check('phone: send form result counted once, as sent, never the address', ev.filter((e) => e.n === 'send_form_submit' && e.p.result === 'sent').length === 1 && !JSON.stringify(await log()).includes('example.com'), ev.filter((e) => e.n === 'send_form_submit').map(key));
-      check('phone: the play of the 720 copy is counted once (film_play)', ev.filter((e) => e.n === 'film_play').length === 1, ev.filter((e) => /^film/.test(e.n)).map(key));
       check('phone: device phone, no consent events', ev.every((e) => e.dev === 'phone') && !ev.some((e) => /^consent/.test(e.n)));
       check('phone: nothing written', empty(await storage(page)));
       check('phone: no page errors', errors.length === 0, errors);

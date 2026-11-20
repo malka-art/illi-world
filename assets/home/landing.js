@@ -16,12 +16,8 @@
 
   // ---------- 1. player: illi's own film player; the install button at the end leads phones to the send-to-desktop form ----------
   var CWS = 'https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg';
-  // two copies of the same film (task 928, 2026-11-19): phones get a lighter 1280x720 one, which still has more pixels than
-  // a phone shows the film at upright; computers and tablets keep the 1920x1080 one. Picked once, from the screen's short
-  // side (a phone's is 500 CSS px or less, a tablet's or computer's more), so turning a phone sideways never swaps the file.
-  var phoneScreen = Math.min(screen.width, screen.height) <= 500;
   var player = window.FilmPlayer.create(document.getElementById('demo-player'), {
-    src: phoneScreen ? 'assets/home/illi-demo-720.mp4?v=1' : 'assets/home/illi-demo.mp4?v=3', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
+    src: 'assets/home/illi-demo.mp4?v=3', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
     cta: isMobile ? { href: '#send-form', label: 'Remind me on my computer', start: 2602, id: 'film_end_send' }
                   : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602, id: 'film_end' }
   });
