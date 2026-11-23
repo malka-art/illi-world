@@ -2,7 +2,7 @@
 // Headless Chrome with Chrome's DEFAULT autoplay policy (no --autoplay-policy flag), against .qa/consent/server.py on 127.0.0.1,
 // which also stands in for the site-event function. Every request off this machine is aborted and counted.
 //
-//   PUPPETEER_PATH=<.../puppeteer-core> CHROME=<chrome.exe> BASE=http://127.0.0.1:8766 OUT=<folder> node .qa/film-loop-check.cjs
+//   PUPPETEER_PATH=<.../puppeteer-core> CHROME=<chrome.exe> BASE=http://127.0.0.1:8766 OUT=<folder> [QUERY=&loop=a] node .qa/film-loop-check.cjs
 const puppeteer = require(process.env.PUPPETEER_PATH);
 const path = require('path');
 const fs = require('fs');
@@ -44,7 +44,7 @@ const state = (page) => page.evaluate(() => {
     page.on('request', (r) => { const u = new URL(r.url()); if (u.hostname === '127.0.0.1' || u.protocol === 'data:') r.continue(); else { outside.push(r.url()); r.abort(); } });
     const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
     await clearLog();
-    await page.goto(`${BASE}/?track_endpoint=${encodeURIComponent(BASE + '/collect')}`, { waitUntil: 'load' });
+    await page.goto(`${BASE}/?track_endpoint=${encodeURIComponent(BASE + '/collect')}${process.env.QUERY || ''}`, { waitUntil: 'load' });
     return { ctx, page, errors };
   }
 
