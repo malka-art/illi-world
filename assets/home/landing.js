@@ -18,8 +18,9 @@
   var CWS = 'https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg';
   var player = window.FilmPlayer.create(document.getElementById('demo-player'), {
     src: 'assets/home/illi-demo.mp4?v=3', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
-    // at rest: a 7.5 s silent loop of the film's opening (0:00.4 to 0:07.5, joined to its start by a 0.4 s crossfade, task 928)
-    loop: { src: 'assets/home/illi-demo-loop.mp4?v=2', poster: 'assets/home/illi-demo-loop-poster.webp?v=2', label: 'Watch the demo (2 min)' },
+    // at rest: a 7.5 s silent loop of the film's opening (0:00.4 to 0:07.5, joined to its start by a 0.4 s crossfade, task 928),
+    // with the film's own illi hub composited on it from the first frame (the film itself is unchanged)
+    loop: { src: 'assets/home/illi-demo-loop.mp4?v=3', poster: 'assets/home/illi-demo-loop-poster.webp?v=3', label: 'Watch the demo (2 min)' },
     cta: isMobile ? { href: '#send-form', label: 'Remind me on my computer', start: 2602, id: 'film_end_send' }
                   : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602, id: 'film_end' }
   });
