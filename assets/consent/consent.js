@@ -167,7 +167,8 @@
   // The bar sits at the bottom of the window, like the banner it is modelled on. Two exceptions, both about the film, and
   // in both the bar steps aside (fades, cannot be clicked or focused) and returns when it is clear:
   //   1. the film is playing and the bar would lie over it;
-  //   2. the film has not been played and the bar would cover its play button (narrow windows, where the film sits low).
+  //   2. the film has not been played and the bar would cover its play button (narrow windows, where the film sits low);
+  //      while the silent preview loop runs (task 928) that button is "Watch the demo" (.fp-watch).
   //      Not while "What gets saved?" is open or the keyboard focus is inside the bar: the visitor is using the bar, so
   //      it must not vanish under them (it is re-checked when focus leaves).
   // The bar's box is taken from its layout (pinned to the bottom, full width), not from where the arrival animation has
@@ -176,7 +177,7 @@
     if (ask.hidden || gone) return;   // once it is leaving, nothing re-seats it or gives the footer its room back
     var h = ask.offsetHeight, r = { left: 0, right: root.clientWidth, top: W.innerHeight - h, bottom: W.innerHeight, height: h };
     var playing = !!(video && !video.paused && !video.ended);
-    var big = film && !film.classList.contains('played') && !playing ? film.querySelector('.fp-big') : null, b = big && big.getBoundingClientRect();
+    var big = film && !film.classList.contains('played') && !playing ? (film.querySelector('.fp-watch') || film.querySelector('.fp-big')) : null, b = big && big.getBoundingClientRect();
     var bigR = b && b.width ? { left: b.left - GAP, right: b.right + GAP, top: b.top - GAP, bottom: b.bottom + GAP } : null;   // a little air around the play button
     var more = ask.querySelector('.ask-more'), using = !!((more && more.getAttribute('aria-expanded') === 'true') || ask.contains(D.activeElement));
     var aside = !!((playing && stage && hit(r, stage.getBoundingClientRect())) || (bigR && !using && !answered && hit(r, bigR)));
