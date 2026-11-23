@@ -134,7 +134,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight)); await sleep(300);
       // the film: play, then jump through it while it plays
       await page.evaluate(() => window.scrollTo(0, 0)); await sleep(200);
-      await page.click('.fp-big');
+      await page.click('.fp-watch');
       await page.waitForFunction(() => { const v = document.querySelector('#demo-player video'); return v && v.duration > 0 && !v.paused && v.currentTime > 0.2; }, { timeout: 20000 });
       check('while the film plays, the question is never over the film', await offFilm(page));
       const dur = await page.evaluate(() => document.querySelector('#demo-player video').duration);
@@ -183,14 +183,14 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
     // is playing under it, or the film is unplayed and the bar would cover its play button (not while "What gets saved?" is
     // open, not after an answer). While it is up, the footer grows by its height (--ask-h), so the footer stays reachable.
     const barState = (page) => page.evaluate(() => {
-      const a = document.getElementById('ask'), r = a.getBoundingClientRect(), b = document.querySelector('.fp-big').getBoundingClientRect(), s = document.getElementById('stage').getBoundingClientRect();
+      const a = document.getElementById('ask'), r = a.getBoundingClientRect(), b = (document.querySelector('.fp-watch') || document.querySelector('.fp-big')).getBoundingClientRect(), s = document.getElementById('stage').getBoundingClientRect();
       const hit = (p, q) => p.left < q.right && p.right > q.left && p.top < q.bottom && p.bottom > q.top;
       return { hidden: a.hidden, aside: a.classList.contains('is-aside'), inert: a.inert, vis: getComputedStyle(a).visibility, askH: getComputedStyle(document.documentElement).getPropertyValue('--ask-h').trim(),
         coversBig: !!(b.width && hit(r, { left: b.left - 12, right: b.right + 12, top: b.top - 12, bottom: b.bottom + 12 })), overStage: hit(r, s), played: document.getElementById('demo-player').classList.contains('played'), y: Math.round(scrollY), top: Math.round(r.top), bigBottom: Math.round(b.bottom) };
     });
     // scroll down in small steps, from where the page is, until the bar's box no longer covers the play button
     const scrollClear = (page) => page.evaluate(() => {
-      const a = document.getElementById('ask'), big = document.querySelector('.fp-big');
+      const a = document.getElementById('ask'), big = (document.querySelector('.fp-watch') || document.querySelector('.fp-big'));
       const hit = (p, q) => p.left < q.right && p.right > q.left && p.top < q.bottom && p.bottom > q.top;
       for (let y = scrollY; y < scrollY + 1200; y += 4) { window.scrollTo(0, y); window.dispatchEvent(new Event('scroll')); if (!hit(a.getBoundingClientRect(), ((q) => ({ left: q.left - 12, right: q.right + 12, top: q.top - 12, bottom: q.bottom + 12 }))(big.getBoundingClientRect()))) return Math.round(scrollY); }
       return -1;
@@ -229,7 +229,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
         const ask = document.getElementById('ask'), r = ask.getBoundingClientRect(), cw = document.documentElement.clientWidth;
         const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
         const over = [];
-        for (const [n, sel] of [['hero install', '.hero-action .button'], ['header install', '.site-head .cta'], ['play', '.fp-big']]) {
+        for (const [n, sel] of [['hero install', '.hero-action .button'], ['header install', '.site-head .cta'], ['play', '.fp-watch']]) {
           const el = document.querySelector(sel); if (!el) { over.push(n + ' missing'); continue; }
           const b = el.getBoundingClientRect(); if (b.width && b.height && hit(r, b)) over.push(n);
         }
@@ -257,7 +257,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       // whenever it is aside, it is because it would cover it (never stuck aside); a second scroll event at the same
       // position never changes the answer (no flicker)
       const sw = await page.evaluate(() => {
-        const a = document.getElementById('ask'), big = document.querySelector('.fp-big');
+        const a = document.getElementById('ask'), big = (document.querySelector('.fp-watch') || document.querySelector('.fp-big'));
         const hit = (p, q) => p.left < q.right && p.right > q.left && p.top < q.bottom && p.bottom > q.top;
         const max = document.documentElement.scrollHeight - innerHeight, over = [], stuck = [], flicker = [];
         let steps = 0, asideSteps = 0, minClear = null;
@@ -295,7 +295,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       let o = await barState(page);
       if (!o.coversBig) {
         const y = await page.evaluate(() => {
-          const a = document.getElementById('ask'), big = document.querySelector('.fp-big');
+          const a = document.getElementById('ask'), big = (document.querySelector('.fp-watch') || document.querySelector('.fp-big'));
           const hit = (p, q) => p.left < q.right && p.right > q.left && p.top < q.bottom && p.bottom > q.top;
           for (let y = scrollY; y >= 0; y -= 8) { window.scrollTo(0, y); window.dispatchEvent(new Event('scroll')); if (hit(a.getBoundingClientRect(), ((q) => ({ left: q.left - 12, right: q.right + 12, top: q.top - 12, bottom: q.bottom + 12 }))(big.getBoundingClientRect()))) return y; }
           return -1;
@@ -306,7 +306,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       if (o.coversBig) {
         // prefer a position where the bar would still cover the button after the note closes, so the re-apply is exercised
         await page.evaluate((closedH) => {
-          const big = document.querySelector('.fp-big');
+          const big = (document.querySelector('.fp-watch') || document.querySelector('.fp-big'));
           for (let y = scrollY; y >= 0; y -= 4) { window.scrollTo(0, y); window.dispatchEvent(new Event('scroll')); const b = big.getBoundingClientRect(); if (b.bottom + 12 > innerHeight - closedH && b.top < innerHeight) return; }
         }, arr.height);
         await sleep(250); o = await barState(page);
@@ -316,13 +316,18 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
         await page.focus('#ask .ask-more'); await page.keyboard.press('Enter'); await sleep(300);
         const c = await barState(page);
         const f = await page.evaluate(() => { const e = document.activeElement; return e === document.body ? 'body' : (e.className || e.tagName); });
-        check(`${w}x${h}: note closed by keyboard over the play button: the bar stays while focus is inside it`, c.coversBig && !c.aside && !c.inert && c.vis === 'visible', c);
+        // the closed bar is shorter: where it no longer reaches the play button (e.g. the lower "Watch the demo" button of the
+        // preview loop, task 928, at 1280x720 and 1100x700) the bar simply stays, and the focus-leaves re-apply cannot be exercised
+        const reach = c.coversBig;
+        if (!reach) console.log(`INFO ${w}x${h}: the closed bar does not reach the play button, so the focus-leaves re-apply is not exercised at this size`);
+        check(`${w}x${h}: note closed by keyboard over the play button: the bar stays while focus is inside it`, !c.aside && !c.inert && c.vis === 'visible', c);
         check(`${w}x${h}: closing the note by keyboard keeps focus on "What gets saved?"`, f === 'ask-more', f);
         // focus leaves the bar (Shift+Tab back to the header): the play-button rule applies again
         await page.keyboard.down('Shift'); await page.keyboard.press('Tab'); await page.keyboard.up('Shift'); await sleep(300);
         const g = await barState(page);
         const fe = await page.evaluate(() => { const e = document.activeElement; return { inBar: !!e.closest('#ask'), what: e === document.body ? 'body' : (e.className || e.tagName) }; });
-        check(`${w}x${h}: focus has left the bar and it still covers the padded play button: aside and inert`, !fe.inBar && g.coversBig && g.aside && g.inert && parseFloat(g.askH) === 0, { g, focus: fe.what });
+        if (reach) check(`${w}x${h}: focus has left the bar and it still covers the padded play button: aside and inert`, !fe.inBar && g.coversBig && g.aside && g.inert && parseFloat(g.askH) === 0, { g, focus: fe.what });
+        else check(`${w}x${h}: focus has left the bar, which is clear of the play button: it stays, clickable`, !fe.inBar && !g.coversBig && !g.aside && !g.inert && g.vis === 'visible', { g, focus: fe.what });
         await scrollClear(page); await sleep(300);
       } else {
         await page.click('#ask .ask-more'); await sleep(200);
@@ -360,7 +365,7 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
         const overlapNow = () => page.evaluate(() => { const s = document.getElementById('stage').getBoundingClientRect(), r = document.getElementById('ask').getBoundingClientRect(); return r.top < s.bottom && r.bottom > s.top; });
         let how = 'on arrival';
         if (!(await overlapNow())) {
-          await page.click('.fp-big');
+          await page.click('.fp-watch');
           await page.waitForFunction(() => { const v = document.querySelector('#demo-player video'); return v && !v.paused && v.currentTime > 0.2; }, { timeout: 20000 });
           await sleep(300);
           const stay = await page.evaluate(() => { const a = document.getElementById('ask'); return { aside: a.classList.contains('is-aside'), inert: a.inert }; });
@@ -374,10 +379,10 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
         }
         const before = await page.evaluate(() => { const a = document.getElementById('ask'); return { aside: a.classList.contains('is-aside'), inert: a.inert }; });
         check(`${w}x${h}: film not playing, bar over the stage (${how}): the bar stays`, (await overlapNow()) && !before.aside && !before.inert, before);
-        const pb = await page.evaluate(() => { const b = document.querySelector('.fp-big').getBoundingClientRect(), at = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return { x: b.left + b.width / 2, y: b.top + b.height / 2, free: !!at && !at.closest('#ask') }; });
+        const pb = await page.evaluate(() => { const b = (document.querySelector('.fp-watch') || document.querySelector('.fp-big')).getBoundingClientRect(), at = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return { x: b.left + b.width / 2, y: b.top + b.height / 2, free: !!at && !at.closest('#ask') }; });
         const started = await page.evaluate(() => document.querySelector('#demo-player video').currentTime > 0);
         if (started) await page.evaluate(() => document.querySelector('#demo-player video').play());   // resume, as the player's own control would
-        else if (pb.free) await page.mouse.click(pb.x, pb.y); else await page.evaluate(() => document.querySelector('.fp-big').click());
+        else if (pb.free) await page.mouse.click(pb.x, pb.y); else await page.evaluate(() => (document.querySelector('.fp-watch') || document.querySelector('.fp-big')).click());
         await page.waitForFunction(() => { const v = document.querySelector('#demo-player video'); return v && !v.paused && v.currentTime > 0.2; }, { timeout: 20000 });
         await sleep(300);
         const under = await page.evaluate(() => {

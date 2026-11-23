@@ -52,3 +52,20 @@
 
 .fp:fullscreen{width:100vw;height:100vh;aspect-ratio:auto}
 @media (prefers-reduced-motion:reduce){.fp-ui,.fp-tl,.fp-knob{transition:none!important}}
+
+/* the silent preview loop (task 928): it lies over the waiting film; the film's own controls stay away until the film starts.
+   "Watch the demo" and the loop's pause button are sized in page px (not film px), so they stay tappable on a phone. */
+.fp-loop{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.fp.looping{cursor:pointer}
+.fp.looping .fp-ui,.fp.looping .fp-big,.fp.looping .fp-cta{display:none}
+.fp-watch{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 20px 0 16px;border:0;border-radius:999px;background:rgba(15,15,15,.78);color:#fff;font:500 15px/1 Inter,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:background .15s}
+.fp-watch:hover,.fp-watch:focus-visible{background:#DC2626}
+.fp-watch:focus-visible,.fp-hold:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.fp-watch-icon{width:0;height:0;border-style:solid;border-width:7px 0 7px 12px;border-color:transparent transparent transparent #fff}
+.fp-hold{position:absolute;right:10px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(15,15,15,.6);cursor:pointer;padding:0}
+.fp-hold::before,.fp-hold::after{content:"";position:absolute;top:12px;width:4px;height:12px;border-radius:1px;background:#fff}
+.fp-hold::before{left:12px}.fp-hold::after{left:20px}
+.fp-hold.is-held::before{left:14px;top:11px;width:0;height:0;border-radius:0;background:none;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent #fff}
+.fp-hold.is-held::after{display:none}
+.fp-hold:hover{background:rgba(15,15,15,.85)}
+@media (max-width:420px){.fp-watch{bottom:10%;font-size:14px;min-height:44px;padding:0 16px 0 13px}}

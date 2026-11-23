@@ -1,5 +1,5 @@
 /* illi film player (owner rulings 2026-11-09 and 2026-11-10). See film-player.css for the idea.
-   FilmPlayer.create(el, { src, poster, base, cta: { href, label, target, start } }) -> { video, el }
+   FilmPlayer.create(el, { src, poster, base, cta: { href, label, target, start }, loop: { src, poster, label } }) -> { video, el, startFilm }
    The install button: at film frame cta.start the film's hub has started sliding right; the page lays a real link where the
    burned-in version draws its button, fading in, then pulsing twice (swell plus a spreading halo), then staying on.
    Timings match marketing/demo-video/clips-v2/batches/v4/ui-overlay/cta-slide.py (APPEAR, PULSES, PULSE_LEN, ...). */
@@ -47,7 +47,7 @@
       '</div>';
     var q = function (s) { return root.querySelector(s); };
     var v = q('video'), layer = q('.fp-layer'), hit = q('.fp-tlhit'), play = q('.fp-play'), vol = q('.fp-vol');
-    v.src = opt.src; if (opt.poster) v.poster = opt.poster;
+    v.src = opt.src;   // the poster is set below: the loop's frame, or the cover when there is no loop
 
     // ---- keep the 1920x1080 layer glued to the picture's displayed rectangle (letterboxing in fullscreen) ----
     function fit() {
@@ -129,7 +129,7 @@
     hit.addEventListener('pointerup', endScrub); hit.addEventListener('pointercancel', endScrub);
 
     // ---- buttons ----
-    function toggle() { if (v.paused) v.play(); else v.pause(); show(); }
+    function toggle() { if (lv) { startFilm(); return; } if (v.paused) v.play(); else v.pause(); show(); }
     function syncPlay() { play.src = B + (v.paused ? 'pill-play.png' : 'pill-pause.png'); play.alt = v.paused ? 'Play' : 'Pause'; }
     v.addEventListener('play', function () { root.classList.add('played'); syncPlay(); });
     v.addEventListener('pause', function () { syncPlay(); show(); });
@@ -140,15 +140,16 @@
     function fs() { if (document.fullscreenElement) document.exitFullscreen(); else if (root.requestFullscreen) root.requestFullscreen(); else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen(); }
     q('.fp-fs').addEventListener('click', function (e) { e.stopPropagation(); fs(); });
     document.addEventListener('fullscreenchange', function () { setTimeout(fit, 50); });
-    q('.fp-big').addEventListener('click', function (e) { e.stopPropagation(); v.play(); show(); });
+    q('.fp-big').addEventListener('click', function (e) { e.stopPropagation(); if (lv) startFilm(); else { v.play(); show(); } });
 
     // click on the picture: on a touch screen the first tap only reveals the controls; with a mouse a click plays/pauses
     root.addEventListener('click', function (e) {
-      if (e.target.closest('.fp-hit, .fp-cta, .fp-big')) return;
+      if (e.target.closest('.fp-hit, .fp-cta, .fp-big, .fp-watch, .fp-hold')) return;
+      if (lv) { startFilm(); return; }   // the loop is a preview: a click or tap anywhere on it opens the film
       if (e.pointerType === 'touch' && !root.classList.contains('show')) { show(); return; }
       toggle();
     });
-    root.addEventListener('dblclick', function (e) { if (!e.target.closest('.fp-hit, .fp-cta, .fp-big')) fs(); });
+    root.addEventListener('dblclick', function (e) { if (!lv && !e.target.closest('.fp-hit, .fp-cta, .fp-big, .fp-watch, .fp-hold')) fs(); });
     root.addEventListener('keydown', function (e) {
       if (e.target !== root) return;
       var k = e.key.toLowerCase();
@@ -188,8 +189,50 @@
       link.style.boxShadow = ra > 0 ? '0 0 0 ' + (r * grow / (S * ZOOM)).toFixed(2) + 'px rgba(220,38,38,' + ra.toFixed(3) + ')' : '';
     }
 
-    syncPlay(); show();
-    return { video: v, el: root };
+    // ---- the silent preview loop (task 928, Amanda 2026-11-19, owner approved 2026-11-22) ----
+    // At rest the player shows a short muted loop cut from the film. The film itself waits (preload none) until the visitor
+    // asks for it: a click or tap on "Watch the demo" or on the picture starts it from 0:00 with sound. The loop plays only
+    // while on screen and has its own pause button (WCAG 2.2.2). Reduced motion: no loop, the film's cover and play button.
+    var L = opt.loop, reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches, lv = null;
+    if (L && !reduce) {
+      v.preload = 'none'; v.poster = L.poster;          // the film's first look is the loop's own first frame (no cover download)
+      root.classList.add('looping');
+      lv = document.createElement('video');
+      lv.className = 'fp-loop'; lv.muted = true; lv.defaultMuted = true; lv.loop = true; lv.playsInline = true;
+      lv.setAttribute('muted', ''); lv.setAttribute('playsinline', ''); lv.setAttribute('aria-hidden', 'true');
+      lv.preload = 'auto'; lv.poster = L.poster; lv.src = L.src;
+      v.after(lv);                                      // after the film, so '#demo-player video' still finds the film first
+      var watch = document.createElement('button');
+      watch.type = 'button'; watch.className = 'fp-watch';
+      watch.innerHTML = '<span class="fp-watch-icon" aria-hidden="true"></span>' + (L.label || 'Watch the demo');
+      var hold = document.createElement('button');
+      hold.type = 'button'; hold.className = 'fp-hold';
+      root.append(watch, hold);
+      var held = false, inView = false;
+      function syncHold() { hold.setAttribute('aria-label', held ? 'Play the preview' : 'Pause the preview'); hold.classList.toggle('is-held', held); }
+      function runLoop() {
+        if (!lv) return;
+        if (held || !inView || document.hidden) { lv.pause(); return; }
+        var p = lv.play(); if (p && p.catch) p.catch(function () {});   // blocked (e.g. iPhone Low Power Mode): the poster stays
+      }
+      if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { inView = es[es.length - 1].isIntersecting; runLoop(); }, { threshold: 0.25 }).observe(root);
+      else { inView = true; runLoop(); }
+      document.addEventListener('visibilitychange', runLoop);
+      hold.addEventListener('click', function (e) { e.stopPropagation(); held = !held; syncHold(); runLoop(); });
+      watch.addEventListener('click', function (e) { e.stopPropagation(); startFilm(); });
+      syncHold();
+    } else if (opt.poster) v.poster = opt.poster;
+    function startFilm() {                              // from the loop to the film, with sound, from the start
+      if (lv) { lv.pause(); lv.removeAttribute('src'); lv.load(); lv.remove(); lv = null; }
+      root.classList.remove('looping');
+      root.querySelectorAll('.fp-watch, .fp-hold').forEach(function (b) { b.remove(); });
+      v.preload = 'auto'; v.muted = false;
+      if (v.currentTime) v.currentTime = 0;
+      v.play(); show(); root.focus({ preventScroll: true });
+    }
+
+    syncPlay(); if (!lv) show();
+    return { video: v, el: root, startFilm: startFilm };
   }
   window.FilmPlayer = { create: create };
 })();
