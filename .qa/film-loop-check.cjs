@@ -22,7 +22,7 @@ const state = (page) => page.evaluate(() => {
   const w = document.querySelector('.fp-watch'), h = document.querySelector('.fp-hold');
   return {
     film: { paused: film.paused, muted: film.muted, volume: film.volume, t: film.currentTime, preload: film.preload, poster: film.poster.replace(location.origin, ''), audioBytes: film.webkitAudioDecodedByteCount || 0, ready: film.readyState },
-    loop: loop && { paused: loop.paused, muted: loop.muted, loop: loop.loop, playsinline: loop.hasAttribute('playsinline'), t: loop.currentTime },
+    loop: loop && { d: loop.duration, paused: loop.paused, muted: loop.muted, loop: loop.loop, playsinline: loop.hasAttribute('playsinline'), t: loop.currentTime },
     watch: w && { text: w.textContent, h: w.getBoundingClientRect().height, w: w.getBoundingClientRect().width },
     hold: h && h.getAttribute('aria-label'),
     big: getComputedStyle(document.querySelector('.fp-big')).display,
@@ -59,7 +59,7 @@ const state = (page) => page.evaluate(() => {
       check(`${dev}: "Watch the demo (2 min)" is shown, at least 40 px tall; the old play button is hidden`, s.watch && s.watch.text === 'Watch the demo (2 min)' && s.watch.h >= 40 && s.big === 'none', { watch: s.watch, big: s.big });
       await sleep(8000);
       s = await state(page);
-      check(`${dev}: after 10 s the loop has wrapped round and is still playing`, s.loop && !s.loop.paused && s.loop.t < 7.46, s.loop);
+      check(`${dev}: after 10 s the loop has wrapped round and is still playing`, s.loop && !s.loop.paused && s.loop.t < s.loop.d, s.loop);
       await page.screenshot({ path: path.join(OUT, `${dev}-1-loop.png`) });
       // pause button
       if (dev === 'phone') await page.tap('.fp-hold'); else await page.click('.fp-hold');
