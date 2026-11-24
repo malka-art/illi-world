@@ -1,0 +1,92 @@
+/* The handoff sheet, phones and tablets only (task 933, Amanda's recommended design, owner approved 2026-11-24).
+   Shared by the home page and /upgrade, so every value is an illi token (illi-tokens.css, loaded by both pages' stylesheets).
+   Page tokens the design used on the home page are restated here from the same illi tokens; where a page defines its own motion
+   token (--t-settle, --ease-out on the home page) that wins, and the illi motion token stands in on /upgrade.
+   Provisional (named in the design file mock933.css): --h-box-max, --h-rise, --h-step-dot, --h-tap. */
+.handoff{
+  --h-paper:var(--illi-surface-card);
+  --h-field-bg:var(--illi-surface-raised);
+  --h-ink:var(--illi-text-primary);
+  --h-heading:var(--illi-text-heading);
+  --h-muted:var(--illi-text-secondary);
+  --h-line:var(--illi-border-divider);
+  --h-field-line:var(--illi-border-field);
+  --h-band:var(--illi-surface-sunken);
+  --h-red:var(--illi-red-600);
+  --h-red-hover:var(--illi-red-700);
+  --h-on-red:var(--illi-on-accent);
+  --h-focus:var(--illi-bone-950);
+  --h-hairline:1px;
+  --h-focus-width:2px;
+  --h-focus-offset:4px;
+  --h-underline-offset:4px;
+  --h-underline-width:1px;
+  --h-track-title:-.02em;
+  --h-box-max:680px;                          /* PROVISIONAL: the tablet box, two routes side by side */
+  --h-rise:var(--illi-space-xl);              /* PROVISIONAL: how far the sheet travels as it arrives */
+  --h-step-dot:var(--illi-space-xl);          /* PROVISIONAL: the step numeral's disc */
+  --h-tap:48px;                               /* touch target: the home page's field height (--p-field-h) */
+  --h-settle:var(--t-settle,var(--illi-motion-base));
+  --h-fast:var(--t-fast,var(--illi-motion-fast));
+  --h-ease:var(--ease-out,var(--illi-motion-ease));
+  box-sizing:border-box;position:fixed;inset:auto 0 0 0;width:100%;max-width:none;max-height:100dvh;margin:0;overflow:auto;border:0;
+  padding:var(--illi-space-xl) var(--illi-space-xl) calc(var(--illi-space-xl) + env(safe-area-inset-bottom,0px));
+  border-radius:var(--illi-shape-xl) var(--illi-shape-xl) 0 0;background:var(--h-paper);color:var(--h-ink);box-shadow:var(--illi-shadow-raise-lg);
+  font-family:var(--illi-font-primary),sans-serif;font-size:var(--illi-type-body-size);line-height:var(--illi-type-body-line);text-align:left
+}
+.handoff *,.handoff *::before{box-sizing:border-box}
+.handoff p,.handoff ol{margin:0;padding:0}
+.handoff ol{list-style:none}
+.handoff::backdrop{background:color-mix(in srgb,var(--illi-gray-900) 70%,transparent)}
+.handoff[open]{animation:handoff-in var(--h-settle) var(--h-ease)}
+@keyframes handoff-in{from{opacity:0;translate:0 var(--h-rise)}}
+@media(prefers-reduced-motion:reduce){.handoff[open]{animation:none}.handoff .handoff-btn{transition:none}}
+.handoff :where(a,button,input,[tabindex]):focus-visible{outline:var(--h-focus-width) solid var(--h-focus);outline-offset:var(--h-focus-offset);border-radius:var(--illi-shape-sm)}
+.handoff .handoff-btn:focus-visible{border-radius:var(--illi-shape-full)}
+
+.handoff-close{position:absolute;top:var(--illi-space-sm);right:var(--illi-space-sm);display:grid;place-items:center;width:var(--illi-space-3xl);height:var(--illi-space-3xl);padding:0;border:0;border-radius:var(--illi-shape-circle);background:none;color:var(--h-muted);cursor:pointer}
+.handoff-title{padding-right:var(--illi-space-2xl);font-family:var(--illi-font-display),sans-serif;font-weight:var(--illi-weight-bold);letter-spacing:var(--h-track-title);font-size:var(--illi-type-h3-size);line-height:var(--illi-type-h3-line);color:var(--h-ink);text-wrap:balance}
+.handoff-title:focus{outline:none}
+.handoff .handoff-why{margin-top:var(--illi-space-sm);color:var(--h-muted);text-wrap:pretty}
+.handoff-why b{font-weight:var(--illi-weight-medium);color:var(--h-heading)}
+.handoff-view[hidden]{display:none}
+
+.handoff-routes{display:grid;gap:var(--illi-space-xl);margin-top:var(--illi-space-xl)}
+.handoff-route{margin:0;min-width:0}
+.handoff-route + .handoff-route{padding-top:var(--illi-space-xl);border-top:var(--h-hairline) solid var(--h-line)}
+.handoff-route-name{display:block;margin:0;font-weight:var(--illi-weight-medium);color:var(--h-heading)}
+.handoff .handoff-steps{counter-reset:step;display:grid;gap:var(--illi-space-sm);margin:var(--illi-space-md) 0 var(--illi-space-lg)}
+.handoff-steps li{counter-increment:step;display:grid;grid-template-columns:var(--h-step-dot) 1fr;gap:var(--illi-space-md);align-items:start;color:var(--h-ink);text-wrap:pretty}
+.handoff-steps li::before{content:counter(step);display:grid;place-items:center;width:var(--h-step-dot);height:var(--h-step-dot);border-radius:var(--illi-shape-circle);background:var(--illi-surface-chip);color:var(--h-heading);font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium);line-height:1}
+.handoff-steps b{font-weight:var(--illi-weight-semibold)}
+.handoff .handoff-cond{margin-top:var(--illi-space-md);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--h-muted);text-wrap:pretty}
+.handoff .handoff-route-name + .handoff-cond{margin-top:var(--illi-space-xs)}
+.handoff-view[data-view="store"] .handoff-cond,.handoff-view[data-view="sent"] .handoff-cond{margin-top:var(--illi-space-lg)}
+
+/* buttons: the home page's red pill, and its outline for the quieter route */
+.handoff-btn{display:inline-flex;align-items:center;justify-content:center;height:var(--h-tap);padding:0 var(--illi-space-xl);border:0;border-radius:var(--illi-shape-full);background:var(--h-red);color:var(--h-on-red);font:inherit;font-weight:var(--illi-weight-semibold);font-size:var(--illi-type-body-size);line-height:1;white-space:nowrap;text-decoration:none;cursor:pointer;transition:background var(--h-fast) var(--h-ease)}
+.handoff-btn:hover{background:var(--h-red-hover);text-decoration:none}
+.handoff-btn.is-outline{background:transparent;color:var(--h-heading);box-shadow:inset 0 0 0 var(--h-hairline) var(--h-heading)}
+.handoff-btn.is-outline:hover{background:var(--h-band)}
+.handoff-btn:disabled{cursor:default}
+
+/* the email route: the field takes the full width, its button under it */
+.handoff-row{display:flex;flex-direction:column;align-items:flex-start;gap:var(--illi-space-md);margin-top:var(--illi-space-md)}
+.handoff-input{width:100%;height:var(--h-tap);padding:0 var(--illi-space-lg);font:inherit;color:var(--h-ink);background:var(--h-field-bg);border:var(--h-hairline) solid var(--h-field-line);border-radius:var(--illi-shape-full);caret-color:var(--h-ink);margin:0}
+.handoff-input::placeholder{color:var(--h-muted);opacity:1}
+.handoff-input:focus{border-color:var(--h-heading);outline:none}
+.handoff-input[aria-invalid="true"]{border-color:var(--h-red)}
+.handoff .handoff-status{margin-top:var(--illi-space-md);font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--h-ink)}
+.handoff-status:empty{display:none}
+.handoff-status.is-error{color:var(--h-red-hover)}
+.handoff-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+
+/* the quiet way out: a text link with a full touch target, never a second button */
+.handoff-textlink{display:inline-flex;align-items:center;min-height:var(--h-tap);margin-top:var(--illi-space-sm);padding:0;border:0;background:none;font:inherit;font-weight:var(--illi-weight-medium);color:var(--h-heading);text-align:left;text-decoration:underline;text-underline-offset:var(--h-underline-offset);text-decoration-thickness:var(--h-underline-width);cursor:pointer}
+
+/* tablets: a centred box, the two routes side by side */
+@media(min-width:600px){
+  .handoff{inset:0;width:calc(100vw - var(--illi-space-3xl) * 2);max-width:var(--h-box-max);height:fit-content;max-height:calc(100dvh - var(--illi-space-xl) * 2);margin:auto;padding:var(--illi-space-2xl);border-radius:var(--illi-shape-lg)}
+  .handoff-routes{grid-template-columns:1fr 1fr;gap:var(--illi-space-2xl);margin-top:var(--illi-space-2xl)}
+  .handoff-route + .handoff-route{padding-top:0;border-top:0;padding-left:var(--illi-space-2xl);border-left:var(--h-hairline) solid var(--h-line)}
+}

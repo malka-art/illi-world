@@ -30,7 +30,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <!-- Privacy choices panel (2026-11-11): the same panel as the home page footer. -->
-  <link rel="stylesheet" href="/assets/consent/plain-page.css?v=1">
+  <link rel="stylesheet" href="/assets/consent/plain-page.css?v=2">
   <link rel="stylesheet" href="/assets/consent/consent.css?v=1">
 </head>
 <body>
@@ -198,6 +198,8 @@
       <a href="/fr/privacy.html" lang="fr" hreflang="fr">Confidentialité</a>
       <a href="/fr/terms.html" lang="fr" hreflang="fr">Conditions</a>
     </nav>
+    <!-- phones and tablets only (/assets/handheld.js shows it): the store link above cannot install illi there (task 933) -->
+    <p class="handheld-note" data-handheld-note hidden>illi works in Chrome on a computer or laptop. Open illi.world there to install.</p>
     <p>© 2026 illi</p>
     <div class="choices" id="choices" role="dialog" aria-modal="false" aria-labelledby="choices-title" hidden>
       <h2 class="choices-title" id="choices-title" tabindex="-1">Privacy choices</h2>
@@ -206,6 +208,7 @@
       <a class="choices-policy" href="/privacy.html#counting">Read the privacy policy</a>
     </div>
   </footer>
+  <script defer src="/assets/handheld.js?v=1"></script>
   <script defer src="/assets/consent/consent.js?v=3"></script>
 </body>
 </html>

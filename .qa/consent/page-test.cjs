@@ -571,12 +571,12 @@ async function flush(page) { await page.evaluate(() => { document.dispatchEvent(
       check('phone: no question', !(await askVisible(page)));
       const wide = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       check('phone: no sideways scroll', wide <= 0, wide);
-      // since 2026-11-11 (site main) the phone's install buttons say "Remind me on my computer" and open the send form in a popup
-      await page.click('.hero-action a[href="#send-form"]'); await sleep(300);
-      check('phone: the hero button opens the send popup', await page.evaluate(() => document.getElementById('send-dialog').open));
-      await page.type('#send-email', 'test@example.com');
-      await page.click('#send-form button[type="submit"]'); await sleep(600);
-      await page.click('#send-close'); await sleep(200);
+      // task 933: the phone's install buttons say "Send illi to my computer" and open the handoff sheet (store route, then the email)
+      await page.click('.hero-action a[href="#handoff"]'); await sleep(300);
+      check('phone: the hero button opens the handoff sheet', await page.evaluate(() => document.getElementById('handoff').open));
+      await page.type('#handoff-email', 'test@example.com');
+      await page.click('#handoff-form button[type="submit"]'); await sleep(600);
+      await page.click('#handoff-close'); await sleep(200);
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight)); await sleep(200);
       await page.screenshot({ path: path.join(OUT, 'phone-390-footer.png') });
       await page.click('.foot-choice'); await sleep(250);

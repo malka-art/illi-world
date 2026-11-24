@@ -1,9 +1,9 @@
 /* illi landing, Amanda iteration 3 (2026-11-08). Design artifact, not production code.
-   1. illi's own film player on the final cut, with the end install button (phones: send-to-desktop).
+   1. illi's own film player on the final cut, with the end install button (phones and tablets: the handoff sheet).
    2. Moving strip under the film: option A (gestures and effects) runs by default; ?strip=a|b|none or the ?review=1 switch flips it.
    3. Story rail arrows. 4. Conversion feedback. 5. Sticky header hairline. 6. Phone detection.
    8. A phone turned sideways: the film fills the screen.
-   7. Phone send-to-desktop: real since 2026-11-10, posts to the send-to-desktop Edge Function (one email per address per day, B14). */
+   7. Phones and tablets: the handoff sheet (assets/handoff.js, task 933) holds the store route and the send-to-desktop email. */
 (function () {
   'use strict';
 
@@ -12,29 +12,27 @@
   // An iPad introduces itself as a Mac. What gives it away: it has a touch screen and its browser is never a Chromium one
   // (only Chromium browsers have navigator.userAgentData). A touch-screen MacBook running Chrome or Edge therefore stays a computer.
   var isIpadAsMac = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1 && !navigator.userAgentData;
-  var isMobile = (navigator.userAgentData && navigator.userAgentData.mobile) || /Android|iPhone|iPad|iPod/i.test(ua) || isIpadAsMac || params.get('device') === 'mobile';
+  // assets/handheld.js decides (task 933: it also catches an Android tablet asking for the desktop site); the old test stays as a fallback
+  var isMobile = typeof window.illiHandheld === 'boolean' ? window.illiHandheld
+    : (navigator.userAgentData && navigator.userAgentData.mobile) || /Android|iPhone|iPad|iPod/i.test(ua) || isIpadAsMac || params.get('device') === 'mobile';
 
-  // ---------- 1. player: illi's own film player; the install button at the end leads phones to the send-to-desktop form ----------
+  // ---------- 1. player: illi's own film player; on phones and tablets the install button at the end opens the handoff sheet ----------
   var CWS = 'https://chromewebstore.google.com/detail/hocdlcekmbokkepblkopcefmenhnincg';
   var player = window.FilmPlayer.create(document.getElementById('demo-player'), {
     src: 'assets/home/illi-demo.mp4?v=3', poster: 'assets/home/cover.webp', base: 'assets/home/film-player/',
     // at rest: a 7.5 s silent loop of the film's opening (0:00.4 to 0:07.5, joined to its start by a 0.4 s crossfade, task 928)
     loop: { src: 'assets/home/illi-demo-loop.mp4?v=5', poster: 'assets/home/illi-demo-loop-poster.webp?v=5', label: 'Watch the demo (2 min)' },
-    cta: isMobile ? { href: '#send-form', label: 'Remind me on my computer', start: 2602, id: 'film_end_send' }
+    cta: isMobile ? { href: '#handoff', label: 'Send illi to my computer', start: 2602, id: 'film_end_send' }
                   : { href: CWS, label: 'Try illi free for 45 days', target: '_blank', start: 2602, id: 'film_end' }
   });
   if (isMobile) player.el.querySelector('.fp-cta a').classList.remove('cta');   // no "opened the store" note for the phone path
 
-  // ---------- 1b. phones and tablets cannot install a Chrome extension, so the store is a dead end there (owner request 2026-11-11):
-  //             every install button says "Remind me on my computer" instead and opens the send popup (section 7) ----------
-  var sendDialog = document.getElementById('send-dialog');
-  if (isMobile && sendDialog) {
+  // ---------- 1b. phones and tablets cannot install a Chrome extension (task 933): assets/handoff.js relabels every install button
+  //             and opens the handoff sheet from it. This page only reorders the hero for them (style.css, .is-phone). ----------
+  if (isMobile) {
     document.documentElement.classList.add('is-phone');
-    document.getElementById('device-note').hidden = false;   // why the button offers a reminder instead of installing
-    document.querySelectorAll('.site-head a.cta, .hero-action a.cta, .close a.cta').forEach(function (a) {
-      a.href = '#send-form'; a.removeAttribute('target'); a.removeAttribute('rel'); a.classList.remove('cta');
-      a.textContent = a.closest('.site-head') ? 'Get illi now' : 'Remind me on my computer';   // the top button stays short; the popup explains
-    });
+    // before section 4 wires the "Opened the Chrome Web Store" note: these buttons open the sheet there, never the store
+    document.querySelectorAll('[data-handoff-label]').forEach(function (a) { a.classList.remove('cta'); });
   }
   player.video.addEventListener('error', function () { document.getElementById('stage-error').hidden = false; });
 
@@ -71,54 +69,7 @@
   function syncHead() { head.classList.toggle('is-stuck', window.scrollY > 1); }
   window.addEventListener('scroll', syncHead, { passive: true }); syncHead();
 
-  // ---------- 6. phone detection for the send form (the browser notice was removed by the owner, 2026-11-09) ----------
-  // (isMobile is worked out at the top: the player's install button needs it too)
-
-  // ---------- 7. send-to-desktop (phones): posts to the send-to-desktop Edge Function, which emails the install link once per address per day (B14) ----------
-  var SEND_ENDPOINT = 'https://wbobpjzkasbnkxbiiioe.supabase.co/functions/v1/send-to-desktop';
-  var SEND_MESSAGES = {
-    sent: 'Sent. Open the email on your computer and you’re one click from installing.',
-    invalid_email: 'That doesn’t look like an email address. Check it and try again.',
-    disposable_email: 'That address looks temporary. Use one you’ll open at your computer.',
-    already_sent: 'We already sent the link to that address today. Check your inbox, and the spam folder just in case.',
-    rate_limited: 'Too many requests from this connection for now. Please try again in an hour.',
-    busy: 'The form is busy right now. Please try again later.',
-    failed: 'The email didn’t go out. Please try again in a minute.'
-  };
-  var form = document.getElementById('send-form');
-  if (isMobile && form && sendDialog) {
-    var input = document.getElementById('send-email'); var status = document.getElementById('send-status'); var button = form.querySelector('button[type="submit"]');
-    // every "Remind me on my computer" button opens the popup with the email field ready
-    document.querySelectorAll('a[href="#send-form"]').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (sendDialog.showModal) sendDialog.showModal(); else sendDialog.setAttribute('open', '');
-        input.focus();
-      });
-    });
-    function closeSend() { if (sendDialog.close) sendDialog.close(); else sendDialog.removeAttribute('open'); }
-    document.getElementById('send-close').addEventListener('click', closeSend);
-    sendDialog.addEventListener('click', function (e) { if (e.target === sendDialog) closeSend(); });   // a tap outside the box closes it
-    var trap = document.getElementById('send-website');
-    function report(result) { if (window.illiTrack) window.illiTrack('send_form_submit', { result: result }); }   // page events (track.js)
-    function setStatus(text, isError) { status.textContent = text; status.classList.toggle('is-error', !!isError); input.setAttribute('aria-invalid', isError ? 'true' : 'false'); }
-    input.addEventListener('input', function () { if (input.getAttribute('aria-invalid') === 'true' && input.validity.valid) setStatus('', false); });
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var email = input.value.trim();
-      if (!input.validity.valid || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setStatus(SEND_MESSAGES.invalid_email, true); input.focus(); return; }
-      button.disabled = true; setStatus('Sending…', false);
-      fetch(SEND_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, website: trap ? trap.value : '' }) })
-        .then(function (res) { return res.json().catch(function () { return {}; }).then(function (data) { return { ok: res.ok && data.ok === true, error: data.error }; }); })
-        .then(function (r) {
-          report(r.ok ? 'sent' : r.error === 'already_sent' ? 'already_sent' : 'error');
-          if (r.ok) { form.classList.add('is-sent'); setStatus(SEND_MESSAGES.sent, false); return; }
-          button.disabled = false;
-          setStatus(SEND_MESSAGES[r.error] || SEND_MESSAGES.failed, r.error === 'invalid_email' || r.error === 'disposable_email');
-        })
-        .catch(function () { report('error'); button.disabled = false; setStatus(SEND_MESSAGES.failed, false); });
-    });
-  }
+  // ---------- 6 and 7. phone detection and the send-to-desktop form moved to assets/handheld.js and assets/handoff.js (task 933) ----------
 
   // ---------- 8. a phone turned sideways: if the film was on screen, or is playing, bring it up so it fills the screen
   //             (the layout for this lives in style.css, "a phone turned sideways"; the media query here must match that one) ----------

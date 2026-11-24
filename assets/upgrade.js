@@ -8,21 +8,14 @@
   var SUPABASE_URL = "https://wbobpjzkasbnkxbiiioe.supabase.co";
   var SUPABASE_ANON_KEY = "sb_publishable_nj-_J2qmR2VT45qqSesaTg_rvZcXr1j";
   var SUPABASE_JS = "/assets/vendor/supabase-js-2.103.0.esm.js";
-  var SEND_ENDPOINT = SUPABASE_URL + "/functions/v1/send-to-desktop";
   var $ = function (id) {
     return document.getElementById(id);
   };
   var body = document.body;
 
-  // A phone or tablet cannot install a Chrome extension (same test as the home page's landing.js). An iPad introduces itself as a
-  // Mac: it has a touch screen and its browser is never a Chromium one, so a touch-screen MacBook in Chrome stays a computer.
-  var ua = navigator.userAgent || "";
-  var isIpadAsMac = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1 && !navigator.userAgentData;
-  var isMobile =
-    (navigator.userAgentData && navigator.userAgentData.mobile) ||
-    /Android|iPhone|iPad|iPod/i.test(ua) ||
-    isIpadAsMac ||
-    params.get("device") === "mobile";
+  // A phone or tablet cannot install a Chrome extension. assets/handheld.js decides (task 933); assets/handoff.js relabels the
+  // install buttons there and opens the handoff sheet from them. This page only marks the body.
+  var isMobile = window.illiHandheld === true;
 
   /* ---------- the bottom note (the working page's status region) ---------- */
   var stub = $("checkoutStub");
@@ -1038,82 +1031,9 @@
     }
   });
 
-  /* ---------- install: the store link on a computer. A phone or tablet cannot install a Chrome extension, so there every install
-     button opens the send-to-computer form in place (the live send-to-desktop function and the home page's messages). ---------- */
-  var sendForm = $("sendForm"),
-    sendEmail = $("sendEmail"),
-    sendStatus = $("sendStatus"),
-    heroInstall = $("heroInstall");
-  var SEND_MESSAGES = {
-    sent: "Sent. Open the email on your computer and you’re one click from installing.",
-    invalid_email: "That doesn’t look like an email address. Check it and try again.",
-    disposable_email: "That address looks temporary. Use one you’ll open at your computer.",
-    already_sent: "We already sent the link to that address today. Check your inbox, and the spam folder just in case.",
-    rate_limited: "Too many requests from this connection for now. Please try again in an hour.",
-    busy: "The form is busy right now. Please try again later.",
-    failed: "The email didn’t go out. Please try again in a minute.",
-  };
-  if (isMobile) {
-    body.setAttribute("data-device", "phone");
-    document.querySelectorAll("[data-install-label-phone]").forEach(function (a) {
-      a.textContent = a.getAttribute("data-install-label-phone");
-    });
-    document.querySelectorAll("[data-install]").forEach(function (a) {
-      a.removeAttribute("target");
-      a.addEventListener("click", function (e) {
-        e.preventDefault();
-        sendForm.hidden = false;
-        heroInstall.hidden = true;
-        sendForm.scrollIntoView({ block: "center" });
-        sendEmail.focus({ preventScroll: true });
-      });
-    });
-  }
-  function setSendStatus(text, isError) {
-    sendStatus.textContent = text;
-    sendStatus.classList.toggle("is-error", !!isError);
-    sendEmail.setAttribute("aria-invalid", isError ? "true" : "false");
-  }
-  sendForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var button = sendForm.querySelector('button[type="submit"]');
-    var email = sendEmail.value.trim();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      setSendStatus(SEND_MESSAGES.invalid_email, true);
-      sendEmail.focus();
-      return;
-    }
-    button.disabled = true;
-    setSendStatus("Sending…", false);
-    fetch(SEND_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, website: $("sendWebsite").value }),
-    })
-      .then(function (res) {
-        return res
-          .json()
-          .catch(function () {
-            return {};
-          })
-          .then(function (data) {
-            return { ok: res.ok && data.ok === true, error: data.error };
-          });
-      })
-      .then(function (r) {
-        if (r.ok) {
-          sendForm.classList.add("is-sent");
-          setSendStatus(SEND_MESSAGES.sent, false);
-          return;
-        }
-        button.disabled = false;
-        setSendStatus(SEND_MESSAGES[r.error] || SEND_MESSAGES.failed, r.error === "invalid_email" || r.error === "disposable_email");
-      })
-      .catch(function () {
-        button.disabled = false;
-        setSendStatus(SEND_MESSAGES.failed, false);
-      });
-  });
+  /* ---------- install: the store link on a computer. On a phone or tablet assets/handoff.js turns every install button into
+     "Send illi to my computer" (the header one into "Get illi now") and opens the handoff sheet from it (task 933). ---------- */
+  if (isMobile) body.setAttribute("data-device", "phone");
 
   /* ---------- wiring ---------- */
   document.querySelectorAll("[data-buy]").forEach(function (button) {

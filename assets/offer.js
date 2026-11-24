@@ -106,5 +106,5 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) api.refresh();
   });
-  // Phones and tablets: the pricing page handles its own install buttons (upgrade.js opens the send-to-desktop form in place).
+  // Phones and tablets: the install buttons open the handoff sheet (assets/handoff.js, task 933).
 })();

@@ -79,7 +79,6 @@
   --p-icon:16px;
   --p-icon-button:40px;
   --p-dialog-w:480px;
-  --p-send-w:420px;
   --p-check-w:300px;                           /* Cloudflare's checkbox frame is 300 by 65 */
   --p-check-h:65px;
   --p-focus-width:2px;                         /* home */
@@ -206,19 +205,6 @@ body[data-tier="paid"] .paid-act{display:flex;flex-direction:column;align-items:
 body[data-view="founding"] .back-link{display:inline-flex;align-items:center;gap:var(--illi-space-sm);min-height:var(--p-tap);margin-bottom:var(--illi-space-sm);font-size:var(--illi-type-body-sm-size);font-weight:var(--illi-weight-medium)}
 .back-link svg{width:var(--p-icon);height:var(--p-icon);fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 
-/* phone visitor: send the install link to a computer (the home form, on paper) */
-.send{display:flex;flex-direction:column;gap:var(--illi-space-sm);width:100%;max-width:var(--p-send-w)}
-/* BUILD: field above button, as in the home page's send popup; side by side, "Send me the link" left the field too narrow to show an address at 390 */
-.send-row{display:flex;flex-direction:column;gap:var(--illi-space-md)}
-.send-row .field{flex:none;min-width:0}
-.send-row .button{min-height:var(--p-field-h);justify-content:center}
-/* BUILD: the live send-to-desktop function answers; its sentence shows under the form (the home page's messages) */
-.send-status{font-size:var(--illi-type-body-sm-size);line-height:var(--illi-type-body-sm-line);color:var(--heading)}
-.send-status:empty{display:none}
-.send-status.is-error{color:var(--error);font-weight:var(--illi-weight-medium)}
-.send-title{font-weight:var(--illi-weight-medium);color:var(--ink)}
-.send .field-label{margin-top:var(--illi-space-sm)}
-.send.is-sent .send-row,.send.is-sent .send-why,.send.is-sent .field-label{display:none}
 .trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 
 /* ---------- fields: one field style everywhere ---------- */

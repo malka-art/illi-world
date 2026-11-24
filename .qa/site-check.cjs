@@ -17,6 +17,7 @@ const renewalFixture = require("./renewal-contract.cjs");
 
 const root = path.resolve(__dirname, "..");
 const CAPS =
+  process.env.QA_CAPS ||
   "C:/Users/35263/OneDrive/Documents/Vibe Coding/Malka's Software Dev/Dev Workflow/CompNy workflow/Projects/Illi/design/upgrade-page-2026-11-11/captures";
 const PORT = 18786;
 const base = "http://127.0.0.1:" + PORT;
@@ -303,12 +304,12 @@ const SIZES = [
       for (const data of [closedOffer, offer]) {
         const r = await visit(Object.assign({ data }, size));
         assert.equal(await visible(r.page, "#freeInstall"), true);
-        assert.equal(await text(r.page, "#freeInstall"), "Get illi free");
+        assert.equal(await text(r.page, "#freeInstall"), size.phone ? "Send illi to my computer" : "Get illi free"); // task 933: phones relabel
         assert.equal(await r.page.$eval("#freeInstall", (a) => a.classList.contains("secondary") && a.dataset.cta), "free_card");
         assert.equal(await visible(r.page, "#stayLine"), false);
         assert.equal(await text(r.page, "#freeNote"), "Do nothing and you move to Free.");
         const reds = await r.page.$$eval(".button", (els) => els.filter((e) => e.offsetWidth && !e.closest("#foundingBanner") && getComputedStyle(e).backgroundColor !== "rgba(0, 0, 0, 0)").map((e) => e.textContent.trim()));
-        assert.deepEqual(reds, size.phone ? ["Get illi now", "Remind me on my computer"] : ["Try illi free", "Try illi free"], "red buttons: " + reds);
+        assert.deepEqual(reds, size.phone ? ["Get illi now", "Send illi to my computer"] : ["Try illi free", "Try illi free"], "red buttons: " + reds);
         if (!size.phone) {
           const tops = await r.page.$$eval("#freeInstall, #plans [data-buy]", (els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
           if (size.width >= 1280) assert.equal(new Set(tops).size, 1, "buttons do not line up: " + tops);
@@ -321,10 +322,11 @@ const SIZES = [
           const p2 = await t.page();
           if (p2) await p2.close();
         } else {
+          assert.equal(await text(r.page, "#freeInstall"), "Send illi to my computer");
           await r.page.click("#freeInstall");
-          await r.page.waitForSelector("#sendForm:not([hidden])");
+          await r.page.waitForSelector("#handoff[open]");
           assert.equal(r.page.url(), base + "/upgrade/");
-          assert.equal(await r.page.evaluate(() => document.activeElement.id), "sendEmail");
+          assert.equal(await r.page.evaluate(() => document.activeElement.id), "handoff-title");
         }
         assert.ok(!r.aborted.some((u) => u.includes("chromewebstore")) && r.stripeNav.length === 0);
         await r.page.close();
@@ -352,28 +354,27 @@ const SIZES = [
     assert.equal(await r.page.$eval("#signupModal", (e) => e.hidden), true);
     await r.page.close();
   });
-  await check("Phone visitor: install buttons open the send form in place; send posts email and honeypot to send-to-desktop (stubbed)", async () => {
+  await check("Phone visitor (task 933): install buttons open the handoff sheet; its email route posts email and honeypot to send-to-desktop (stubbed)", async () => {
     const r = await visit({ data: closedOffer, width: 390, height: 844, phone: true });
-    assert.equal(await text(r.page, "#heroInstall"), "Remind me on my computer");
+    assert.equal(await text(r.page, "#heroInstall"), "Send illi to my computer");
     await r.page.click("#heroInstall");
-    await r.page.waitForSelector("#sendForm:not([hidden])");
-    assert.equal(await visible(r.page, "#heroInstall"), false);
-    assert.equal(await r.page.evaluate(() => document.activeElement.id), "sendEmail");
-    await r.page.type("#sendEmail", "sam@example.com");
-    await r.page.evaluate(() => window.scrollTo(0, 0));
-    assert.equal(await r.page.$eval("#sendEmail", (e) => Math.round(e.getBoundingClientRect().height)), 48, "send field squashed");
-    assert.equal(await r.page.$eval("#sendEmail", (e) => e.scrollWidth <= e.clientWidth), true, "address does not fit the field");
+    await r.page.waitForSelector("#handoff[open]");
+    assert.equal(await r.page.evaluate(() => document.activeElement.id), "handoff-title");
+    assert.match(await text(r.page, "#handoff-store"), /^Open the Chrome Web Store$/);
+    await r.page.type("#handoff-email", "sam@example.com");
+    assert.equal(await r.page.$eval("#handoff-email", (e) => Math.round(e.getBoundingClientRect().height)), 48, "send field squashed");
+    assert.equal(await r.page.$eval("#handoff-email", (e) => e.scrollWidth <= e.clientWidth), true, "address does not fit the field");
     assert.equal(await text(r.page, ".site-head [data-install]"), "Get illi now");
     await shot(r.page, "02-visitor-phone-send", "view");
-    await r.page.click('#sendForm button[type="submit"]');
+    await r.page.click('#handoff-form button[type="submit"]');
     await wait(200);
     assert.deepEqual(r.send, [{ email: "sam@example.com", website: "" }]);
-    assert.match(await text(r.page, "#sendStatus"), /^Sent\./);
+    assert.equal(await r.page.$eval('#handoff [data-view="sent"]', (v) => v.hidden), false);
     assert.equal(await noOverflow(r.page), true);
-    // the header pill also opens the form, never the store
+    // the header pill also opens the sheet, never the store
     const r2 = await visit({ data: closedOffer, width: 390, height: 844, phone: true });
     await r2.page.click(".site-head [data-install]");
-    await r2.page.waitForSelector("#sendForm:not([hidden])");
+    await r2.page.waitForSelector("#handoff[open]");
     assert.equal(r2.page.url(), base + "/upgrade/");
     await r.page.close();
     await r2.page.close();
@@ -851,7 +852,7 @@ const SIZES = [
     assert.deepEqual(await r.page.$$eval("#plans > .plan", (els) => els.map((e) => e.id)), ["planFree", "planAnnual", "planMonthly"]);
     const stops = await tabStops(r.page, 12);
     assert.deepEqual(stops.filter((s) => s.id === "freeInstall" || s.interval).map((s) => s.id || s.interval), ["freeInstall", "annual", "monthly"]);
-    assert.equal(stops.find((s) => s.id === "freeInstall").name, "Get illi free");
+    assert.equal(stops.find((s) => s.id === "freeInstall").name, "Send illi to my computer"); // task 933: phones relabel
     await r.page.close();
   });
   await check("Names: every button and link has a name; plan cards are labelled; the dialog is a labelled modal", async () => {
@@ -860,7 +861,7 @@ const SIZES = [
     assert.deepEqual(unnamed, []);
     assert.deepEqual(await r.page.$$eval("#plans > .plan", (els) => els.map((e) => e.getAttribute("aria-label")).sort()), ["Free", "illi Premium, annual", "illi Premium, monthly"]);
     assert.equal(await r.page.$eval("#signupModal", (e) => e.getAttribute("role") + "/" + e.getAttribute("aria-modal") + "/" + !!document.getElementById(e.getAttribute("aria-labelledby"))), "dialog/true/true");
-    assert.deepEqual(await r.page.$$eval("#otpEmail, #otpCode, #sendEmail", (els) => els.map((e) => !!document.querySelector('label[for="' + e.id + '"]'))), [true, true, true]);
+    assert.deepEqual(await r.page.$$eval("#otpEmail, #otpCode", (els) => els.map((e) => !!document.querySelector('label[for="' + e.id + '"]'))), [true, true]);
     await r.page.close();
   });
   await check("Dialog: focus moves in, stays in (Tab wraps), returns to the opener on Escape; page behind is inert", async () => {
