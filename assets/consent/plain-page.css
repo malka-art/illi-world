@@ -41,7 +41,7 @@
 .pc-foot>nav a:hover,.pc-foot>nav .foot-choice:hover,.pc-foot>nav .foot-choice[aria-expanded="true"]{text-decoration:underline}
 .pc-foot>p{margin:12px 0 0;font-size:13px}
 /* phones and tablets only (/assets/handheld.js shows it, task 933): the store link above cannot install illi there */
-.pc-foot>p.handheld-note{font-size:14px;color:#333}
+.pc-foot>p.handheld-note{font-size:14px;color:var(--illi-gray-700)}
 .pc-foot>p.handheld-note[hidden]{display:none}
 .pc-foot :where(a,button):focus-visible,.choices :where(a,button,[tabindex]):focus-visible{outline:var(--p-focus-width) solid var(--focus);outline-offset:var(--p-focus-offset);border-radius:var(--illi-shape-sm)}
 .choices,.choices *{box-sizing:border-box}
