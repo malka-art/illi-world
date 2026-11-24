@@ -261,8 +261,11 @@ async function pixelDiff(x, y) {
         assert.deepEqual(a.dom.links, b.dom.links);
         assert.equal(a.dom.text, b.dom.text);
         assert.deepEqual(a.rec.errors, []);
-        const px = await pixelDiff(a.img, b.img);
-        assert.equal(px, 0, px + " pixels differ from origin/main by more than 2 levels");
+        // two loads of the SAME page differ now and then (measured 2026-11-24: origin/main against itself failed on about one page
+        // in ten), so a page passes when any of three fresh pairs of loads matches
+        let px = await pixelDiff(a.img, b.img), tries = [px];
+        for (let k = 0; px !== 0 && k < 2; k++) { px = await pixelDiff((await snap(B)).img, (await snap(M)).img); tries.push(px); }
+        assert.equal(px, 0, "pixels differing from origin/main by more than 2 levels, per try: " + tries);
       });
     }
   }
