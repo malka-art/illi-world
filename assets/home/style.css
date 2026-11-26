@@ -497,6 +497,7 @@ h1{font-size:var(--p-fluid-display);line-height:var(--illi-type-display-line);ma
   .card:hover,.card:hover .diagram{transform:none}
   .d-mark .r1{opacity:.4}
   .strip-track{animation:none;flex-wrap:wrap;width:auto;justify-content:center;row-gap:var(--illi-space-md)}
+  .strip-track li[aria-hidden="true"]{display:none}   /* the copies landing.js adds for the loop: a still strip shows each gesture once */
   .story-arrow{transition:none}
   .strip{mask-image:none}
 }
