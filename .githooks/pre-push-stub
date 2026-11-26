@@ -1,0 +1,15 @@
+#!/bin/sh
+# Shared pre-push stub for every worktree of illi-world. Lives at "$(git rev-parse --git-common-dir)/hooks/pre-push".
+# Runs the pushing worktree's .githooks/pre-push if it has one, else the copy on origin/main (older branches lack the folder).
+# If neither exists and the push targets main, it refuses rather than letting the push through unchecked.
+input=$(cat)
+hook="$(git rev-parse --show-toplevel)/.githooks/pre-push"
+if [ ! -f "$hook" ]; then
+  hook=$(mktemp) && trap 'rm -f "$hook"' EXIT
+  if ! git show refs/remotes/origin/main:.githooks/pre-push > "$hook" 2>/dev/null; then
+    printf '%s\n' "$input" | grep -q ' refs/heads/main ' || exit 0
+    echo "pre-push: no guard hook here or on origin/main; push to main REFUSED (bypass deliberately with --no-verify)." >&2
+    exit 1
+  fi
+fi
+printf '%s\n' "$input" | sh "$hook" "$@"

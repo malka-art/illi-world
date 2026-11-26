@@ -1,0 +1,2 @@
+# hook scripts must keep LF endings or sh breaks on Windows checkouts (core.autocrlf=true)
+* text eol=lf

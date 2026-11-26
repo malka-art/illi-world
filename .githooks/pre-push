@@ -1,0 +1,49 @@
+#!/bin/sh
+# pre-push guard (added 2026-11-25): before any push that updates main on the remote, run .qa/home-strip-check.cjs
+# against the exact tree being pushed, and refuse the push if it fails. Pushes to any other branch pass straight through.
+#
+# How it is installed: git runs .git/hooks/pre-push (the hooks folder shared by every worktree of this repo; core.hooksPath
+# stays unset). That file is a copy of .githooks/pre-push-stub. It runs this file from the worktree doing the push if it has
+# one, else the copy on origin/main. Reinstall from any worktree:
+#     cp .githooks/pre-push-stub "$(git rev-parse --git-common-dir)/hooks/pre-push"
+# Remove: delete that file.
+# Emergency bypass, deliberately and knowing the strip is not checked:  git push --no-verify origin <branch>:main
+#
+# How it checks: git archive the pushed commit (films left out, the guard never loads them) into a temp folder and run the
+# guard there, so it tests what is being pushed, not what is checked out. If that commit predates the guard, the guard from
+# origin/main is used. Needs node, Chrome and puppeteer-core at the paths below; if one is missing it refuses with a message.
+CHROME="C:/Program Files/Google/Chrome/Application/chrome.exe"
+PUPPETEER="C:/worktrees/illi-xbrowser-harness/node_modules/puppeteer-core/package.json"
+GUARD=.qa/home-strip-check.cjs
+LIMIT=300   # seconds before a hung guard counts as a failure
+
+shas=""
+while read -r lref lsha rref rsha; do
+  [ "$rref" = refs/heads/main ] || continue
+  case "$lsha" in *[!0]*) shas="$shas $lsha" ;; esac   # all zeros = deleting main: not this guard's job
+done
+[ -n "$shas" ] || exit 0
+
+refuse() { echo "pre-push: push to main REFUSED: $*" >&2; echo "pre-push: (bypass deliberately with git push --no-verify)" >&2; exit 1; }
+command -v node >/dev/null 2>&1 || refuse "node is not on PATH, so the home strip guard cannot run."
+[ -f "$CHROME" ] || refuse "Chrome not found at $CHROME, so the home strip guard cannot run."
+[ -f "$PUPPETEER" ] || refuse "puppeteer-core not found at $PUPPETEER, so the home strip guard cannot run."
+
+for sha in $shas; do
+  short=$(git rev-parse --short "$sha")
+  tmp=$(mktemp -d "${TMPDIR:-/tmp}/illi-prepush.XXXXXX") || refuse "could not make a temp folder."
+  trap 'rm -rf "$tmp"' EXIT
+  git archive "$sha" -- ':(top)' ':(top,exclude)*.mp4' | tar -x -C "$tmp" || refuse "could not export $short to check it."
+  if [ ! -f "$tmp/$GUARD" ]; then
+    git show "refs/remotes/origin/main:$GUARD" > "$tmp/$GUARD" 2>/dev/null || refuse "$short has no $GUARD and origin/main has none either."
+    echo "pre-push: $short has no $GUARD; using the one from origin/main."
+  fi
+  dir=$(cygpath -m "$tmp" 2>/dev/null || echo "$tmp")
+  echo "pre-push: push to main: running the home strip guard on $short (about a minute)..."
+  timeout "$LIMIT" node "$dir/$GUARD"; code=$?
+  rm -rf "$tmp"; trap - EXIT
+  [ "$code" = 124 ] && refuse "the home strip guard on $short did not finish within $LIMIT s."
+  [ "$code" = 0 ] || refuse "the home strip guard failed on $short (the FAIL lines above say what broke)."
+  echo "pre-push: home strip guard passed on $short."
+done
+exit 0
